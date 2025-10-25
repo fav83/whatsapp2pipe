@@ -30,6 +30,8 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 ### Specs
 - [Spec-101-Project-Foundation-Build-Setup.md](Docs/Specs/Spec-101-Project-Foundation-Build-Setup.md) - Project foundation and build setup specification
 - [Spec-102-Chrome-Extension-Manifest-Basic-Structure.md](Docs/Specs/Spec-102-Chrome-Extension-Manifest-Basic-Structure.md) - Chrome extension manifest and basic structure
+- [Spec-103-WhatsApp-Sidebar-Injection.md](Docs/Specs/Spec-103-WhatsApp-Sidebar-Injection.md) - WhatsApp Web sidebar injection with UI states (✅ Complete)
+- [Spec-103-Implementation-Summary.md](Docs/Specs/Spec-103-Implementation-Summary.md) - Complete implementation summary and manual testing checklist
 
 ## Development Commands
 
@@ -101,6 +103,49 @@ npm run type-check
 4. Test changes on https://web.whatsapp.com
 
 For faster development, use `npm run dev` which watches for changes and rebuilds automatically.
+
+## Build System Notes
+
+### Chrome Extension Module Bundling
+
+The build system includes a custom Vite plugin (`inline-chunks`) that solves Chrome Manifest V3 ES module compatibility issues:
+
+**Problem:** Chrome content scripts don't support ES modules, but Vite creates code-split chunks with import/export statements.
+
+**Solution:** The `inline-chunks` plugin automatically:
+- Detects and reads chunk files after build
+- Removes export statements
+- Wraps chunks in IIFE to prevent variable collisions
+- Inlines all React dependencies (~142KB) into content-script.js
+- Produces a single self-contained file with no import/export statements
+
+**Result:** content-script.js works in Chrome without "Cannot use import statement outside a module" errors.
+
+**Documentation:** See [Chrome-Extension-Architecture.md](Docs/Architecture/Chrome-Extension-Architecture.md#81-vite-configuration) for complete technical details.
+
+### WhatsApp Web Integration
+
+The sidebar adjusts the WhatsApp Web layout to prevent overlay:
+- Detects WhatsApp container: `#app > div > div`
+- Applies `marginRight: 350px` to push content left
+- Sidebar uses `position: fixed` on the right
+- Result: Sidebar and WhatsApp sit side-by-side without overlap
+
+## Current Implementation Status
+
+**✅ Completed Features:**
+- ✅ Project foundation and build setup (Spec-101)
+- ✅ Chrome extension manifest and structure (Spec-102)
+- ✅ WhatsApp Web sidebar injection with UI states (Spec-103)
+  - WhatsApp load detection
+  - Fixed header + scrollable body
+  - 4 UI states: welcome, loading, contact, error
+  - TypeScript discriminated unions for state management
+  - 55 automated tests passing
+  - WhatsApp color theme matching
+
+**📋 Next Feature:**
+- Feature 4: Chat detection and phone extraction
 
 ## Git Commit Guidelines
 

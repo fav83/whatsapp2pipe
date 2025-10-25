@@ -4,23 +4,32 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
+import { waitForWhatsAppLoad } from './whatsapp-loader'
 import '../styles/content-script.css'
 
 console.log('[Content Script] Loading on WhatsApp Web')
 
-// Wait for DOM to be fully loaded
-function init() {
+// Initialize sidebar after WhatsApp is fully loaded
+async function init() {
+  console.log('[Content Script] Waiting for WhatsApp Web to load...')
+
+  // Wait for WhatsApp to be ready
+  await waitForWhatsAppLoad()
+
   console.log('[Content Script] Initializing sidebar injection')
 
-  // Check if we're on WhatsApp Web
-  if (!window.location.href.includes('web.whatsapp.com')) {
-    console.warn('[Content Script] Not on WhatsApp Web, exiting')
-    return
+  // Adjust WhatsApp Web layout to make room for sidebar
+  const whatsappContainer = document.querySelector('#app > div > div') as HTMLElement
+  if (whatsappContainer) {
+    whatsappContainer.style.marginRight = '350px'
+    console.log('[Content Script] WhatsApp container adjusted for sidebar')
   }
 
   // Create sidebar container
   const sidebarContainer = document.createElement('div')
   sidebarContainer.id = 'pipedrive-whatsapp-sidebar'
+
+  // Core positioning (inline styles for critical layout)
   sidebarContainer.style.cssText = `
     position: fixed;
     top: 0;
@@ -28,9 +37,6 @@ function init() {
     width: 350px;
     height: 100vh;
     z-index: 999999;
-    background: white;
-    border-left: 1px solid #e0e0e0;
-    box-shadow: -2px 0 8px rgba(0,0,0,0.1);
   `
 
   // Append to body
@@ -47,8 +53,10 @@ function init() {
 
   console.log('[Content Script] React app rendered')
 
-  // Test message passing to service worker
-  testServiceWorkerConnection()
+  // Test message passing to service worker (development mode)
+  if (import.meta.env.DEV) {
+    testServiceWorkerConnection()
+  }
 }
 
 function testServiceWorkerConnection() {
@@ -64,10 +72,9 @@ function testServiceWorkerConnection() {
   })
 }
 
-// Wait for WhatsApp to load
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init)
+// Start initialization
+if (window.location.href.includes('web.whatsapp.com')) {
+  init()
 } else {
-  // DOM already loaded
-  setTimeout(init, 1000) // Small delay to ensure WhatsApp is ready
+  console.warn('[Content Script] Not on WhatsApp Web, exiting')
 }

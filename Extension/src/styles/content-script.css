@@ -1,12 +1,13 @@
-/* Reset styles for sidebar to prevent WhatsApp CSS conflicts */
+/* Reset all styles within sidebar to prevent WhatsApp CSS conflicts */
+#pipedrive-whatsapp-sidebar,
 #pipedrive-whatsapp-sidebar * {
-  all: initial;
-  font-family:
-    system-ui,
-    -apple-system,
-    sans-serif;
+  all: revert;
+  box-sizing: border-box;
 }
 
+/* Set base font for sidebar */
 #pipedrive-whatsapp-sidebar {
-  /* Sidebar container styles applied via inline styles for specificity */
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
 }

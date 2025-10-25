@@ -381,11 +381,50 @@ chrome.runtime.sendMessage({ type: 'AUTH_SUCCESS', tokens: {...} })
 - CSS scoped to prevent WhatsApp style conflicts
 
 **Positioning & Layout:**
-- Fixed position sidebar (300-400px width)
-- Slides in from right side
-- Does not overlap WhatsApp main chat
-- Responsive: collapses on smaller screens
-- Toggle button to show/hide (preserves space)
+- Fixed position sidebar (350px width, per Spec-103)
+- Right side of viewport
+- **Pushes WhatsApp content left** by adjusting WhatsApp container's `marginRight`
+- Does not overlay - WhatsApp content resizes to accommodate sidebar
+- Always visible (no toggle, per Spec-103)
+
+**WhatsApp Layout Adjustment:**
+
+To prevent the sidebar from overlaying WhatsApp content, the content script adjusts the WhatsApp Web layout:
+
+```typescript
+// Extension/src/content-script/index.tsx
+async function init() {
+  await waitForWhatsAppLoad()
+
+  // Adjust WhatsApp Web layout to make room for sidebar
+  const whatsappContainer = document.querySelector('#app > div > div') as HTMLElement
+  if (whatsappContainer) {
+    whatsappContainer.style.marginRight = '350px'
+    console.log('[Content Script] WhatsApp container adjusted for sidebar')
+  }
+
+  // Create sidebar container
+  const sidebarContainer = document.createElement('div')
+  sidebarContainer.id = 'pipedrive-whatsapp-sidebar'
+  sidebarContainer.style.cssText = `
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 350px;
+    height: 100vh;
+    z-index: 999999;
+  `
+
+  document.body.appendChild(sidebarContainer)
+  // ... render React app
+}
+```
+
+**Why This Approach:**
+- Sidebar uses `position: fixed` for reliable positioning
+- WhatsApp container gets `marginRight: 350px` to shrink and make room
+- Result: WhatsApp and sidebar sit side-by-side without overlap
+- WhatsApp content remains fully functional and clickable
 
 ### 6.3 Application States
 
@@ -503,6 +542,151 @@ export default defineConfig({
 - Source maps for debugging
 - Tree shaking and minification for production
 - Tailwind CSS processing
+
+**Critical: Content Script Module Bundling**
+
+Chrome Manifest V3 content scripts do not support ES modules (no `type: "module"`). When Vite builds multiple entry points (content-script, popup, service-worker) that share dependencies (React), it automatically code-splits shared libraries into separate chunk files with ES6 import/export statements. This breaks content scripts.
+
+**Problem:**
+```javascript
+// Generated content-script.js (BROKEN)
+import{j as e,r as i,c as a,R as c}from"./chunks/client.Ds7D3P6J.js"
+// Chrome Error: Uncaught SyntaxError: Cannot use import statement outside a module
+```
+
+**Solution - Custom Vite Plugin (`inline-chunks`):**
+
+The plugin inlines all chunk dependencies into content-script.js at build time:
+
+```typescript
+// Extension/vite.config.ts
+{
+  name: 'inline-chunks',
+  closeBundle() {
+    const contentScriptPath = resolve(__dirname, 'dist/content-script.js')
+    const chunksDir = resolve(__dirname, 'dist/chunks')
+
+    if (existsSync(contentScriptPath) && existsSync(chunksDir)) {
+      let contentScript = readFileSync(contentScriptPath, 'utf-8')
+      const importRegex = /import\{([^}]+)\}from"\.\/chunks\/([^"]+)"/g
+      const matches = [...contentScript.matchAll(importRegex)]
+
+      if (matches.length > 0) {
+        const chunksToInline = new Map()
+
+        // Collect chunk contents and variable mappings
+        for (const match of matches) {
+          const importedVars = match[1]
+          const chunkFileName = match[2]
+          const chunkFile = resolve(__dirname, 'dist/chunks', chunkFileName)
+
+          if (existsSync(chunkFile) && !chunksToInline.has(chunkFileName)) {
+            let chunkContent = readFileSync(chunkFile, 'utf-8')
+
+            // Remove export statement from chunk
+            const exportRegex = /export\{([^}]+)\};?\s*$/m
+            const exportMatch = chunkContent.match(exportRegex)
+
+            if (exportMatch) {
+              const exportedVars = exportMatch[1]
+              chunkContent = chunkContent.replace(exportRegex, '')
+              chunksToInline.set(chunkFileName, {
+                content: chunkContent,
+                exports: exportedVars,
+                imports: importedVars
+              })
+            }
+          }
+        }
+
+        // Inline chunks with proper variable scoping
+        for (const [chunkFileName, { content, exports, imports }] of chunksToInline) {
+          // Build export name to actual variable mapping
+          // exports format: "Td as R,Io as c,Ld as j,$u as r"
+          const exportMap = new Map()
+          for (const pair of exports.split(',').map(s => s.trim())) {
+            const parts = pair.split(' as ')
+            if (parts.length === 2) {
+              const [actualVar, exportedAs] = parts
+              exportMap.set(exportedAs, actualVar)
+            }
+          }
+
+          // Wrap chunk in IIFE to prevent variable name collisions
+          const preservedVars = Array.from(exportMap.values())
+          const returnStatement = `return {${preservedVars.join(',')}};`
+          const iife = `const __chunk__=(function(){${content}${returnStatement}})();`
+
+          // Map imported names to chunk variables
+          // imports format: "j as e,r as i,c as a,R as c"
+          const adjustedMappings = []
+          for (const pair of imports.split(',').map(s => s.trim())) {
+            const parts = pair.split(' as ')
+            if (parts.length === 2) {
+              const [importedName, localName] = parts
+              const actualVar = exportMap.get(importedName)
+              if (actualVar) {
+                adjustedMappings.push(`const ${localName}=__chunk__.${actualVar};`)
+              }
+            }
+          }
+
+          const inlinedCode = iife + '\n' + adjustedMappings.join('')
+
+          // Replace import statement with inlined code
+          const firstImportRegex = new RegExp(
+            `import\\{[^}]+\\}from"\\.\/chunks\/${chunkFileName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`
+          )
+          contentScript = contentScript.replace(firstImportRegex, inlinedCode)
+        }
+
+        // Remove any remaining import statements (duplicates in string literals)
+        contentScript = contentScript.replace(
+          /import\{[^}]+\}from"\.\/chunks\/[^"]+"/g,
+          '/* chunk already inlined */'
+        )
+
+        writeFileSync(contentScriptPath, contentScript)
+        console.log('✓ Inlined chunks into content-script.js')
+      }
+    }
+  }
+}
+```
+
+**How It Works:**
+
+1. **Detects chunk imports** in content-script.js after Vite build completes
+2. **Reads chunk files** (e.g., `chunks/client.Ds7D3P6J.js` containing React)
+3. **Removes export statements** from chunk content
+4. **Wraps chunk in IIFE** to create isolated scope and prevent variable name collisions with content script code
+5. **Creates variable mappings** from import names to actual chunk variables via `__chunk__` object
+6. **Replaces import statements** with the IIFE + variable declarations
+7. **Result**: Single self-contained content-script.js file (~142KB) with no import/export statements
+
+**Why IIFE is Critical:**
+
+The inlined React chunk contains minified variable names (like `var b=`) that can collide with content script variables. Wrapping in an IIFE creates a closure scope:
+
+```javascript
+// WITHOUT IIFE (BROKEN - variable collision)
+var b={exports:{}}; // From React chunk
+async function b(){...} // Content script function - COLLISION!
+
+// WITH IIFE (WORKS - isolated scope)
+const __chunk__=(function(){
+  var b={exports:{}}; // Scoped to IIFE
+  return {Td,Io,Ld,$u}; // Only exports needed
+})();
+const e=__chunk__.Ld; // Map to content script variables
+async function b(){...} // Content script function - NO COLLISION
+```
+
+**Build Output:**
+- content-script.js: ~142KB (React + app code bundled)
+- No import/export statements
+- Works in Chrome content script context
+- Popup and service-worker still use normal code-splitting
 
 ### 8.2 Development Environment
 
