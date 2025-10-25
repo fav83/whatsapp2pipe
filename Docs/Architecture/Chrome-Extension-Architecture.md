@@ -66,52 +66,61 @@ This Chrome extension integrates WhatsApp Web with Pipedrive CRM, enabling users
 
 ### 2.2 Folder Structure
 
+**Important:** All extension source code is located under the `Extension/` folder at the project root.
+
 ```
-pipe2whatsapp/
-├── public/
-│   ├── manifest.json           # Chrome extension manifest
-│   └── icons/                  # Extension icons (16, 48, 128px)
-├── src/
-│   ├── content-script/         # WhatsApp Web integration
-│   │   ├── index.tsx           # Entry point, sidebar injection
-│   │   ├── dom-observer.ts     # Watch for chat switches
-│   │   └── phone-extractor.ts  # Extract JID/phone from DOM
-│   ├── service-worker/         # Background script
-│   │   ├── index.ts            # Service worker entry
-│   │   └── oauth-handler.ts    # OAuth flow management
-│   ├── popup/                  # Extension popup (optional)
-│   │   └── index.tsx
-│   ├── components/             # Shared React components
-│   │   ├── ui/                 # shadcn/ui components
-│   │   ├── PersonCard.tsx
-│   │   ├── CreatePersonModal.tsx
-│   │   └── AttachPersonModal.tsx
-│   ├── hooks/                  # Custom React hooks
-│   │   ├── usePipedrive.ts     # TanStack Query hooks
-│   │   └── useWhatsAppChat.ts  # Current chat state
-│   ├── contexts/               # React Context providers
-│   │   └── AuthContext.tsx     # Auth state & tokens
-│   ├── services/               # Business logic & API
-│   │   ├── pipedrive.ts        # Pipedrive API functions
-│   │   └── encryption.ts       # Web Crypto API token encryption
-│   ├── utils/                  # Helper functions
-│   │   ├── logger.ts           # Sentry integration
-│   │   └── phone-parser.ts     # JID to phone conversion
-│   ├── types/                  # TypeScript definitions
-│   │   ├── pipedrive.ts
-│   │   └── whatsapp.ts
-│   └── styles/                 # Global styles
-│       └── globals.css         # Tailwind imports
-├── tests/
-│   ├── unit/
-│   ├── integration/
-│   └── e2e/
-├── .env.development
-├── .env.production
-├── vite.config.ts
-├── tailwind.config.js
-├── tsconfig.json
-└── package.json
+whatsapp2pipe/
+├── Extension/                  # All extension source code
+│   ├── public/
+│   │   ├── manifest.json       # Chrome extension manifest
+│   │   └── icons/              # Extension icons (16, 48, 128px)
+│   ├── src/
+│   │   ├── content-script/     # WhatsApp Web integration
+│   │   │   ├── index.tsx       # Entry point, sidebar injection
+│   │   │   ├── dom-observer.ts # Watch for chat switches
+│   │   │   └── phone-extractor.ts  # Extract JID/phone from DOM
+│   │   ├── service-worker/     # Background script
+│   │   │   ├── index.ts        # Service worker entry
+│   │   │   └── oauth-handler.ts # OAuth flow management
+│   │   ├── popup/              # Extension popup (optional)
+│   │   │   └── index.tsx
+│   │   ├── components/         # Shared React components
+│   │   │   ├── ui/             # shadcn/ui components
+│   │   │   ├── PersonCard.tsx
+│   │   │   ├── CreatePersonModal.tsx
+│   │   │   └── AttachPersonModal.tsx
+│   │   ├── hooks/              # Custom React hooks
+│   │   │   ├── usePipedrive.ts # TanStack Query hooks
+│   │   │   └── useWhatsAppChat.ts # Current chat state
+│   │   ├── contexts/           # React Context providers
+│   │   │   └── AuthContext.tsx # Auth state & tokens
+│   │   ├── services/           # Business logic & API
+│   │   │   ├── pipedrive.ts    # Pipedrive API functions
+│   │   │   └── encryption.ts   # Web Crypto API token encryption
+│   │   ├── utils/              # Helper functions
+│   │   │   ├── logger.ts       # Sentry integration
+│   │   │   └── phone-parser.ts # JID to phone conversion
+│   │   ├── types/              # TypeScript definitions
+│   │   │   ├── pipedrive.ts
+│   │   │   └── whatsapp.ts
+│   │   └── styles/             # Global styles
+│   │       └── globals.css     # Tailwind imports
+│   ├── tests/
+│   │   ├── unit/
+│   │   ├── integration/
+│   │   └── e2e/
+│   ├── .env.development
+│   ├── .env.production
+│   ├── vite.config.ts
+│   ├── tailwind.config.js
+│   ├── tsconfig.json
+│   └── package.json
+├── Docs/                       # Documentation
+│   ├── Architecture/
+│   ├── BRDs/
+│   ├── Plans/
+│   └── Specs/
+└── .gitignore
 ```
 
 ---
@@ -498,8 +507,10 @@ export default defineConfig({
 ### 8.2 Development Environment
 
 **Local Development:**
+- Navigate to `Extension/` directory: `cd Extension`
 - `npm run dev` - Build in watch mode
 - Load unpacked extension in Chrome (chrome://extensions)
+- Select the `Extension/dist/` folder when loading
 - Changes trigger rebuild, manual extension reload required
 - Source maps enabled for debugging in DevTools
 
@@ -554,11 +565,14 @@ npx lint-staged
 
 **Production Build:**
 ```bash
+# Navigate to Extension directory
+cd Extension
+
 # Build for production
 npm run build
 
 # Output structure:
-dist/
+Extension/dist/
 ├── manifest.json           # Generated from public/manifest.json
 ├── content-script.js       # Bundled React sidebar app
 ├── service-worker.js       # Background script
@@ -577,12 +591,13 @@ dist/
 ### 9.2 Chrome Web Store Submission
 
 **Manual Deployment Process:**
-1. Run `npm run build` with production env
-2. Test built extension locally (load unpacked)
-3. Create ZIP archive of `dist/` folder
-4. Upload to Chrome Web Store Developer Dashboard
-5. Fill in store listing (description, screenshots, privacy policy)
-6. Submit for review
+1. Navigate to Extension directory: `cd Extension`
+2. Run `npm run build` with production env
+3. Test built extension locally (load unpacked from `Extension/dist/`)
+4. Create ZIP archive of `Extension/dist/` folder
+5. Upload to Chrome Web Store Developer Dashboard
+6. Fill in store listing (description, screenshots, privacy policy)
+7. Submit for review
 
 **Store Listing Requirements:**
 - Extension name and description
@@ -843,11 +858,12 @@ const AttachPersonModal = lazy(() => import('./components/AttachPersonModal'))
 ### 12.4 Documentation Requirements
 
 **Developer Documentation:**
-- Setup instructions (npm install, load extension)
+- Setup instructions (navigate to Extension/, npm install, load extension)
 - Architecture overview (this document)
 - API service documentation
 - Testing guide
 - Contributing guidelines
+- Note: All extension code is under Extension/ directory
 
 **User Documentation:**
 - Installation guide
