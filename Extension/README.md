@@ -42,6 +42,47 @@ Chrome extension that integrates Pipedrive CRM with WhatsApp Web for seamless co
 - `npm run lint` - Lint code
 - `npm run format` - Format code
 
+### Manual Testing (Feature 2 - Basic Extension)
+
+After loading the extension:
+
+1. **Service Worker:**
+   - Go to `chrome://extensions`
+   - Find "Pipedrive for WhatsApp Web"
+   - Click "service worker" link to open console
+   - Verify you see `[Service Worker] Loaded` and `[Service Worker] Ready`
+
+2. **Content Script on WhatsApp Web:**
+   - Navigate to https://web.whatsapp.com
+   - A sidebar should appear on the right side
+   - The sidebar should show:
+     - "Pipedrive for WhatsApp" heading
+     - Extension version
+     - "Test Service Worker" button
+     - "Test Storage" button
+
+3. **Test Service Worker Communication:**
+   - Click "Test Service Worker" button
+   - Counter should increment
+   - Check browser console for ping/pong messages
+
+4. **Test Storage:**
+   - Click "Test Storage" button
+   - Button should turn green showing "success"
+   - Check console for storage test logs
+
+5. **Popup:**
+   - Click the extension icon in toolbar
+   - Popup should open showing:
+     - Extension icon and version
+     - WhatsApp Web detection status
+     - "Open WhatsApp Web" button (if not open)
+
+6. **Console Logs:**
+   - Open DevTools on WhatsApp Web page
+   - Look for `[Content Script]` logs
+   - Service worker inspector should show `[Service Worker]` logs
+
 ## Documentation
 
 See [Docs/](../Docs/) folder for:

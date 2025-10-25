@@ -1,0 +1,12 @@
+/* Reset styles for sidebar to prevent WhatsApp CSS conflicts */
+#pipedrive-whatsapp-sidebar * {
+  all: initial;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+#pipedrive-whatsapp-sidebar {
+  /* Sidebar container styles applied via inline styles for specificity */
+}

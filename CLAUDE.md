@@ -29,6 +29,78 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 
 ### Specs
 - [Spec-101-Project-Foundation-Build-Setup.md](Docs/Specs/Spec-101-Project-Foundation-Build-Setup.md) - Project foundation and build setup specification
+- [Spec-102-Chrome-Extension-Manifest-Basic-Structure.md](Docs/Specs/Spec-102-Chrome-Extension-Manifest-Basic-Structure.md) - Chrome extension manifest and basic structure
+
+## Development Commands
+
+All commands must be run from the `Extension/` directory:
+
+```bash
+cd Extension
+```
+
+### Setup
+```bash
+# Install dependencies
+npm install
+
+# First-time setup: copy environment template
+cp .env.development .env.local
+```
+
+### Build Commands
+```bash
+# Production build (creates Extension/dist/)
+npm run build
+
+# Development build with watch mode
+npm run dev
+```
+
+### Testing Commands
+```bash
+# Run unit tests (Vitest)
+npm test
+
+# Run unit tests in watch mode
+npm run test -- --watch
+
+# Run E2E tests (Playwright)
+npm run test:e2e
+
+# Run E2E tests in UI mode
+npm run test:e2e -- --ui
+```
+
+### Code Quality Commands
+```bash
+# Lint code
+npm run lint
+
+# Format code with Prettier
+npm run format
+
+# Type check without emitting files
+npm run type-check
+```
+
+### Loading the Extension in Chrome
+
+1. Build the extension: `npm run build`
+2. Open Chrome and navigate to `chrome://extensions`
+3. Enable "Developer mode" (toggle in top-right)
+4. Click "Load unpacked"
+5. Select the `Extension/dist/` folder
+6. The extension should now appear in your extensions list
+
+### Development Workflow
+
+1. Make code changes in `Extension/src/`
+2. Run `npm run build` to rebuild
+3. Go to `chrome://extensions` and click the reload icon on your extension
+4. Test changes on https://web.whatsapp.com
+
+For faster development, use `npm run dev` which watches for changes and rebuilds automatically.
 
 ## Git Commit Guidelines
 
