@@ -1,0 +1,49 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(test:*)",
+      "Bash(git init:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss init:*)",
+      "Bash(npm exec tailwindcss:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(cat:*)",
+      "Bash(npx:*)",
+      "Bash(yes \"\")",
+      "Bash(npm test)",
+      "Bash(timeout:*)",
+      "Bash(pkill:*)",
+      "Bash(npm run:*)",
+      "Bash(npm test:*)",
+      "Bash(node:*)",
+      "Bash(curl:*)",
+      "Bash(git log:*)",
+      "Bash(where gh)",
+      "Bash(taskkill:*)",
+      "Bash(netstat:*)",
+      "Bash(gh pr list:*)",
+      "Bash(mkdir:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(move:*)",
+      "Bash(git show HEAD --format=fuller)",
+      "Bash(exit 0)",
+      "Bash(fi)",
+      "Bash(findstr LISTENING)",
+      "WebSearch"
+    ],
+    "deny": [],
+    "ask": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr view:*)",
+      "Bash(git reset:*)",
+      "Bash(git mv:*)",
+      "Bash(git push:*)"      
+    ]
+  }
+}

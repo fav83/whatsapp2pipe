@@ -1,0 +1,97 @@
+# Plan-001: MVP Feature Breakdown
+
+**Date:** 2025-10-25
+**Based on:** BRD-001-MVP-Pipedrive-WhatsApp.md
+**Architecture:** Chrome-Extension-Architecture.md
+**Status:** Draft
+
+---
+
+## Feature Breakdown
+
+### Feature 1: Project Foundation & Build Setup
+Set up the basic project structure with Vite, TypeScript, React, and all necessary tooling including ESLint, Prettier, and testing infrastructure.
+
+### Feature 2: Chrome Extension Manifest & Basic Structure
+Create Manifest V3 configuration with required permissions, define extension components (service worker, content script, popup), and implement basic extension loading on WhatsApp Web.
+
+### Feature 3: WhatsApp Web Sidebar Injection
+Inject a React-based sidebar into WhatsApp Web DOM with proper styling isolation, responsive layout, and show/hide toggle functionality.
+
+### Feature 4: WhatsApp Chat Detection & Phone Extraction
+Implement DOM observer to detect 1:1 chat switches, extract JID from WhatsApp DOM, parse phone numbers from JID, and detect unsupported chat types (groups).
+
+### Feature 5: Pipedrive OAuth Authentication
+Implement OAuth 2.0 PKCE flow using chrome.identity API in service worker, token encryption with Web Crypto API, secure storage in chrome.storage.local, and authentication state management.
+
+### Feature 6: Pipedrive API Service Layer
+Create centralized API service with TypeScript interfaces for Person lookup by phone, Person search by name, Person creation, and phone attachment to existing Person.
+
+### Feature 7: TanStack Query Integration
+Set up React Query client with caching strategy, implement query hooks for person lookup and search, mutation hooks for create/attach operations, and error handling with retry logic.
+
+### Feature 8: Authentication UI State
+Build sign-in prompt UI with Pipedrive branding, authenticated/unauthenticated states in sidebar, and sign-out functionality.
+
+### Feature 9: Person Auto-Lookup Flow
+Implement automatic person lookup on chat switch, display matched Person card with details and "Open in Pipedrive" button, and show loading states during lookup.
+
+### Feature 10: Create Person Flow
+Build Create Person modal with pre-filled name (from WhatsApp display name), optional email field, form validation, and creation with WhatsApp phone label (not primary).
+
+### Feature 11: Attach Number to Existing Person Flow
+Implement person search by name with keyboard navigation, person selection UI, attach phone as "WhatsApp" label (not primary), and success confirmation.
+
+### Feature 12: UI States & Error Handling
+Implement all required UI states (no chat selected, loading, matched, no match, success, error), error boundaries, user-friendly error messages, and retry mechanisms.
+
+### Feature 13: shadcn/ui Component Library Setup
+Install and configure shadcn/ui with Tailwind CSS, set up required components (Button, Input, Card, Dialog, Command, Alert, Skeleton), and customize theme.
+
+### Feature 14: Sentry Error Tracking Integration
+Set up Sentry for content script and service worker, implement PII filtering for phone numbers and names, configure breadcrumbs for user actions, and error boundaries.
+
+### Feature 15: Testing Infrastructure
+Set up Vitest for unit/integration tests, configure Testing Library for React components, set up Playwright for E2E tests, and create test fixtures and mocks.
+
+### Feature 16: Build & Deployment Pipeline
+Configure Vite build for production with optimization, create Chrome Web Store package, implement versioning strategy, and prepare store listing materials.
+
+### Feature 17: Performance Optimization
+Implement debouncing for chat switches, lazy loading for modals, bundle size optimization, API request deduplication, and memory management.
+
+### Feature 18: Documentation
+Create developer setup guide, user installation guide, privacy policy, and demo video (Loom).
+
+---
+
+## Implementation Order Recommendation
+
+The features are numbered in a suggested implementation order that considers:
+- Dependencies between features
+- Ability to test incrementally
+- Delivering vertical slices of functionality
+
+**Phase 1: Foundation (Features 1-4)**
+Get the basic extension working with sidebar injection and WhatsApp chat detection.
+
+**Phase 2: Authentication & API (Features 5-7)**
+Implement Pipedrive connectivity with secure authentication and API layer.
+
+**Phase 3: Core User Flows (Features 8-11)**
+Build the main user-facing features for person lookup, creation, and attachment.
+
+**Phase 4: Polish & Quality (Features 12-15)**
+Add error handling, testing, monitoring, and UI refinement.
+
+**Phase 5: Release Preparation (Features 16-18)**
+Optimize, package, and document for public release.
+
+---
+
+## Notes
+
+- Each feature should be implemented as a complete vertical slice where possible
+- Features can be worked on in parallel if dependencies allow
+- Detailed acceptance criteria will be added to each feature in separate documents
+- This breakdown aligns with BRD Section 4 (Functional Requirements) and the architecture document
