@@ -1,9 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
-import { copyFileSync, existsSync, readFileSync, writeFileSync, unlinkSync, rmdirSync } from 'fs'
+import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'fs'
 
 export default defineConfig({
+  base: './', // Enable relative asset loading for Chrome extension compatibility
   plugins: [
     react(),
     // Copy manifest to dist after build
@@ -17,15 +18,18 @@ export default defineConfig({
         console.log('✓ Copied manifest.json to dist/')
       },
     },
-    // Move popup.html to root of dist
+    // Move popup.html to root of dist and fix asset paths
     {
       name: 'move-popup-html',
       closeBundle() {
         const popupSrc = resolve(__dirname, 'dist/src/popup/index.html')
         const popupDest = resolve(__dirname, 'dist/popup.html')
         if (existsSync(popupSrc)) {
-          copyFileSync(popupSrc, popupDest)
-          console.log('✓ Moved popup.html to dist/')
+          let popupContent = readFileSync(popupSrc, 'utf-8')
+          // Fix asset paths: ../../assets/ becomes ./assets/ since we're moving from dist/src/popup/ to dist/
+          popupContent = popupContent.replace(/\.\.(\/\.\.)+\//g, './')
+          writeFileSync(popupDest, popupContent)
+          console.log('✓ Moved popup.html to dist/ and fixed asset paths')
         }
       },
     },
@@ -76,7 +80,7 @@ export default defineConfig({
 
               // Build a map of export names (j,r,c,R) to their actual variable names (Ld,$u,Io,Td)
               const exportMap = new Map()
-              for (const pair of exports.split(',').map(s => s.trim())) {
+              for (const pair of exports.split(',').map((s: string) => s.trim())) {
                 const parts = pair.split(' as ')
                 if (parts.length === 2) {
                   const [actualVar, exportedAs] = parts
@@ -86,7 +90,7 @@ export default defineConfig({
 
               // Create variable declarations to map imports to actual variables
               const varMappings = []
-              for (const pair of imports.split(',').map(s => s.trim())) {
+              for (const pair of imports.split(',').map((s: string) => s.trim())) {
                 const parts = pair.split(' as ')
                 if (parts.length === 2) {
                   const [importedName, localName] = parts
@@ -106,7 +110,7 @@ export default defineConfig({
 
               // Update variable mappings to reference __chunk__
               const adjustedMappings = []
-              for (const pair of imports.split(',').map(s => s.trim())) {
+              for (const pair of imports.split(',').map((s: string) => s.trim())) {
                 const parts = pair.split(' as ')
                 if (parts.length === 2) {
                   const [importedName, localName] = parts
@@ -120,7 +124,8 @@ export default defineConfig({
               const inlinedCode = iife + '\n' + adjustedMappings.join('')
 
               // Find the first import for this chunk and replace it
-              const firstImportRegex = new RegExp(`import\\{[^}]+\\}from"\\.\/chunks\/${chunkFileName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`)
+              const escapedFileName = chunkFileName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+              const firstImportRegex = new RegExp(`import\\{[^}]+\\}from"\\./chunks/${escapedFileName}"`)
               contentScript = contentScript.replace(firstImportRegex, inlinedCode)
             }
 
@@ -160,7 +165,7 @@ export default defineConfig({
           return 'assets/[name].[hash].[ext]'
         },
         format: 'es',
-        manualChunks: (id) => {
+        manualChunks: () => {
           // Don't create separate vendor chunks - inline everything
           return undefined
         },

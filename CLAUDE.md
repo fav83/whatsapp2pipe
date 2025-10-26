@@ -106,6 +106,16 @@ For faster development, use `npm run dev` which watches for changes and rebuilds
 
 ## Build System Notes
 
+### Vite Configuration for Chrome Extensions
+
+The build system uses Vite with Chrome extension-specific configurations:
+
+**Asset Loading Configuration:**
+- **`base: './'`** in vite.config.ts - CRITICAL for Chrome extensions
+- Vite defaults to absolute paths (`/assets/...`) which fail in extension context
+- Relative paths (`./assets/...`) ensure proper CSS/JS loading
+- Without this setting, assets will fail to load with CORS or path resolution errors
+
 ### Chrome Extension Module Bundling
 
 The build system includes a custom Vite plugin (`inline-chunks`) that solves Chrome Manifest V3 ES module compatibility issues:

@@ -516,6 +516,7 @@ async function init() {
 ```typescript
 // vite.config.ts structure
 export default defineConfig({
+  base: './', // CRITICAL: Enable relative asset loading for Chrome extensions
   build: {
     rollupOptions: {
       input: {
@@ -535,6 +536,10 @@ export default defineConfig({
   ]
 })
 ```
+
+**Chrome Extension Asset Loading:**
+- **`base: './'`** - Essential for Chrome extensions. Vite defaults to absolute paths (`/assets/...`) which fail in extension context. Relative paths (`./assets/...`) ensure proper loading.
+- Without this setting, CSS and JavaScript assets will fail to load with CORS or path resolution errors.
 
 **Key Features:**
 - TypeScript compilation
