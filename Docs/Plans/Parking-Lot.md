@@ -38,6 +38,34 @@
 
 ---
 
+### DOM-Based Contact Info Extraction
+**Description:** Use DOM parsing as a fallback method for extracting contact phone numbers when module raid is unavailable or fails.
+
+**Current State:** Implemented but disabled. Close button detection broken on WhatsApp v2.3000+.
+
+**Benefits:**
+- Extracts formatted phone numbers with spaces (e.g., `+34 679 29 72 97` instead of `+34679297297`)
+- Provides fallback if WhatsApp changes internal module structure
+- Can extract additional contact details visible in UI but not in modules
+
+**Blockers:**
+- Close button selector not working - contact info panel stays open after extraction
+- Visual side effects - panel opens on screen, interrupting user
+- WhatsApp console errors triggered by programmatic clicks (non-fatal but cosmetic)
+- UI redesign fragility - WhatsApp v2.3000+ changed all icon names and selectors
+
+**Investigation Needed:**
+1. Find correct close button selector for WhatsApp v2.3000+
+2. Investigate hidden iframe approach to eliminate visual side effects
+3. Consider MutationObserver instead of setTimeout for better timing
+
+**Documentation:** [WhatsApp-Contact-Extraction-DOM-Parsing.md](../Architecture/WhatsApp-Contact-Extraction-DOM-Parsing.md)
+
+**Priority:** Low (Module raid works well for current needs)
+**Effort:** Medium (Close button investigation + testing)
+
+---
+
 ## Notes
 
 - Features in this parking lot are not committed for any specific release

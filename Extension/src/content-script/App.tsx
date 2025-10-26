@@ -3,28 +3,65 @@
  *
  * Main application component for the Pipedrive sidebar.
  * Manages UI state and renders appropriate components based on current state.
+ *
+ * Integrates with WhatsApp chat detection via 200ms polling.
+ * When user switches chats, the sidebar automatically updates to show contact info.
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { WelcomeState } from './components/WelcomeState'
 import { ContactInfoCard } from './components/ContactInfoCard'
-import { LoadingState } from './components/LoadingState'
-import { ErrorState } from './components/ErrorState'
+import { ContactWarningCard } from './components/ContactWarningCard'
+import { GroupChatState } from './components/GroupChatState'
+
+interface ChatStatus {
+  phone: string | null
+  name: string | null
+  is_group: boolean
+  group_name?: string | null
+  participants?: Array<{ phone: string; name: string }>
+}
 
 /**
  * Discriminated union type for sidebar UI states
+ *
+ * Note: No loading or error states needed. The 200ms polling provides
+ * near-instant updates (0-200ms latency), and errors are handled gracefully
+ * by the next poll iteration.
  */
 type SidebarState =
   | { type: 'welcome' }
-  | { type: 'loading' }
   | { type: 'contact'; name: string; phone: string }
-  | { type: 'error'; message: string; onRetry: () => void }
+  | { type: 'contact-warning'; name: string; warning: string }
+  | { type: 'group-chat' }
 
 /**
  * Main App Component
+ *
+ * Initializes WhatsApp chat monitoring on mount and updates sidebar state
+ * when user switches chats.
  */
 export default function App() {
   const [state, setState] = useState<SidebarState>({ type: 'welcome' })
+
+  // Listen for chat status events from MAIN world
+  useEffect(() => {
+    console.log('[App] Setting up chat status event listener')
+
+    const handleChatStatus = (event: Event) => {
+      const customEvent = event as CustomEvent<ChatStatus>
+      const status = customEvent.detail
+      handleChatStatusChange(status, setState)
+    }
+
+    // Listen for custom events dispatched from MAIN world
+    window.addEventListener('whatsapp-chat-status', handleChatStatus)
+
+    // Cleanup on unmount
+    return () => {
+      window.removeEventListener('whatsapp-chat-status', handleChatStatus)
+    }
+  }, [])
 
   // Development mode: expose setState globally for testing different states
   if (import.meta.env.DEV) {
@@ -32,9 +69,11 @@ export default function App() {
     window.__setSidebarState = setState
     console.log('[Sidebar] Development mode: Use window.__setSidebarState() to test states')
     console.log('[Sidebar] Examples:')
-    console.log('  __setSidebarState({ type: "loading" })')
     console.log('  __setSidebarState({ type: "contact", name: "John Doe", phone: "+1234567890" })')
-    console.log('  __setSidebarState({ type: "error", message: "Test error", onRetry: () => console.log("retry") })')
+    console.log(
+      '  __setSidebarState({ type: "contact-warning", name: "Jane Doe", warning: "Test warning" })'
+    )
+    console.log('  __setSidebarState({ type: "group-chat" })')
     console.log('  __setSidebarState({ type: "welcome" })')
   }
 
@@ -47,30 +86,72 @@ export default function App() {
 
       {/* Scrollable Body */}
       <main className="flex-1 overflow-y-auto">
-        <SidebarContent state={state} setState={setState} />
+        <SidebarContent state={state} />
       </main>
     </div>
   )
 }
 
 /**
+ * Handle chat status change from WhatsAppChatStatus callback
+ *
+ * Maps detection status to appropriate sidebar UI state.
+ * This function determines which component to show based on the chat data.
+ */
+function handleChatStatusChange(
+  status: ChatStatus,
+  setState: React.Dispatch<React.SetStateAction<SidebarState>>
+) {
+  console.log('[App] Chat status changed:', status)
+
+  // No chat selected
+  if (!status.name) {
+    setState({ type: 'welcome' })
+    return
+  }
+
+  // Group chat detected
+  if (status.is_group) {
+    setState({ type: 'group-chat' })
+    return
+  }
+
+  // Individual chat with phone
+  if (status.phone) {
+    setState({
+      type: 'contact',
+      name: status.name,
+      phone: status.phone,
+    })
+    return
+  }
+
+  // Individual chat but phone unavailable
+  setState({
+    type: 'contact-warning',
+    name: status.name,
+    warning: 'Phone number unavailable - matching by name only',
+  })
+}
+
+/**
  * SidebarContent Component
- * Renders appropriate content based on current state
+ *
+ * Renders appropriate content based on current state.
  */
 interface SidebarContentProps {
   state: SidebarState
-  setState: React.Dispatch<React.SetStateAction<SidebarState>>
 }
 
-function SidebarContent({ state, setState: _setState }: SidebarContentProps) {
+function SidebarContent({ state }: SidebarContentProps) {
   switch (state.type) {
     case 'welcome':
       return <WelcomeState />
-    case 'loading':
-      return <LoadingState />
     case 'contact':
       return <ContactInfoCard name={state.name} phone={state.phone} />
-    case 'error':
-      return <ErrorState message={state.message} onRetry={state.onRetry} />
+    case 'contact-warning':
+      return <ContactWarningCard name={state.name} warning={state.warning} />
+    case 'group-chat':
+      return <GroupChatState />
   }
 }
