@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install:*)",
+      "Bash(python scrape_pipedrive_docs.py:*)",
+      "WebFetch(domain:developers.pipedrive.com)",
+      "Bash(curl:*)",
+      "Bash(python:*)",
+      "Bash(playwright install:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -33,6 +33,9 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 - [Spec-103-WhatsApp-Sidebar-Injection.md](Docs/Specs/Spec-103-WhatsApp-Sidebar-Injection.md) - WhatsApp Web sidebar injection with UI states (✅ Complete)
 - [Spec-103-Implementation-Summary.md](Docs/Specs/Spec-103-Implementation-Summary.md) - Complete implementation summary and manual testing checklist
 
+### External Documentation
+- [Pipedrive/](Docs/External/Pipedrive/) - Pipedrive API documentation and development resources
+
 ## Development Commands
 
 All commands must be run from the `Extension/` directory:
