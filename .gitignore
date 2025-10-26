@@ -82,3 +82,9 @@ Extension/.web-extension-id
 # Editor directories
 .history/
 .vscode-test/
+
+# Documentation
+Docs/Local/
+
+# Playground
+Playground/Sample-Extention-Src/

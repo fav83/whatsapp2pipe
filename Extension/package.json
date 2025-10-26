@@ -44,11 +44,11 @@
     "vitest": "^2.1.8"
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
-      "cd Extension && npx eslint --fix",
+    "Extension/**/*.{ts,tsx}": [
+      "bash -c 'cd Extension && npx eslint --config eslint.config.js --fix \"${0#Extension/}\"' --",
       "npx prettier --write"
     ],
-    "*.{css,json,md}": [
+    "Extension/**/*.{css,json,md}": [
       "npx prettier --write"
     ]
   }

@@ -8,6 +8,8 @@ import { waitForWhatsAppLoad } from './whatsapp-loader'
 import '../styles/content-script.css'
 
 console.log('[Content Script] Loading on WhatsApp Web')
+console.log('[Content Script] Development mode:', import.meta.env.DEV)
+console.log('[Content Script] Mode:', import.meta.env.MODE)
 
 // Initialize sidebar after WhatsApp is fully loaded
 async function init() {
