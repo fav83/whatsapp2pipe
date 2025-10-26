@@ -153,9 +153,18 @@ The sidebar adjusts the WhatsApp Web layout to prevent overlay:
   - TypeScript discriminated unions for state management
   - 55 automated tests passing
   - WhatsApp color theme matching
+- ✅ WhatsApp chat detection and phone extraction (Spec-104)
+  - 200ms polling for chat detection
+  - MAIN world with CustomEvent communication architecture
+  - Phone extraction in E.164 format (+prefix)
+  - Contact name extraction (prefers pushname)
+  - Group chat detection
+  - UI components: ContactWarningCard, GroupChatState
+  - 76 automated tests passing (96%)
+  - Production validated
 
 **📋 Next Feature:**
-- Feature 4: Chat detection and phone extraction
+- Feature 5: Pipedrive API integration
 
 ## Git Commit Guidelines
 

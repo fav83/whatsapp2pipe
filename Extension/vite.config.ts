@@ -33,15 +33,26 @@ export default defineConfig({
         }
       },
     },
-    // Inline chunks into content-script for Chrome compatibility
+    // Inline chunks into content-script and inspector-main for Chrome compatibility
     {
       name: 'inline-chunks',
       closeBundle() {
         const contentScriptPath = resolve(__dirname, 'dist/content-script.js')
+        const inspectorMainPath = resolve(__dirname, 'dist/inspector-main.js')
         const chunksDir = resolve(__dirname, 'dist/chunks')
 
-        if (existsSync(contentScriptPath) && existsSync(chunksDir)) {
-          let contentScript = readFileSync(contentScriptPath, 'utf-8')
+        // Process both content-script.js and inspector-main.js
+        const filesToProcess = [
+          { path: contentScriptPath, name: 'content-script' },
+          { path: inspectorMainPath, name: 'inspector-main' },
+        ]
+
+        for (const { path: filePath, name: fileName } of filesToProcess) {
+          if (!existsSync(filePath) || !existsSync(chunksDir)) {
+            continue
+          }
+
+          let contentScript = readFileSync(filePath, 'utf-8')
 
           // Find all chunk imports
           const importRegex = /import\{([^}]+)\}from"\.\/chunks\/([^"]+)"/g
@@ -77,6 +88,7 @@ export default defineConfig({
             }
 
             // Replace all import statements with chunk content
+            let chunkIndex = 0
             for (const [chunkFileName, { content, exports }] of chunksToInline) {
               // Build export map
               const exportMap = new Map()
@@ -91,9 +103,13 @@ export default defineConfig({
               // Get list of exported variable names we need to preserve
               const preservedVars = Array.from(exportMap.values())
 
+              // Use unique chunk variable name for each chunk to avoid redeclaration
+              const chunkVarName = `__chunk${chunkIndex}__`
+              chunkIndex++
+
               // Wrap chunk in IIFE and return the preserved variables
               const returnStatement = `return {${preservedVars.join(',')}};`
-              const iife = `const __chunk__=(function(){${content}${returnStatement}})();`
+              const iife = `const ${chunkVarName}=(function(){${content}${returnStatement}})();`
 
               // Find ALL imports for this chunk and replace them all at once
               const escapedFileName = chunkFileName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -127,7 +143,7 @@ export default defineConfig({
 
                   const actualVar = exportMap.get(importedName)
                   if (actualVar) {
-                    varMappings.push(`const ${localName}=__chunk__.${actualVar};`)
+                    varMappings.push(`const ${localName}=${chunkVarName}.${actualVar};`)
                   }
                 }
 
@@ -144,8 +160,8 @@ export default defineConfig({
               })
             }
 
-            writeFileSync(contentScriptPath, contentScript)
-            console.log('✓ Inlined chunks into content-script.js')
+            writeFileSync(filePath, contentScript)
+            console.log(`✓ Inlined chunks into ${fileName}.js`)
           }
         }
       },

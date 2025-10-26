@@ -4,7 +4,7 @@
  * This script runs in the MAIN world (page context) instead of ISOLATED world.
  * This makes it directly accessible from the browser console.
  *
- * IMPORTANT: Module raid must be initialized IMMEDIATELY on page load,
+ * IMPORTANT: Module raid and Store access must be initialized IMMEDIATELY on page load,
  * before WhatsApp's modules finish loading.
  *
  * Note: MAIN world scripts cannot access chrome.* APIs.
@@ -14,6 +14,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { WhatsAppInspector } from './utils/WhatsAppInspector'
+import { initializeStoreAccess } from './whatsapp-integration/store-accessor'
+import { startChatMonitoring } from './whatsapp-integration/chat-monitor-main'
 
 // Prevent multiple initializations (use global singleton)
 const win = window as any
@@ -59,6 +61,19 @@ if (!win.__whatsappInspectorInitialized) {
       console.log(
         '[Main World] Module raid initialization complete. Try: __whatsappInspector.inspectAll()'
       )
+
+      // Also initialize Store access for production chat detection
+      console.log('[Main World] Initializing WhatsApp Store access...')
+      const storeInitialized = initializeStoreAccess()
+      if (storeInitialized) {
+        console.log('[Main World] Store access initialized successfully')
+      } else {
+        console.warn('[Main World] Store access initialization failed')
+      }
+
+      // Start chat monitoring in MAIN world
+      console.log('[Main World] Starting chat monitoring...')
+      startChatMonitoring()
     } else if (webpackCheckCount >= maxChecks) {
       clearInterval(checkForWebpack)
       console.log('[Main World] ⚠️  Webpack chunks not found after 5 seconds')
