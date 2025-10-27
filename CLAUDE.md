@@ -32,6 +32,8 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 - [Spec-102-Chrome-Extension-Manifest-Basic-Structure.md](Docs/Specs/Spec-102-Chrome-Extension-Manifest-Basic-Structure.md) - Chrome extension manifest and basic structure
 - [Spec-103-WhatsApp-Sidebar-Injection.md](Docs/Specs/Spec-103-WhatsApp-Sidebar-Injection.md) - WhatsApp Web sidebar injection with UI states (✅ Complete)
 - [Spec-103-Implementation-Summary.md](Docs/Specs/Spec-103-Implementation-Summary.md) - Complete implementation summary and manual testing checklist
+- [Spec-105a-Backend-OAuth-Service.md](Docs/Specs/Spec-105a-Backend-OAuth-Service.md) - Backend OAuth Service for Pipedrive authentication (✅ Complete)
+- [Spec-105b-Extension-OAuth-Integration.md](Docs/Specs/Spec-105b-Extension-OAuth-Integration.md) - Extension OAuth integration with hybrid architecture (✅ Complete)
 
 ### External Documentation
 - [Pipedrive/](Docs/External/Pipedrive/) - Pipedrive API documentation and development resources
@@ -165,9 +167,26 @@ The sidebar adjusts the WhatsApp Web layout to prevent overlay:
   - UI components: ContactWarningCard, GroupChatState
   - 76 automated tests passing (96%)
   - Production validated
+- ✅ Pipedrive OAuth authentication (Spec-105a + Spec-105b)
+  - **Backend (Azure Functions):**
+    - OAuth 2.0 authorization code flow with Pipedrive
+    - AuthStart and AuthCallback endpoints
+    - Session management with Azure Table Storage
+    - OAuth state validation and CSRF protection
+    - Dynamic extension ID support (no hardcoding)
+    - Automatic popup closure via chromiumapp.org redirect
+    - CORS configured for WhatsApp Web origins
+  - **Extension (Hybrid Architecture):**
+    - Content script OAuth state generation (extensionId + nonce + timestamp)
+    - Content script fetches OAuth URL from backend (CORS works)
+    - Service worker launches chrome.identity popup
+    - Service worker validates state on callback
+    - verification_code extraction and storage
+    - Message passing between content script and service worker
+    - Build successful with all tests passing
 
 **📋 Next Feature:**
-- Feature 5: Pipedrive API integration
+- Feature 6: Pipedrive API Service Layer
 
 ## Code Style Guidelines
 

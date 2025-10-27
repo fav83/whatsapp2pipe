@@ -18,11 +18,11 @@ Create Manifest V3 configuration with required permissions, define extension com
 ### Feature 3: WhatsApp Web Sidebar Injection
 Inject a React-based sidebar into WhatsApp Web DOM with proper styling isolation, responsive layout, and show/hide toggle functionality.
 
-### Feature 4: WhatsApp Chat Detection & Phone Extraction
+### Feature 4: WhatsApp Chat Detection & Phone Extraction (✅ Complete - Spec-104)
 Implement DOM observer to detect 1:1 chat switches, extract JID from WhatsApp DOM, parse phone numbers from JID, and detect unsupported chat types (groups).
 
-### Feature 5: Pipedrive OAuth Authentication
-Implement OAuth 2.0 PKCE flow using chrome.identity API in service worker, token encryption with Web Crypto API, secure storage in chrome.storage.local, and authentication state management.
+### Feature 5: Pipedrive OAuth Authentication (✅ Complete - Spec-105a + Spec-105b)
+Implement OAuth 2.0 authorization code flow with backend service (Azure Functions + Azure Table Storage) and extension integration using chrome.identity API. Backend handles secure token storage and issues session identifiers. Extension uses hybrid architecture (content script + service worker) with dynamic extension ID support and state-based CSRF protection.
 
 ### Feature 6: Pipedrive API Service Layer
 Create centralized API service with TypeScript interfaces for Person lookup by phone, Person search by name, Person creation, and phone attachment to existing Person.
