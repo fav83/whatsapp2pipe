@@ -1,5 +1,5 @@
 using System.Net;
-using System.Web;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -37,8 +37,8 @@ public class AuthStartFunction
         try
         {
             // Extract state parameter from query string
-            var query = HttpUtility.ParseQueryString(req.Url.Query);
-            var extensionState = query["state"];
+            var query = QueryHelpers.ParseQuery(req.Url.Query);
+            var extensionState = query.TryGetValue("state", out var stateValue) ? stateValue.ToString() : null;
 
             // Validate state parameter is present
             if (string.IsNullOrEmpty(extensionState))

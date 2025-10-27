@@ -1,5 +1,5 @@
 using System.Net;
-using System.Web;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -37,10 +37,10 @@ public class AuthCallbackFunction
         try
         {
             // Parse query parameters
-            var query = HttpUtility.ParseQueryString(req.Url.Query);
-            var code = query["code"];
-            var state = query["state"];
-            var error = query["error"];
+            var query = QueryHelpers.ParseQuery(req.Url.Query);
+            var code = query.TryGetValue("code", out var codeValue) ? codeValue.ToString() : null;
+            var state = query.TryGetValue("state", out var stateValue) ? stateValue.ToString() : null;
+            var error = query.TryGetValue("error", out var errorValue) ? errorValue.ToString() : null;
 
             // Check for OAuth errors
             if (!string.IsNullOrEmpty(error))

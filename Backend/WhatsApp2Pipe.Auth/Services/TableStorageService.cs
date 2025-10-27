@@ -102,67 +102,65 @@ public class TableStorageService : ITableStorageService
 
     #region State Operations (CSRF Protection)
 
-    public async Task<string> CreateStateAsync()
-    {
-        var now = DateTimeOffset.UtcNow;
-        var stateValue = Guid.NewGuid().ToString("N"); // 32-char hex string
-
-        var state = new StateEntity
-        {
-            RowKey = stateValue,
-            CreatedAt = now,
-            ExpiresAt = now.AddMinutes(azureSettings.StateExpirationMinutes)
-        };
-
-        await stateTable.AddEntityAsync(state);
-
-        logger.LogInformation("Created state {State}, expires at {ExpiresAt}",
-            stateValue, state.ExpiresAt);
-
-        return stateValue;
-    }
-
     public async Task StoreStateAsync(string state)
     {
         var now = DateTimeOffset.UtcNow;
+        var stateHash = ComputeStateHash(state);
 
         var stateEntity = new StateEntity
         {
-            RowKey = state,
+            RowKey = stateHash,        // 32-char hash (under 40-char limit)
+            StateValue = state,        // Full base64 state from extension
             CreatedAt = now,
             ExpiresAt = now.AddMinutes(azureSettings.StateExpirationMinutes)
         };
 
-        await stateTable.AddEntityAsync(stateEntity);
-
-        logger.LogInformation("Stored extension state {State}, expires at {ExpiresAt}",
-            state, stateEntity.ExpiresAt);
+        try
+        {
+            await stateTable.AddEntityAsync(stateEntity);
+            logger.LogInformation("Stored state with hash {Hash}, expires at {ExpiresAt}",
+                stateHash, stateEntity.ExpiresAt);
+        }
+        catch (Azure.RequestFailedException ex) when (ex.Status == 409)
+        {
+            // Astronomically rare collision (P ~10^-31 with 10k concurrent states)
+            logger.LogError("State hash collision detected: {Hash} - retry authentication", stateHash);
+            throw new InvalidOperationException("State collision detected - please retry authentication", ex);
+        }
     }
 
     public async Task<bool> ValidateAndConsumeStateAsync(string state)
     {
         try
         {
-            var response = await stateTable.GetEntityAsync<StateEntity>("state", state);
+            var stateHash = ComputeStateHash(state);
+            var response = await stateTable.GetEntityAsync<StateEntity>("state", stateHash);
             var stateEntity = response.Value;
+
+            // Verify the full state value matches (defense against theoretical hash collision)
+            if (stateEntity.StateValue != state)
+            {
+                logger.LogError("State value mismatch for hash {Hash} - possible collision", stateHash);
+                return false;
+            }
 
             // Check if state has expired
             if (DateTimeOffset.UtcNow > stateEntity.ExpiresAt)
             {
-                logger.LogWarning("State {State} has expired", state);
-                await stateTable.DeleteEntityAsync("state", state);
+                logger.LogWarning("State with hash {Hash} has expired", stateHash);
+                await stateTable.DeleteEntityAsync("state", stateHash);
                 return false;
             }
 
-            // Consume the state (delete it after successful validation)
-            await stateTable.DeleteEntityAsync("state", state);
-            logger.LogInformation("State {State} validated and consumed", state);
+            // Consume the state (delete it after successful validation - prevents replay attacks)
+            await stateTable.DeleteEntityAsync("state", stateHash);
+            logger.LogInformation("State with hash {Hash} validated and consumed", stateHash);
 
             return true;
         }
         catch (Azure.RequestFailedException ex) when (ex.Status == 404)
         {
-            logger.LogWarning("State {State} not found or already consumed", state);
+            logger.LogWarning("State not found or already consumed");
             return false;
         }
     }
@@ -188,6 +186,19 @@ public class TableStorageService : ITableStorageService
         }
 
         return new string(result);
+    }
+
+    /// <summary>
+    /// Computes SHA256 hash of state and returns first 128 bits as 32 hex characters.
+    /// Used as RowKey to keep under 40-char limit while maintaining deterministic O(1) lookups.
+    /// Collision probability with 10k concurrent states: ~10^-31 (negligible).
+    /// </summary>
+    private static string ComputeStateHash(string state)
+    {
+        using var sha256 = System.Security.Cryptography.SHA256.Create();
+        var hashBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(state));
+        // Take first 16 bytes (128 bits) = 32 hex characters
+        return BitConverter.ToString(hashBytes, 0, 16).Replace("-", "").ToLowerInvariant();
     }
 
     #endregion

@@ -11,7 +11,6 @@ public interface ITableStorageService
     Task DeleteSessionAsync(string verificationCode);
 
     // State operations (CSRF protection)
-    Task<string> CreateStateAsync();
-    Task<bool> ValidateAndConsumeStateAsync(string state);
     Task StoreStateAsync(string state);
+    Task<bool> ValidateAndConsumeStateAsync(string state);
 }
