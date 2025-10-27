@@ -169,6 +169,55 @@ The sidebar adjusts the WhatsApp Web layout to prevent overlay:
 **📋 Next Feature:**
 - Feature 5: Pipedrive API integration
 
+## Code Style Guidelines
+
+### C# Naming Conventions
+
+**IMPORTANT:** For C# code, follow these naming conventions:
+
+- **Do NOT** use underscore prefix for any variables, including private fields
+- Use `camelCase` for private fields, parameters, and local variables
+- Use `PascalCase` for public properties, methods, and classes
+- Use descriptive, meaningful names
+
+**Examples:**
+
+```csharp
+// ❌ INCORRECT - Do not use underscore prefix
+private readonly ILogger<MyClass> _logger;
+private readonly IMyService _myService;
+
+// ✅ CORRECT - Use camelCase without underscore
+private readonly ILogger<MyClass> logger;
+private readonly IMyService myService;
+
+public class MyService
+{
+    private readonly HttpClient httpClient;  // ✅ Correct
+    private readonly string apiKey;          // ✅ Correct
+
+    public MyService(HttpClient httpClient, string apiKey)
+    {
+        // Use 'this.' when parameter name matches field name
+        this.httpClient = httpClient;
+        this.apiKey = apiKey;
+    }
+
+    public async Task<string> GetDataAsync(string id)
+    {
+        var result = await httpClient.GetAsync($"/api/{id}");
+        return await result.Content.ReadAsStringAsync();
+    }
+}
+```
+
+### TypeScript/JavaScript Conventions
+
+- Follow existing project conventions (see Extension/ codebase)
+- Use `camelCase` for variables and functions
+- Use `PascalCase` for React components and types
+- Use `UPPER_CASE` for constants
+
 ## Git Commit Guidelines
 
 **IMPORTANT:** Git commit messages must NOT include any mention of AI tools, including but not limited to:

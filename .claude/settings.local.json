@@ -33,7 +33,10 @@
       "Bash(fi)",
       "Bash(findstr LISTENING)",
       "WebSearch",
-      "Bash(npm init:*)"
+      "Bash(npm init:*)",
+      "Bash(findstr:*)",
+      "Bash(dotnet restore:*)",
+      "Bash(dotnet build:*)"
     ],
     "deny": [],
     "ask": [
