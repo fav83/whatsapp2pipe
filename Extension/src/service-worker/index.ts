@@ -55,9 +55,20 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
       return true
     }
 
-    // Run async OAuth flow with provided authUrl
+    // Validate state exists
+    if (!message.state || typeof message.state !== 'string') {
+      console.error('[Service Worker] Invalid or missing state in message')
+      const response: AuthSignInError = {
+        type: 'AUTH_SIGN_IN_ERROR',
+        error: 'Invalid authentication request: missing OAuth state',
+      }
+      sendResponse(response)
+      return true
+    }
+
+    // Run async OAuth flow with provided authUrl and state
     serviceWorkerAuthService
-      .signIn(message.authUrl)
+      .signIn(message.authUrl, message.state)
       .then((verificationCode) => {
         console.log('[Service Worker] Sign-in successful, sending response')
         const response: AuthSignInSuccess = {

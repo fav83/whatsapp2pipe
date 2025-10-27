@@ -14,6 +14,15 @@ describe('AuthService', () => {
     vi.clearAllMocks()
     // Reset storage mock
     vi.mocked(chrome.storage.local.get).mockResolvedValue({})
+
+    // Mock global fetch for backend OAuth URL requests
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          AuthorizationUrl: 'https://oauth.pipedrive.com/oauth/authorize?client_id=test',
+        }),
+    })
   })
 
   describe('signIn()', () => {
@@ -26,9 +35,17 @@ describe('AuthService', () => {
 
       await authService.signIn()
 
-      expect(chrome.runtime.sendMessage).toHaveBeenCalledWith({
-        type: 'AUTH_SIGN_IN',
-      })
+      // Verify fetch was called with state parameter
+      expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/auth/start?state='))
+
+      // Verify message includes both authUrl and state
+      expect(chrome.runtime.sendMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'AUTH_SIGN_IN',
+          authUrl: expect.stringContaining('https://oauth.pipedrive.com'),
+          state: expect.any(String),
+        })
+      )
     })
 
     it('returns verification_code on success', async () => {

@@ -37,7 +37,7 @@ public class TableStorageService : ITableStorageService
 
     #region Session Operations
 
-    public async Task<SessionEntity> CreateSessionAsync(string accessToken, string refreshToken, string apiDomain, int expiresIn)
+    public async Task<SessionEntity> CreateSessionAsync(string accessToken, string refreshToken, string apiDomain, int expiresIn, string extensionId)
     {
         var now = DateTimeOffset.UtcNow;
         var verificationCode = GenerateVerificationCode();
@@ -50,13 +50,14 @@ public class TableStorageService : ITableStorageService
             ApiDomain = apiDomain,
             ExpiresAt = now.AddSeconds(expiresIn),
             CreatedAt = now,
-            SessionExpiresAt = now.AddDays(azureSettings.SessionExpirationDays)
+            SessionExpiresAt = now.AddDays(azureSettings.SessionExpirationDays),
+            ExtensionId = extensionId
         };
 
         await sessionTable.AddEntityAsync(session);
 
-        logger.LogInformation("Created session {VerificationCode}, expires at {ExpiresAt}",
-            verificationCode, session.SessionExpiresAt);
+        logger.LogInformation("Created session {VerificationCode} for extension {ExtensionId}, expires at {ExpiresAt}",
+            verificationCode, extensionId, session.SessionExpiresAt);
 
         return session;
     }

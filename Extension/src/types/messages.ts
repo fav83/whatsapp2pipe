@@ -15,12 +15,13 @@
  * Sent from: Content script
  * Handled by: Service worker
  *
- * Content script fetches authUrl from backend (to avoid CORS issues with chrome-extension:// origin)
- * then passes it to service worker which launches chrome.identity
+ * Content script generates OAuth state with extension ID, fetches authUrl from backend,
+ * then passes both to service worker which launches chrome.identity and validates state on callback
  */
 export interface AuthSignInRequest {
   type: 'AUTH_SIGN_IN'
   authUrl: string
+  state: string // OAuth state parameter (base64-encoded JSON with extensionId, nonce, timestamp)
 }
 
 /**

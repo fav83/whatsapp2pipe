@@ -12,5 +12,18 @@
       "default": "Information",
       "Microsoft.AspNetCore": "Warning"
     }
+  },
+  "extensions": {
+    "http": {
+      "routePrefix": "api",
+      "cors": {
+        "allowedOrigins": [
+          "https://web.whatsapp.com",
+          "https://www.whatsapp.com"
+        ],
+        "allowedMethods": ["GET", "POST"],
+        "allowedHeaders": ["*"]
+      }
+    }
   }
 }

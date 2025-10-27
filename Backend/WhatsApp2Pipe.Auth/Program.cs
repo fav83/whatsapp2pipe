@@ -13,6 +13,7 @@ var host = new HostBuilder()
         // Register services
         services.AddSingleton<ITableStorageService, TableStorageService>();
         services.AddSingleton<IOAuthService, OAuthService>();
+        services.AddSingleton<OAuthStateValidator>();
     })
     .Build();
 

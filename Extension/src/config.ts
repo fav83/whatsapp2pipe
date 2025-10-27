@@ -12,7 +12,12 @@ export const config = {
 export const AUTH_CONFIG = {
   backendUrl: import.meta.env.VITE_BACKEND_URL || 'http://localhost:7071',
   endpoints: {
-    authStart: '/api/auth/start',
+    authStart: '/api/auth/start', // Now accepts ?state= parameter with extension ID
     authCallback: '/api/auth/callback',
   },
+  // OAuth state includes:
+  // - extensionId: chrome.runtime.id (dynamically determined at runtime)
+  // - nonce: CSRF protection (crypto.randomUUID())
+  // - timestamp: Request timestamp (Date.now())
+  // This enables the backend to support any extension ID without hardcoding
 }

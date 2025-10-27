@@ -26,6 +26,12 @@ public class SessionEntity : ITableEntity
     public DateTimeOffset SessionExpiresAt { get; set; }
 
     /// <summary>
+    /// Chrome extension ID that initiated this OAuth flow.
+    /// Used for validation and debugging.
+    /// </summary>
+    public string ExtensionId { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets the verification_code (session ID)
     /// </summary>
     public string VerificationCode => RowKey;

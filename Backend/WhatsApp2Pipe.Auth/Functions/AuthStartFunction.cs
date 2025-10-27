@@ -1,4 +1,5 @@
 using System.Net;
+using System.Web;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -10,17 +11,17 @@ namespace WhatsApp2Pipe.Auth.Functions;
 
 public class AuthStartFunction
 {
-    private readonly ITableStorageService tableStorageService;
     private readonly IOAuthService oauthService;
+    private readonly OAuthStateValidator stateValidator;
     private readonly ILogger<AuthStartFunction> logger;
 
     public AuthStartFunction(
-        ITableStorageService tableStorageService,
         IOAuthService oauthService,
+        OAuthStateValidator stateValidator,
         ILogger<AuthStartFunction> logger)
     {
-        this.tableStorageService = tableStorageService;
         this.oauthService = oauthService;
+        this.stateValidator = stateValidator;
         this.logger = logger;
     }
 
@@ -32,13 +33,40 @@ public class AuthStartFunction
 
         try
         {
-            // Generate CSRF state parameter
-            var state = await tableStorageService.CreateStateAsync();
+            // Extract state parameter from query string
+            var query = HttpUtility.ParseQueryString(req.Url.Query);
+            var extensionState = query["state"];
 
-            // Build Pipedrive authorization URL
-            var authorizationUrl = oauthService.BuildAuthorizationUrl(state);
+            // Validate state parameter is present
+            if (string.IsNullOrEmpty(extensionState))
+            {
+                logger.LogError("Missing required 'state' parameter");
+                return CreateErrorResponse(req, HttpStatusCode.BadRequest,
+                    "missing_state", "State parameter is required");
+            }
 
-            // Return authorization URL to client
+            // Validate state format and contents
+            if (!stateValidator.IsValidStateFormat(extensionState))
+            {
+                logger.LogError("Invalid state format");
+                return CreateErrorResponse(req, HttpStatusCode.BadRequest,
+                    "invalid_state", "State parameter has invalid format");
+            }
+
+            // Decode state to log extension ID
+            var stateData = stateValidator.DecodeState(extensionState);
+            if (stateData != null)
+            {
+                logger.LogInformation("Received state from extension: {ExtensionId}, nonce: {Nonce}",
+                    stateData.ExtensionId, stateData.Nonce);
+            }
+
+            // Build Pipedrive authorization URL with extension's state
+            var authorizationUrl = oauthService.BuildAuthorizationUrl(extensionState);
+
+            logger.LogInformation("Generated Pipedrive OAuth URL with extension state");
+
+            // Return authorization URL to extension
             var response = req.CreateResponse(HttpStatusCode.OK);
             response.Headers.Add("Content-Type", "application/json");
 
@@ -49,26 +77,33 @@ public class AuthStartFunction
 
             await response.WriteStringAsync(JsonSerializer.Serialize(responseBody));
 
-            logger.LogInformation("AuthStart completed successfully, state: {State}", state);
-
             return response;
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error in AuthStart endpoint");
-
-            var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
-            errorResponse.Headers.Add("Content-Type", "application/json");
-
-            var errorBody = new ErrorResponse
-            {
-                Error = "internal_error",
-                ErrorDescription = "An internal error occurred while starting the authorization flow"
-            };
-
-            await errorResponse.WriteStringAsync(JsonSerializer.Serialize(errorBody));
-
-            return errorResponse;
+            return CreateErrorResponse(req, HttpStatusCode.InternalServerError,
+                "internal_error", "An internal error occurred while starting the authorization flow");
         }
+    }
+
+    private HttpResponseData CreateErrorResponse(
+        HttpRequestData req,
+        HttpStatusCode statusCode,
+        string error,
+        string errorDescription)
+    {
+        var response = req.CreateResponse(statusCode);
+        response.Headers.Add("Content-Type", "application/json");
+
+        var errorBody = new ErrorResponse
+        {
+            Error = error,
+            ErrorDescription = errorDescription
+        };
+
+        response.WriteString(JsonSerializer.Serialize(errorBody));
+
+        return response;
     }
 }
