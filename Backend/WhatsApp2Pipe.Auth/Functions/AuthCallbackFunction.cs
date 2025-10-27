@@ -81,6 +81,15 @@ public class AuthCallbackFunction
                 return CreateHtmlErrorResponse(req, HttpStatusCode.BadRequest, "invalid_state");
             }
 
+            // Verify state was issued by server and consume it (one-time use, prevents replay attacks)
+            logger.LogInformation("Validating state against server-issued records");
+            if (!await tableStorageService.ValidateAndConsumeStateAsync(state))
+            {
+                logger.LogError("State validation failed - not issued by server, expired, or already consumed");
+                return CreateHtmlErrorResponse(req, HttpStatusCode.BadRequest, "invalid_state");
+            }
+            logger.LogInformation("State successfully validated and consumed - CSRF protection verified");
+
             // Exchange authorization code for tokens
             logger.LogInformation("Exchanging authorization code for tokens");
             PipedriveTokenResponse tokenResponse;

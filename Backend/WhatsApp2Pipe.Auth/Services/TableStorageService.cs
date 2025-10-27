@@ -122,6 +122,23 @@ public class TableStorageService : ITableStorageService
         return stateValue;
     }
 
+    public async Task StoreStateAsync(string state)
+    {
+        var now = DateTimeOffset.UtcNow;
+
+        var stateEntity = new StateEntity
+        {
+            RowKey = state,
+            CreatedAt = now,
+            ExpiresAt = now.AddMinutes(azureSettings.StateExpirationMinutes)
+        };
+
+        await stateTable.AddEntityAsync(stateEntity);
+
+        logger.LogInformation("Stored extension state {State}, expires at {ExpiresAt}",
+            state, stateEntity.ExpiresAt);
+    }
+
     public async Task<bool> ValidateAndConsumeStateAsync(string state)
     {
         try

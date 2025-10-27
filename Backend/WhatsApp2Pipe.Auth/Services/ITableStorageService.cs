@@ -10,9 +10,8 @@ public interface ITableStorageService
     Task UpdateSessionAsync(SessionEntity session);
     Task DeleteSessionAsync(string verificationCode);
 
-    // State operations (CSRF protection) - DEPRECATED
-    // These methods are kept for backward compatibility but are no longer used
-    // OAuth state is now managed by the Chrome extension
+    // State operations (CSRF protection)
     Task<string> CreateStateAsync();
     Task<bool> ValidateAndConsumeStateAsync(string state);
+    Task StoreStateAsync(string state);
 }
