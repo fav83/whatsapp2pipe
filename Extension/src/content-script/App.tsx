@@ -2,14 +2,18 @@
  * Sidebar App Component
  *
  * Main application component for the Pipedrive sidebar.
- * Manages UI state and renders appropriate components based on current state.
+ * Manages authentication state and UI state.
+ * Renders appropriate components based on current state.
  *
- * Integrates with WhatsApp chat detection via 200ms polling.
- * When user switches chats, the sidebar automatically updates to show contact info.
+ * Integrates with:
+ * - OAuth authentication via useAuth hook
+ * - WhatsApp chat detection via 200ms polling
  */
 
 import { useState, useEffect } from 'react'
+import { useAuth } from './hooks/useAuth'
 import { WelcomeState } from './components/WelcomeState'
+import { AuthenticatingState } from './components/AuthenticatingState'
 import { ContactInfoCard } from './components/ContactInfoCard'
 import { ContactWarningCard } from './components/ContactWarningCard'
 import { GroupChatState } from './components/GroupChatState'
@@ -38,10 +42,11 @@ type SidebarState =
 /**
  * Main App Component
  *
- * Initializes WhatsApp chat monitoring on mount and updates sidebar state
- * when user switches chats.
+ * Manages authentication and sidebar UI state.
+ * Shows sign-in UI when unauthenticated, otherwise shows chat-based content.
  */
 export default function App() {
+  const { authState, signIn, error } = useAuth()
   const [state, setState] = useState<SidebarState>({ type: 'welcome' })
 
   // Listen for chat status events from MAIN world
@@ -86,7 +91,17 @@ export default function App() {
 
       {/* Scrollable Body */}
       <main className="flex-1 overflow-y-auto">
-        <SidebarContent state={state} />
+        {/* Unauthenticated: Show sign-in UI */}
+        {authState === 'unauthenticated' && <WelcomeState onSignIn={signIn} />}
+
+        {/* Authenticating: Show loading state */}
+        {authState === 'authenticating' && <AuthenticatingState />}
+
+        {/* Error: Show sign-in UI with error message */}
+        {authState === 'error' && <WelcomeState onSignIn={signIn} error={error} />}
+
+        {/* Authenticated: Show chat-based content */}
+        {authState === 'authenticated' && <SidebarContent state={state} />}
       </main>
     </div>
   )

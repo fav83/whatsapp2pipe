@@ -7,3 +7,12 @@ export const config = {
   sentryEnabled: import.meta.env.VITE_SENTRY_ENABLED === 'true',
   env: import.meta.env.VITE_ENV as 'development' | 'production',
 }
+
+// Backend OAuth Service configuration
+export const AUTH_CONFIG = {
+  backendUrl: import.meta.env.VITE_BACKEND_URL || 'http://localhost:7071',
+  endpoints: {
+    authStart: '/api/auth/start',
+    authCallback: '/api/auth/callback',
+  },
+}
