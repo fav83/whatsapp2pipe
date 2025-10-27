@@ -36,7 +36,8 @@
       "Bash(npm init:*)",
       "Bash(findstr:*)",
       "Bash(dotnet restore:*)",
-      "Bash(dotnet build:*)"
+      "Bash(dotnet build:*)",
+      "Bash(func init:*)"
     ],
     "deny": [],
     "ask": [

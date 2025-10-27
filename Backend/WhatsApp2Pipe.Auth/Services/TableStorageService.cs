@@ -156,11 +156,20 @@ public class TableStorageService : ITableStorageService
     private static string GenerateVerificationCode()
     {
         // Generate a secure random 32-character alphanumeric code
-        return Convert.ToBase64String(Guid.NewGuid().ToByteArray())
-            .Replace("+", "")
-            .Replace("/", "")
-            .Replace("=", "")
-            .Substring(0, 32);
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        const int length = 32;
+
+        var bytes = new byte[length];
+        using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
+        rng.GetBytes(bytes);
+
+        var result = new char[length];
+        for (int i = 0; i < length; i++)
+        {
+            result[i] = chars[bytes[i] % chars.Length];
+        }
+
+        return new string(result);
     }
 
     #endregion
