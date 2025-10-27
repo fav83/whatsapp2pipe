@@ -46,7 +46,7 @@ type SidebarState =
  * Shows sign-in UI when unauthenticated, otherwise shows chat-based content.
  */
 export default function App() {
-  const { authState, signIn, error } = useAuth()
+  const { authState, signIn, signOut, error } = useAuth()
   const [state, setState] = useState<SidebarState>({ type: 'welcome' })
 
   // Listen for chat status events from MAIN world
@@ -85,8 +85,17 @@ export default function App() {
   return (
     <div className="h-full flex flex-col bg-white border-l border-[#d1d7db]">
       {/* Fixed Header */}
-      <header className="flex-shrink-0 px-5 py-4 border-b border-[#d1d7db]">
+      <header className="flex-shrink-0 px-5 py-4 border-b border-[#d1d7db] flex items-center justify-between">
         <h1 className="text-[17px] font-semibold text-[#111b21]">Pipedrive</h1>
+        {authState === 'authenticated' && (
+          <button
+            onClick={signOut}
+            className="text-sm text-[#667781] hover:text-[#111b21] transition-colors px-3 py-1 rounded hover:bg-[#f0f2f5]"
+            aria-label="Sign out"
+          >
+            Sign out
+          </button>
+        )}
       </header>
 
       {/* Scrollable Body */}

@@ -154,6 +154,50 @@ describe('Authentication Flow Integration', () => {
       // Should not show sign-in UI
       expect(screen.queryByText('Sign in with Pipedrive')).not.toBeInTheDocument()
     })
+
+    it('shows sign-out button when authenticated', async () => {
+      vi.mocked(authService.isAuthenticated).mockResolvedValue(true)
+      vi.mocked(authService.getVerificationCode).mockResolvedValue('existing_code')
+
+      render(<App />)
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Sign out' })).toBeInTheDocument()
+      })
+    })
+
+    it('calls signOut and transitions to unauthenticated when sign-out button is clicked', async () => {
+      vi.mocked(authService.isAuthenticated).mockResolvedValue(true)
+      vi.mocked(authService.getVerificationCode).mockResolvedValue('existing_code')
+      vi.mocked(authService.signOut).mockResolvedValue(undefined)
+
+      const user = userEvent.setup()
+      render(<App />)
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Sign out' })).toBeInTheDocument()
+      })
+
+      const signOutButton = screen.getByRole('button', { name: 'Sign out' })
+      await user.click(signOutButton)
+
+      await waitFor(() => {
+        expect(authService.signOut).toHaveBeenCalled()
+        expect(screen.getByText('Sign in with Pipedrive')).toBeInTheDocument()
+      })
+    })
+
+    it('does not show sign-out button when unauthenticated', async () => {
+      vi.mocked(authService.isAuthenticated).mockResolvedValue(false)
+
+      render(<App />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Sign in with Pipedrive')).toBeInTheDocument()
+      })
+
+      expect(screen.queryByRole('button', { name: 'Sign out' })).not.toBeInTheDocument()
+    })
   })
 
   describe('UI Components Integration', () => {
