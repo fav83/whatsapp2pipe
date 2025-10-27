@@ -1,8 +1,25 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import App from '../../src/content-script/App'
+import { authService } from '../../src/content-script/services/authService'
+
+// Mock authService to be authenticated by default for these tests
+vi.mock('../../src/content-script/services/authService', () => ({
+  authService: {
+    isAuthenticated: vi.fn().mockResolvedValue(true),
+    getVerificationCode: vi.fn().mockResolvedValue('test_code'),
+    signIn: vi.fn(),
+    signOut: vi.fn(),
+  },
+}))
 
 describe('App Component', () => {
+  beforeEach(() => {
+    // Reset mocks to authenticated state
+    vi.mocked(authService.isAuthenticated).mockResolvedValue(true)
+    vi.mocked(authService.getVerificationCode).mockResolvedValue('test_code')
+  })
+
   describe('Layout Structure', () => {
     it('renders fixed header with Pipedrive text', () => {
       render(<App />)
@@ -47,8 +64,10 @@ describe('App Component', () => {
   })
 
   describe('Initial State', () => {
-    it('displays welcome state by default', () => {
+    it('displays welcome state by default', async () => {
       render(<App />)
+      // Wait for async auth check to complete
+      await screen.findByText('Select a chat to view contact information')
       expect(screen.getByText('Select a chat to view contact information')).toBeInTheDocument()
     })
 

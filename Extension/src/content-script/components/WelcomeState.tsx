@@ -1,16 +1,43 @@
 /**
  * WelcomeState Component
  *
- * Displays a welcome message when no chat is selected in WhatsApp.
- * This is the default idle state of the sidebar.
+ * Displays welcome message and sign-in functionality.
+ * Shows sign-in button when user is not authenticated.
+ * Shows simple message when user is authenticated but no chat selected.
  */
 
-export function WelcomeState() {
+import { SignInButton } from './SignInButton'
+
+interface WelcomeStateProps {
+  onSignIn?: () => Promise<void>
+  error?: string | null
+}
+
+export function WelcomeState({ onSignIn, error }: WelcomeStateProps = {}) {
+  // Unauthenticated state - show sign-in
+  if (onSignIn) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+        <div className="mb-6 max-w-xs">
+          <h2 className="text-lg font-semibold text-[#111b21] mb-2">
+            Welcome to Pipedrive for WhatsApp
+          </h2>
+          <p className="text-sm text-[#667781] mb-4">
+            Sign in to automatically sync your WhatsApp contacts with Pipedrive
+          </p>
+        </div>
+
+        <div className="w-full max-w-xs">
+          <SignInButton onClick={onSignIn} error={error} />
+        </div>
+      </div>
+    )
+  }
+
+  // Authenticated state - simple message
   return (
     <div className="px-5 pt-5">
-      <p className="text-sm text-[#667781]">
-        Select a chat to view contact information
-      </p>
+      <p className="text-sm text-[#667781]">Select a chat to view contact information</p>
     </div>
   )
 }

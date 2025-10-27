@@ -1,0 +1,48 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Backend", "Backend", "{1AE8ACA6-933B-BF2A-3671-3E2EAC007D16}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WhatsApp2Pipe.Auth", "Backend\WhatsApp2Pipe.Auth\WhatsApp2Pipe.Auth.csproj", "{018B0594-9632-4DEF-8FAE-FBC70B61A369}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WhatsApp2Pipe.Auth (1)", "WhatsApp2Pipe.Auth (1)", "{B39433A4-D05E-45A3-D17A-17223D7BADFE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "obj", "obj", "{6FFE5105-CDE0-7570-E11B-DA2C69B13976}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Debug", "Debug", "{6D956398-F5AE-BA8D-E0F7-D7A31265493F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "net8.0", "net8.0", "{0CA06425-EDDE-3E1D-977F-89132B7A6581}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkerExtensions", "Backend\WhatsApp2Pipe.Auth\obj\Debug\net8.0\WorkerExtensions\WorkerExtensions.csproj", "{282FF63F-39F4-32A8-703B-245E45EE8A64}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{018B0594-9632-4DEF-8FAE-FBC70B61A369}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{018B0594-9632-4DEF-8FAE-FBC70B61A369}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{018B0594-9632-4DEF-8FAE-FBC70B61A369}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{018B0594-9632-4DEF-8FAE-FBC70B61A369}.Release|Any CPU.Build.0 = Release|Any CPU
+		{282FF63F-39F4-32A8-703B-245E45EE8A64}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{282FF63F-39F4-32A8-703B-245E45EE8A64}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{282FF63F-39F4-32A8-703B-245E45EE8A64}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{282FF63F-39F4-32A8-703B-245E45EE8A64}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{018B0594-9632-4DEF-8FAE-FBC70B61A369} = {1AE8ACA6-933B-BF2A-3671-3E2EAC007D16}
+		{B39433A4-D05E-45A3-D17A-17223D7BADFE} = {1AE8ACA6-933B-BF2A-3671-3E2EAC007D16}
+		{6FFE5105-CDE0-7570-E11B-DA2C69B13976} = {B39433A4-D05E-45A3-D17A-17223D7BADFE}
+		{6D956398-F5AE-BA8D-E0F7-D7A31265493F} = {6FFE5105-CDE0-7570-E11B-DA2C69B13976}
+		{0CA06425-EDDE-3E1D-977F-89132B7A6581} = {6D956398-F5AE-BA8D-E0F7-D7A31265493F}
+		{282FF63F-39F4-32A8-703B-245E45EE8A64} = {0CA06425-EDDE-3E1D-977F-89132B7A6581}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {76CD2006-CEC6-490C-8D56-8C92D2B19F53}
+	EndGlobalSection
+EndGlobal
