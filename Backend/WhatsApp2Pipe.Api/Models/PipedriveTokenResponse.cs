@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace WhatsApp2Pipe.Auth.Models;
+namespace WhatsApp2Pipe.Api.Models;
 
 /// <summary>
 /// Response from Pipedrive OAuth token endpoint

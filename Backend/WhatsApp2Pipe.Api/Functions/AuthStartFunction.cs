@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using WhatsApp2Pipe.Auth.Models;
-using WhatsApp2Pipe.Auth.Services;
+using WhatsApp2Pipe.Api.Models;
+using WhatsApp2Pipe.Api.Services;
 using System.Text.Json;
 
-namespace WhatsApp2Pipe.Auth.Functions;
+namespace WhatsApp2Pipe.Api.Functions;
 
 public class AuthStartFunction
 {

@@ -2,9 +2,9 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
-using WhatsApp2Pipe.Auth.Models;
+using WhatsApp2Pipe.Api.Models;
 
-namespace WhatsApp2Pipe.Auth.Services;
+namespace WhatsApp2Pipe.Api.Services;
 
 /// <summary>
 /// Validates OAuth state parameters received from Chrome extension.

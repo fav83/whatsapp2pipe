@@ -40,7 +40,7 @@ This service implements a secure OAuth 2.0 flow with:
 ## Project Structure
 
 ```
-WhatsApp2Pipe.Auth/
+WhatsApp2Pipe.Api/
 ├── Configuration/       # Configuration models (Pipedrive, Azure settings)
 ├── Functions/          # HTTP trigger functions
 │   ├── AuthStartFunction.cs
@@ -67,7 +67,7 @@ WhatsApp2Pipe.Auth/
 ### 1. Install Dependencies
 
 ```bash
-cd Backend/WhatsApp2Pipe.Auth
+cd Backend/WhatsApp2Pipe.Api
 dotnet restore
 ```
 
@@ -227,7 +227,7 @@ az functionapp config appsettings set \
 ### 3. Deploy Function App
 
 ```bash
-cd Backend/WhatsApp2Pipe.Auth
+cd Backend/WhatsApp2Pipe.Api
 func azure functionapp publish whatsapp2pipe-auth
 ```
 

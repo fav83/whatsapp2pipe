@@ -1,10 +1,10 @@
 using Azure.Data.Tables;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using WhatsApp2Pipe.Auth.Configuration;
-using WhatsApp2Pipe.Auth.Models;
+using WhatsApp2Pipe.Api.Configuration;
+using WhatsApp2Pipe.Api.Models;
 
-namespace WhatsApp2Pipe.Auth.Services;
+namespace WhatsApp2Pipe.Api.Services;
 
 public class TableStorageService : ITableStorageService
 {

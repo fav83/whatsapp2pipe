@@ -1,7 +1,7 @@
 using Azure;
 using Azure.Data.Tables;
 
-namespace WhatsApp2Pipe.Auth.Models;
+namespace WhatsApp2Pipe.Api.Models;
 
 /// <summary>
 /// Represents a CSRF state parameter stored in Azure Table Storage.

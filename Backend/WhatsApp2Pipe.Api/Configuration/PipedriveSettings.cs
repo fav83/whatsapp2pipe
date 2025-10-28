@@ -1,4 +1,4 @@
-namespace WhatsApp2Pipe.Auth.Configuration;
+namespace WhatsApp2Pipe.Api.Configuration;
 
 public class PipedriveSettings
 {

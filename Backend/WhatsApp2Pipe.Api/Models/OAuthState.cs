@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace WhatsApp2Pipe.Auth.Models;
+namespace WhatsApp2Pipe.Api.Models;
 
 /// <summary>
 /// OAuth state parameter sent by Chrome extension.

@@ -1,6 +1,6 @@
 {
-  "azureFunctions.projectSubpath": "Backend/WhatsApp2Pipe.Auth",
-  "azureFunctions.deploySubpath": "Backend\\WhatsApp2Pipe.Auth/bin/Release/net8.0/publish",
+  "azureFunctions.projectSubpath": "Backend/WhatsApp2Pipe.Api",
+  "azureFunctions.deploySubpath": "Backend\\WhatsApp2Pipe.Api/bin/Release/net8.0/publish",
   "azureFunctions.projectLanguage": "C#",
   "azureFunctions.projectRuntime": "~4",
   "debug.internalConsoleOptions": "neverOpen",
