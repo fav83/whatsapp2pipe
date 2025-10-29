@@ -1,8 +1,8 @@
 using AutoFixture;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
+using WhatsApp2Pipe.Api.Configuration;
 using WhatsApp2Pipe.Api.Services;
 
 namespace WhatsApp2Pipe.Api.Tests.Services;
@@ -12,7 +12,7 @@ public class OAuthServiceTests
     private readonly Mock<ILogger<OAuthService>> mockLogger;
     private readonly OAuthService service;
     private readonly Fixture fixture;
-    private readonly IConfiguration configuration;
+    private readonly PipedriveSettings settings;
 
     public OAuthServiceTests()
     {
@@ -20,21 +20,17 @@ public class OAuthServiceTests
         fixture = new Fixture();
 
         // Configure test settings
-        var configData = new Dictionary<string, string>
+        settings = new PipedriveSettings
         {
-            {"Pipedrive:ClientId", "test-client-id"},
-            {"Pipedrive:ClientSecret", "test-client-secret"},
-            {"Pipedrive:RedirectUri", "https://test.azurewebsites.net/api/auth/callback"},
-            {"Pipedrive:AuthorizationEndpoint", "https://oauth.pipedrive.com/oauth/authorize"},
-            {"Pipedrive:TokenEndpoint", "https://oauth.pipedrive.com/oauth/token"},
-            {"Pipedrive:Scope", ""}
+            ClientId = "test-client-id",
+            ClientSecret = "test-client-secret",
+            RedirectUri = "https://test.azurewebsites.net/api/auth/callback",
+            AuthorizationEndpoint = "https://oauth.pipedrive.com/oauth/authorize",
+            TokenEndpoint = "https://oauth.pipedrive.com/oauth/token",
+            Scope = ""
         };
 
-        configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(configData!)
-            .Build();
-
-        service = new OAuthService(configuration, mockLogger.Object);
+        service = new OAuthService(settings, mockLogger.Object);
     }
 
     #region BuildAuthorizationUrl Tests
@@ -93,21 +89,17 @@ public class OAuthServiceTests
     public void BuildAuthorizationUrl_WithScope_IncludesScope()
     {
         // Arrange
-        var configDataWithScope = new Dictionary<string, string>
+        var settingsWithScope = new PipedriveSettings
         {
-            {"Pipedrive:ClientId", "test-client-id"},
-            {"Pipedrive:ClientSecret", "test-client-secret"},
-            {"Pipedrive:RedirectUri", "https://test.azurewebsites.net/api/auth/callback"},
-            {"Pipedrive:AuthorizationEndpoint", "https://oauth.pipedrive.com/oauth/authorize"},
-            {"Pipedrive:TokenEndpoint", "https://oauth.pipedrive.com/oauth/token"},
-            {"Pipedrive:Scope", "read write"}
+            ClientId = "test-client-id",
+            ClientSecret = "test-client-secret",
+            RedirectUri = "https://test.azurewebsites.net/api/auth/callback",
+            AuthorizationEndpoint = "https://oauth.pipedrive.com/oauth/authorize",
+            TokenEndpoint = "https://oauth.pipedrive.com/oauth/token",
+            Scope = "read write"
         };
 
-        var configWithScope = new ConfigurationBuilder()
-            .AddInMemoryCollection(configDataWithScope!)
-            .Build();
-
-        var serviceWithScope = new OAuthService(configWithScope, mockLogger.Object);
+        var serviceWithScope = new OAuthService(settingsWithScope, mockLogger.Object);
         var state = fixture.Create<string>();
 
         // Act

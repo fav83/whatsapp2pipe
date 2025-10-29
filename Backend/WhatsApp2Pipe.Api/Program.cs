@@ -1,4 +1,5 @@
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using WhatsApp2Pipe.Api.Configuration;
@@ -23,13 +24,27 @@ var host = new HostBuilder()
         // Register Pipedrive configuration
         services.AddSingleton(sp =>
         {
-            var baseUrl = Environment.GetEnvironmentVariable("PipedriveApiBaseUrl") ?? "https://api.pipedrive.com";
-            var apiVersion = Environment.GetEnvironmentVariable("PipedriveApiVersion") ?? "v1";
-            return new PipedriveConfig
+            var configuration = sp.GetRequiredService<IConfiguration>();
+            var settings = new PipedriveSettings();
+
+            // Bind OAuth settings from configuration section
+            configuration.GetSection("Pipedrive").Bind(settings);
+
+            // Override API settings from environment variables if provided
+            var baseUrl = Environment.GetEnvironmentVariable("PipedriveApiBaseUrl");
+            var apiVersion = Environment.GetEnvironmentVariable("PipedriveApiVersion");
+
+            if (!string.IsNullOrEmpty(baseUrl))
             {
-                BaseUrl = baseUrl,
-                ApiVersion = apiVersion
-            };
+                settings.BaseUrl = baseUrl;
+            }
+
+            if (!string.IsNullOrEmpty(apiVersion))
+            {
+                settings.ApiVersion = apiVersion;
+            }
+
+            return settings;
         });
 
         // Register Pipedrive services

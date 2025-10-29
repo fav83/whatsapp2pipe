@@ -14,13 +14,13 @@ namespace WhatsApp2Pipe.Api.Tests.Services;
 public class PipedriveApiClientTests
 {
     private readonly Mock<ILogger<PipedriveApiClient>> mockLogger;
-    private readonly PipedriveConfig config;
+    private readonly PipedriveSettings config;
     private readonly Fixture fixture;
 
     public PipedriveApiClientTests()
     {
         mockLogger = new Mock<ILogger<PipedriveApiClient>>();
-        config = new PipedriveConfig
+        config = new PipedriveSettings
         {
             BaseUrl = "https://api.pipedrive.com",
             ApiVersion = "v1"

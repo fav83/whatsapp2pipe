@@ -14,13 +14,13 @@ namespace WhatsApp2Pipe.Api.Services;
 public class PipedriveApiClient : IPipedriveApiClient
 {
     private readonly HttpClient httpClient;
-    private readonly PipedriveConfig config;
+    private readonly PipedriveSettings config;
     private readonly ILogger<PipedriveApiClient> logger;
     private readonly PipedriveApiLogger apiLogger;
 
     public PipedriveApiClient(
         HttpClient httpClient,
-        PipedriveConfig config,
+        PipedriveSettings config,
         ILogger<PipedriveApiClient> logger)
     {
         this.httpClient = httpClient;

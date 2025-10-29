@@ -1,6 +1,5 @@
 using System.Text;
 using System.Text.Json;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using WhatsApp2Pipe.Api.Configuration;
 using WhatsApp2Pipe.Api.Models;
@@ -13,14 +12,11 @@ public class OAuthService : IOAuthService
     private readonly PipedriveSettings pipedriveSettings;
     private readonly ILogger<OAuthService> logger;
 
-    public OAuthService(IConfiguration configuration, ILogger<OAuthService> logger)
+    public OAuthService(PipedriveSettings pipedriveSettings, ILogger<OAuthService> logger)
     {
         this.logger = logger;
+        this.pipedriveSettings = pipedriveSettings;
         httpClient = new HttpClient();
-
-        // Load configuration
-        pipedriveSettings = new PipedriveSettings();
-        configuration.GetSection("Pipedrive").Bind(pipedriveSettings);
 
         logger.LogInformation("OAuthService initialized for redirect URI: {RedirectUri}",
             pipedriveSettings.RedirectUri);
