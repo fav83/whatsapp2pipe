@@ -8,7 +8,11 @@
 
   "permissions": ["storage", "tabs", "identity"],
 
-  "host_permissions": ["*://web.whatsapp.com/*", "http://localhost:7071/*"],
+  "host_permissions": [
+    "*://web.whatsapp.com/*",
+    "http://localhost:7071/*",
+    "https://pipe-tmp-func-h0crhzghhsczbph9.eastus2-01.azurewebsites.net/*"
+  ],
 
   "background": {
     "service_worker": "service-worker.js",

@@ -40,10 +40,10 @@ public class PipedriveApiClient : IPipedriveApiClient
         var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-        // Log request
+        // Log request (sanitize access token)
         var headers = new Dictionary<string, string>
         {
-            { "Authorization", $"Bearer {accessToken}" }
+            { "Authorization", "Bearer [REDACTED]" }
         };
         apiLogger.LogRequest("GET", url, headers, null);
 
@@ -84,10 +84,10 @@ public class PipedriveApiClient : IPipedriveApiClient
         });
         httpRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        // Log request
+        // Log request (sanitize access token)
         var headers = new Dictionary<string, string>
         {
-            { "Authorization", $"Bearer {accessToken}" },
+            { "Authorization", "Bearer [REDACTED]" },
             { "Content-Type", "application/json" }
         };
         apiLogger.LogRequest("POST", url, headers, json);
@@ -123,10 +123,10 @@ public class PipedriveApiClient : IPipedriveApiClient
         var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-        // Log request
+        // Log request (sanitize access token)
         var headers = new Dictionary<string, string>
         {
-            { "Authorization", $"Bearer {accessToken}" }
+            { "Authorization", "Bearer [REDACTED]" }
         };
         apiLogger.LogRequest("GET", url, headers, null);
 
@@ -172,10 +172,10 @@ public class PipedriveApiClient : IPipedriveApiClient
         });
         httpRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        // Log request
+        // Log request (sanitize access token)
         var headers = new Dictionary<string, string>
         {
-            { "Authorization", $"Bearer {accessToken}" },
+            { "Authorization", "Bearer [REDACTED]" },
             { "Content-Type", "application/json" }
         };
         apiLogger.LogRequest("PUT", url, headers, json);
