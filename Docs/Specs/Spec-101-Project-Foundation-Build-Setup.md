@@ -473,40 +473,44 @@ test('extension structure exists', async () => {
 
 **Description:** Set up environment variable management for dev/prod.
 
+**Architecture Note:** The extension communicates only with the Azure Functions backend. All Pipedrive API interactions (including OAuth redirect URLs) are handled server-side for security. The backend dynamically constructs OAuth redirect URLs using the pattern `https://{extensionId}.chromiumapp.org/`, which Chrome recognizes as a special pattern that automatically closes OAuth popups.
+
 **.env.development:**
 ```env
-# Pipedrive API
-VITE_PIPEDRIVE_API_URL=https://api.pipedrive.com/v1
-VITE_PIPEDRIVE_CLIENT_ID=dev_client_id_placeholder
-VITE_OAUTH_REDIRECT_URL=https://placeholder.chromiumapp.org/
-
 # Sentry (disabled in dev)
 VITE_SENTRY_DSN=
 VITE_SENTRY_ENABLED=false
 
 # Environment
 VITE_ENV=development
+
+# Dev Indicator (set to false to hide the dev banner)
+VITE_SHOW_DEV_INDICATOR=true
+
+# Backend OAuth Service
+VITE_BACKEND_URL=http://localhost:7071
 ```
 
 **.env.production:**
 ```env
-# Pipedrive API
-VITE_PIPEDRIVE_API_URL=https://api.pipedrive.com/v1
-VITE_PIPEDRIVE_CLIENT_ID=prod_client_id_placeholder
-VITE_OAUTH_REDIRECT_URL=https://placeholder.chromiumapp.org/
-
 # Sentry (enabled in prod)
 VITE_SENTRY_DSN=
 VITE_SENTRY_ENABLED=true
 
 # Environment
 VITE_ENV=production
+
+# Dev Indicator (not used in production)
+VITE_SHOW_DEV_INDICATOR=false
+
+# Backend OAuth Service
+VITE_BACKEND_URL=https://your-backend-url.azurewebsites.net
 ```
 
 **.env.local (gitignored - for secrets):**
 ```env
 # Local overrides (do not commit)
-# VITE_PIPEDRIVE_CLIENT_ID=actual_secret_key
+# VITE_SENTRY_DSN=actual_sentry_dsn
 ```
 
 **.gitignore additions:**
@@ -517,21 +521,37 @@ VITE_ENV=production
 
 **Usage Example (src/config.ts):**
 ```typescript
+// Environment configuration
 export const config = {
-  pipedriveApiUrl: import.meta.env.VITE_PIPEDRIVE_API_URL,
-  pipedriveClientId: import.meta.env.VITE_PIPEDRIVE_CLIENT_ID,
-  oauthRedirectUrl: import.meta.env.VITE_OAUTH_REDIRECT_URL,
   sentryDsn: import.meta.env.VITE_SENTRY_DSN,
   sentryEnabled: import.meta.env.VITE_SENTRY_ENABLED === 'true',
-  env: import.meta.env.VITE_ENV as 'development' | 'production'
+  env: import.meta.env.VITE_ENV as 'development' | 'production',
+  showDevIndicator: import.meta.env.VITE_SHOW_DEV_INDICATOR === 'true',
+}
+
+// Backend OAuth Service configuration
+export const AUTH_CONFIG = {
+  backendUrl: import.meta.env.VITE_BACKEND_URL || 'http://localhost:7071',
+  endpoints: {
+    authStart: '/api/auth/start',
+    authCallback: '/api/auth/callback',
+  },
 }
 ```
+
+**OAuth Redirect URL Explanation:**
+The extension does NOT need to configure OAuth redirect URLs. The backend dynamically constructs them at runtime:
+- Pattern: `https://{chrome.runtime.id}.chromiumapp.org/`
+- Example: `https://abcdefghijklmnop.chromiumapp.org/?verification_code=xyz&success=true`
+- Chrome's `chrome.identity.launchWebAuthFlow()` recognizes this pattern and auto-closes the OAuth popup
+- The extension ID is passed to the backend via the OAuth state parameter
 
 **Acceptance Criteria:**
 - [ ] .env.development and .env.production exist
 - [ ] .env.local gitignored
 - [ ] Environment variables accessible via import.meta.env
 - [ ] config.ts exports typed configuration
+- [ ] Backend URL configured for both dev and production
 
 ---
 

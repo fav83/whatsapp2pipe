@@ -16,6 +16,7 @@ public class PipedriveApiClient : IPipedriveApiClient
     private readonly HttpClient httpClient;
     private readonly PipedriveConfig config;
     private readonly ILogger<PipedriveApiClient> logger;
+    private readonly PipedriveApiLogger apiLogger;
 
     public PipedriveApiClient(
         HttpClient httpClient,
@@ -25,6 +26,7 @@ public class PipedriveApiClient : IPipedriveApiClient
         this.httpClient = httpClient;
         this.config = config;
         this.logger = logger;
+        this.apiLogger = new PipedriveApiLogger(logger);
     }
 
     /// <summary>
@@ -38,15 +40,25 @@ public class PipedriveApiClient : IPipedriveApiClient
         var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
+        // Log request
+        var headers = new Dictionary<string, string>
+        {
+            { "Authorization", $"Bearer {accessToken}" }
+        };
+        apiLogger.LogRequest("GET", url, headers, null);
+
         var response = await httpClient.SendAsync(request);
+        var content = await response.Content.ReadAsStringAsync();
+
+        // Log response
+        apiLogger.LogResponse("GET", url, (int)response.StatusCode, content);
 
         if (!response.IsSuccessStatusCode)
         {
             logger.LogWarning($"Pipedrive search failed: {response.StatusCode}");
-            await HandleErrorResponse(response);
+            await HandleErrorResponse(response, content);
         }
 
-        var content = await response.Content.ReadAsStringAsync();
         var result = JsonSerializer.Deserialize<PipedriveSearchResponse>(content, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
@@ -72,15 +84,26 @@ public class PipedriveApiClient : IPipedriveApiClient
         });
         httpRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
+        // Log request
+        var headers = new Dictionary<string, string>
+        {
+            { "Authorization", $"Bearer {accessToken}" },
+            { "Content-Type", "application/json" }
+        };
+        apiLogger.LogRequest("POST", url, headers, json);
+
         var response = await httpClient.SendAsync(httpRequest);
+        var content = await response.Content.ReadAsStringAsync();
+
+        // Log response
+        apiLogger.LogResponse("POST", url, (int)response.StatusCode, content);
 
         if (!response.IsSuccessStatusCode)
         {
             logger.LogWarning($"Pipedrive create person failed: {response.StatusCode}");
-            await HandleErrorResponse(response);
+            await HandleErrorResponse(response, content);
         }
 
-        var content = await response.Content.ReadAsStringAsync();
         var result = JsonSerializer.Deserialize<PipedrivePersonResponse>(content, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
@@ -100,7 +123,18 @@ public class PipedriveApiClient : IPipedriveApiClient
         var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
+        // Log request
+        var headers = new Dictionary<string, string>
+        {
+            { "Authorization", $"Bearer {accessToken}" }
+        };
+        apiLogger.LogRequest("GET", url, headers, null);
+
         var response = await httpClient.SendAsync(request);
+        var content = await response.Content.ReadAsStringAsync();
+
+        // Log response
+        apiLogger.LogResponse("GET", url, (int)response.StatusCode, content);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
@@ -110,10 +144,9 @@ public class PipedriveApiClient : IPipedriveApiClient
         if (!response.IsSuccessStatusCode)
         {
             logger.LogWarning($"Pipedrive get person failed: {response.StatusCode}");
-            await HandleErrorResponse(response);
+            await HandleErrorResponse(response, content);
         }
 
-        var content = await response.Content.ReadAsStringAsync();
         var result = JsonSerializer.Deserialize<PipedrivePersonResponse>(content, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
@@ -139,15 +172,26 @@ public class PipedriveApiClient : IPipedriveApiClient
         });
         httpRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
+        // Log request
+        var headers = new Dictionary<string, string>
+        {
+            { "Authorization", $"Bearer {accessToken}" },
+            { "Content-Type", "application/json" }
+        };
+        apiLogger.LogRequest("PUT", url, headers, json);
+
         var response = await httpClient.SendAsync(httpRequest);
+        var content = await response.Content.ReadAsStringAsync();
+
+        // Log response
+        apiLogger.LogResponse("PUT", url, (int)response.StatusCode, content);
 
         if (!response.IsSuccessStatusCode)
         {
             logger.LogWarning($"Pipedrive update person failed: {response.StatusCode}");
-            await HandleErrorResponse(response);
+            await HandleErrorResponse(response, content);
         }
 
-        var content = await response.Content.ReadAsStringAsync();
         var result = JsonSerializer.Deserialize<PipedrivePersonResponse>(content, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
@@ -159,9 +203,8 @@ public class PipedriveApiClient : IPipedriveApiClient
     /// <summary>
     /// Handle error responses from Pipedrive API
     /// </summary>
-    private async Task HandleErrorResponse(HttpResponseMessage response)
+    private Task HandleErrorResponse(HttpResponseMessage response, string content)
     {
-        var content = await response.Content.ReadAsStringAsync();
         logger.LogError($"Pipedrive API error: {response.StatusCode} - {content}");
 
         if (response.StatusCode == HttpStatusCode.Unauthorized)

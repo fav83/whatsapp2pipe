@@ -29,9 +29,15 @@ public class PipedrivePersonsAttachPhoneFunction
 
     [Function("PipedrivePersonsAttachPhone")]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "pipedrive/persons/{personId}/attach-phone")] HttpRequestData req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", "options", Route = "pipedrive/persons/{personId}/attach-phone")] HttpRequestData req,
         string personId)
     {
+        // Handle CORS preflight
+        if (req.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
+        {
+            return req.CreateResponse(HttpStatusCode.OK);
+        }
+
         logger.LogInformation($"PipedrivePersonsAttachPhone function triggered for person {personId}");
 
         try

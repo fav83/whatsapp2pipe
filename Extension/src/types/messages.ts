@@ -6,6 +6,8 @@
  * - Popup <-> Service worker
  */
 
+import type { Person, CreatePersonData, AttachPhoneData } from './person'
+
 // ============================================================================
 // Auth Messages
 // ============================================================================
@@ -50,6 +52,118 @@ export interface AuthSignInError {
 export type AuthSignInResponse = AuthSignInSuccess | AuthSignInError
 
 // ============================================================================
+// Pipedrive API Messages
+// ============================================================================
+
+/**
+ * Pipedrive API Messages
+ *
+ * Discriminated unions for type-safe message passing
+ * between content script and service worker
+ */
+
+// Request Messages (Content Script → Service Worker)
+
+/**
+ * Lookup person by phone number
+ */
+export interface PipedriveLookupByPhoneRequest {
+  type: 'PIPEDRIVE_LOOKUP_BY_PHONE'
+  phone: string // E.164 format
+}
+
+/**
+ * Search persons by name
+ */
+export interface PipedriveSearchByNameRequest {
+  type: 'PIPEDRIVE_SEARCH_BY_NAME'
+  name: string
+}
+
+/**
+ * Create new person
+ */
+export interface PipedriveCreatePersonRequest {
+  type: 'PIPEDRIVE_CREATE_PERSON'
+  data: CreatePersonData
+}
+
+/**
+ * Attach WhatsApp phone to existing person
+ */
+export interface PipedriveAttachPhoneRequest {
+  type: 'PIPEDRIVE_ATTACH_PHONE'
+  data: AttachPhoneData
+}
+
+/**
+ * Union of all Pipedrive request messages
+ */
+export type PipedriveRequest =
+  | PipedriveLookupByPhoneRequest
+  | PipedriveSearchByNameRequest
+  | PipedriveCreatePersonRequest
+  | PipedriveAttachPhoneRequest
+
+// Response Messages (Service Worker → Content Script)
+
+/**
+ * Successful lookup by phone
+ * Returns single person or null if not found
+ */
+export interface PipedriveLookupSuccess {
+  type: 'PIPEDRIVE_LOOKUP_SUCCESS'
+  person: Person | null
+}
+
+/**
+ * Successful search by name
+ * Returns array of matching persons (can be empty)
+ */
+export interface PipedriveSearchSuccess {
+  type: 'PIPEDRIVE_SEARCH_SUCCESS'
+  persons: Person[]
+}
+
+/**
+ * Successfully created person
+ */
+export interface PipedriveCreateSuccess {
+  type: 'PIPEDRIVE_CREATE_SUCCESS'
+  person: Person
+}
+
+/**
+ * Successfully attached phone
+ */
+export interface PipedriveAttachSuccess {
+  type: 'PIPEDRIVE_ATTACH_SUCCESS'
+  person: Person
+}
+
+/**
+ * Pipedrive API error
+ * Includes HTTP status code and user-friendly message
+ */
+export interface PipedriveError {
+  type: 'PIPEDRIVE_ERROR'
+  /** User-friendly error message (ready for display) */
+  error: string
+  /** HTTP status code from backend */
+  statusCode: number
+}
+
+/**
+ * Union of all Pipedrive response messages
+ */
+export type PipedriveResponse =
+  | PipedriveLookupSuccess
+  | PipedriveSearchSuccess
+  | PipedriveCreateSuccess
+  | PipedriveAttachSuccess
+  | PipedriveError
+
+// ============================================================================
 // General Messages
 // ============================================================================
 
@@ -75,9 +189,9 @@ export interface PongMessage {
 /**
  * All possible message types that can be sent
  */
-export type ExtensionMessage = AuthSignInRequest | PingMessage
+export type ExtensionMessage = AuthSignInRequest | PipedriveRequest | PingMessage
 
 /**
  * All possible response types
  */
-export type ExtensionResponse = AuthSignInResponse | PongMessage
+export type ExtensionResponse = AuthSignInResponse | PipedriveResponse | PongMessage

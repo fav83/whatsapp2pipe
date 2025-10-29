@@ -18,6 +18,7 @@ import { ContactInfoCard } from './components/ContactInfoCard'
 import { ContactWarningCard } from './components/ContactWarningCard'
 import { GroupChatState } from './components/GroupChatState'
 import { DevModeIndicator } from './components/DevModeIndicator'
+import { exposePipedriveTestHelpers } from './testPipedriveApi'
 
 interface ChatStatus {
   phone: string | null
@@ -70,18 +71,25 @@ export default function App() {
   }, [])
 
   // Development mode: expose setState globally for testing different states
-  if (import.meta.env.DEV) {
-    // @ts-expect-error - Development only, adding to window for testing
-    window.__setSidebarState = setState
-    console.log('[Sidebar] Development mode: Use window.__setSidebarState() to test states')
-    console.log('[Sidebar] Examples:')
-    console.log('  __setSidebarState({ type: "contact", name: "John Doe", phone: "+1234567890" })')
-    console.log(
-      '  __setSidebarState({ type: "contact-warning", name: "Jane Doe", warning: "Test warning" })'
-    )
-    console.log('  __setSidebarState({ type: "group-chat" })')
-    console.log('  __setSidebarState({ type: "welcome" })')
-  }
+  useEffect(() => {
+    if (import.meta.env.MODE === 'development') {
+      // @ts-expect-error - Development only, adding to window for testing
+      window.__setSidebarState = setState
+      console.log('[Sidebar] Development mode: Use window.__setSidebarState() to test states')
+      console.log('[Sidebar] Examples:')
+      console.log(
+        '  __setSidebarState({ type: "contact", name: "John Doe", phone: "+1234567890" })'
+      )
+      console.log(
+        '  __setSidebarState({ type: "contact-warning", name: "Jane Doe", warning: "Test warning" })'
+      )
+      console.log('  __setSidebarState({ type: "group-chat" })')
+      console.log('  __setSidebarState({ type: "welcome" })')
+
+      // Expose Pipedrive API test helpers
+      exposePipedriveTestHelpers()
+    }
+  }, [])
 
   return (
     <div className="h-full flex flex-col bg-white border-l border-[#d1d7db]">

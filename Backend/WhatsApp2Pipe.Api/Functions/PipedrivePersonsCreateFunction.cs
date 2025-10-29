@@ -29,8 +29,14 @@ public class PipedrivePersonsCreateFunction
 
     [Function("PipedrivePersonsCreate")]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "pipedrive/persons")] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", "options", Route = "pipedrive/persons")] HttpRequestData req)
     {
+        // Handle CORS preflight
+        if (req.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
+        {
+            return req.CreateResponse(HttpStatusCode.OK);
+        }
+
         logger.LogInformation("PipedrivePersonsCreate function triggered");
 
         try

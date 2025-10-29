@@ -47,9 +47,10 @@ This Chrome extension integrates WhatsApp Web with Pipedrive CRM, enabling users
 
 **Service Worker (background.js):**
 - Handles OAuth callbacks and token refresh
+- Makes authenticated Pipedrive API requests on behalf of content script
 - Event-driven, dormant when idle (Manifest V3 requirement)
 - Manages chrome.identity API for Pipedrive OAuth flow
-- Minimal logic - most work happens in content script
+- Message passing architecture for content script communication
 
 **Content Script (content.js):**
 - Injected into `*://web.whatsapp.com/*`
@@ -80,8 +81,9 @@ whatsapp2pipe/
 │   │   │   ├── dom-observer.ts # Watch for chat switches
 │   │   │   └── phone-extractor.ts  # Extract JID/phone from DOM
 │   │   ├── service-worker/     # Background script
-│   │   │   ├── index.ts        # Service worker entry
-│   │   │   └── oauth-handler.ts # OAuth flow management
+│   │   │   ├── index.ts        # Service worker entry & message handlers
+│   │   │   ├── authService.ts  # OAuth flow management
+│   │   │   └── pipedriveApiService.ts  # Pipedrive API client
 │   │   ├── popup/              # Extension popup (optional)
 │   │   │   └── index.tsx
 │   │   ├── components/         # Shared React components
@@ -90,7 +92,8 @@ whatsapp2pipe/
 │   │   │   ├── CreatePersonModal.tsx
 │   │   │   └── AttachPersonModal.tsx
 │   │   ├── hooks/              # Custom React hooks
-│   │   │   ├── usePipedrive.ts # TanStack Query hooks
+│   │   │   ├── useAuth.ts      # OAuth authentication hook
+│   │   │   ├── usePipedrive.ts # Pipedrive API operations hook
 │   │   │   └── useWhatsAppChat.ts # Current chat state
 │   │   ├── contexts/           # React Context providers
 │   │   │   └── AuthContext.tsx # Auth state & tokens
@@ -101,7 +104,8 @@ whatsapp2pipe/
 │   │   │   ├── logger.ts       # Sentry integration
 │   │   │   └── phone-parser.ts # JID to phone conversion
 │   │   ├── types/              # TypeScript definitions
-│   │   │   ├── pipedrive.ts
+│   │   │   ├── person.ts       # Person domain models
+│   │   │   ├── messages.ts     # Message passing types
 │   │   │   └── whatsapp.ts
 │   │   └── styles/             # Global styles
 │   │       └── globals.css     # Tailwind imports
@@ -704,20 +708,37 @@ async function b(){...} // Content script function - NO COLLISION
 - Source maps enabled for debugging in DevTools
 
 **Environment Variables:**
+
+**Architecture Note:** The extension only communicates with the backend Azure Functions service. All Pipedrive API credentials (client_id, client_secret) are securely stored server-side. OAuth redirect URLs are dynamically constructed by the backend using the pattern `https://{extensionId}.chromiumapp.org/`, which Chrome recognizes as a special pattern that automatically closes OAuth popups.
+
 ```
 # .env.development
-VITE_PIPEDRIVE_API_URL=https://api.pipedrive.com/v1
-VITE_PIPEDRIVE_CLIENT_ID=dev_client_id
-VITE_OAUTH_REDIRECT_URL=https://your-redirect-url.chromiumapp.org/
+# Sentry (disabled in dev)
 VITE_SENTRY_DSN=your_sentry_dsn
 VITE_SENTRY_ENABLED=false
 
+# Environment
+VITE_ENV=development
+
+# Dev Indicator
+VITE_SHOW_DEV_INDICATOR=true
+
+# Backend OAuth Service
+VITE_BACKEND_URL=http://localhost:7071
+
 # .env.production
-VITE_PIPEDRIVE_API_URL=https://api.pipedrive.com/v1
-VITE_PIPEDRIVE_CLIENT_ID=prod_client_id
-VITE_OAUTH_REDIRECT_URL=https://your-redirect-url.chromiumapp.org/
+# Sentry (enabled in prod)
 VITE_SENTRY_DSN=your_sentry_dsn
 VITE_SENTRY_ENABLED=true
+
+# Environment
+VITE_ENV=production
+
+# Dev Indicator
+VITE_SHOW_DEV_INDICATOR=false
+
+# Backend OAuth Service
+VITE_BACKEND_URL=https://your-backend-url.azurewebsites.net
 ```
 
 ### 8.3 Code Quality Workflow

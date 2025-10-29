@@ -28,58 +28,92 @@ public class PipedrivePersonsSearchFunction
 
     [Function("PipedrivePersonsSearch")]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "pipedrive/persons/search")] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "options", Route = "pipedrive/persons/search")] HttpRequestData req)
     {
-        logger.LogInformation("PipedrivePersonsSearch function triggered");
+        logger.LogInformation("[PipedrivePersonsSearch] Function triggered - Method: {Method}, URL: {Url}", req.Method, req.Url);
+
+        // Handle CORS preflight
+        if (req.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
+        {
+            logger.LogInformation("[PipedrivePersonsSearch] Handling OPTIONS preflight request");
+            return req.CreateResponse(HttpStatusCode.OK);
+        }
 
         try
         {
             // Extract and validate Authorization header
+            logger.LogInformation("[PipedrivePersonsSearch] Step 1: Checking Authorization header");
             if (!req.Headers.TryGetValues("Authorization", out var authHeaders))
             {
-                logger.LogWarning("Missing Authorization header");
+                logger.LogWarning("[PipedrivePersonsSearch] FAILED Step 1: Missing Authorization header");
                 return req.CreateResponse(HttpStatusCode.Unauthorized);
             }
 
             var authHeader = authHeaders.FirstOrDefault();
+            logger.LogInformation("[PipedrivePersonsSearch] Authorization header found: {AuthHeader}", authHeader);
+
             if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
             {
-                logger.LogWarning("Invalid Authorization header format");
+                logger.LogWarning("[PipedrivePersonsSearch] FAILED Step 1: Invalid Authorization header format - Header: {AuthHeader}", authHeader);
                 return req.CreateResponse(HttpStatusCode.Unauthorized);
             }
 
             var verificationCode = authHeader.Substring("Bearer ".Length);
+            logger.LogInformation("[PipedrivePersonsSearch] Step 1 PASSED: Verification code extracted (length: {Length})", verificationCode.Length);
 
             // Retrieve session from Azure Table Storage
+            logger.LogInformation("[PipedrivePersonsSearch] Step 2: Retrieving session from Table Storage");
             var session = await tableStorageService.GetSessionAsync(verificationCode);
-            if (session == null || session.SessionExpiresAt < DateTimeOffset.UtcNow)
+
+            if (session == null)
             {
-                logger.LogWarning($"Invalid or expired verification code");
+                logger.LogWarning("[PipedrivePersonsSearch] FAILED Step 2: Session not found for verification code");
                 return req.CreateResponse(HttpStatusCode.Unauthorized);
             }
 
+            logger.LogInformation("[PipedrivePersonsSearch] Session found - ExpiresAt: {ExpiresAt}, Now: {Now}", session.SessionExpiresAt, DateTimeOffset.UtcNow);
+
+            if (session.SessionExpiresAt < DateTimeOffset.UtcNow)
+            {
+                logger.LogWarning("[PipedrivePersonsSearch] FAILED Step 2: Session expired - ExpiresAt: {ExpiresAt}, Now: {Now}", session.SessionExpiresAt, DateTimeOffset.UtcNow);
+                return req.CreateResponse(HttpStatusCode.Unauthorized);
+            }
+
+            logger.LogInformation("[PipedrivePersonsSearch] Step 2 PASSED: Valid session retrieved");
+
             // Extract query parameters
+            logger.LogInformation("[PipedrivePersonsSearch] Step 3: Extracting query parameters");
             var query = System.Web.HttpUtility.ParseQueryString(req.Url.Query);
             var term = query["term"];
             var fields = query["fields"];
 
+            logger.LogInformation("[PipedrivePersonsSearch] Query parameters - term: {Term}, fields: {Fields}", term ?? "NULL", fields ?? "NULL");
+
             if (string.IsNullOrEmpty(term) || string.IsNullOrEmpty(fields))
             {
-                logger.LogWarning("Missing required query parameters: term or fields");
+                logger.LogWarning("[PipedrivePersonsSearch] FAILED Step 3: Missing required query parameters - term: {Term}, fields: {Fields}", term ?? "NULL", fields ?? "NULL");
                 var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
                 await badRequestResponse.WriteStringAsync("Missing required query parameters: term and fields");
                 return badRequestResponse;
             }
 
+            logger.LogInformation("[PipedrivePersonsSearch] Step 3 PASSED: Query parameters validated");
+
             // Call Pipedrive API
-            logger.LogInformation($"Searching Pipedrive persons: term={term}, fields={fields}");
+            logger.LogInformation("[PipedrivePersonsSearch] Step 4: Calling Pipedrive API - term: {Term}, fields: {Fields}, AccessToken length: {TokenLength}", term, fields, session.AccessToken.Length);
             var pipedriveResponse = await pipedriveApiClient.SearchPersonsAsync(session.AccessToken, term, fields);
+            logger.LogInformation("[PipedrivePersonsSearch] Step 4 COMPLETED: Pipedrive API call finished");
 
             // Transform response to minimal format
+            logger.LogInformation("[PipedrivePersonsSearch] Step 5: Transforming Pipedrive response - Success: {Success}, HasData: {HasData}", pipedriveResponse.Success, pipedriveResponse.Data != null);
+
             var persons = new List<Person>();
             if (pipedriveResponse.Data?.Items != null)
             {
-                foreach (var item in pipedriveResponse.Data.Items)
+                var items = pipedriveResponse.Data.Items;
+                var itemCount = items.Count();
+                logger.LogInformation("[PipedrivePersonsSearch] Found {Count} items in Pipedrive response", itemCount);
+                foreach (var item in items)
                 {
                     if (item.Item != null)
                     {
@@ -87,27 +121,34 @@ public class PipedrivePersonsSearchFunction
                     }
                 }
             }
+            else
+            {
+                logger.LogInformation("[PipedrivePersonsSearch] No items in Pipedrive response");
+            }
 
-            logger.LogInformation($"Found {persons.Count} persons");
+            var personCount = persons.Count;
+            logger.LogInformation("[PipedrivePersonsSearch] Step 5 COMPLETED: Transformed {Count} persons", personCount);
 
             // Return transformed persons array
+            logger.LogInformation("[PipedrivePersonsSearch] Step 6: Returning response with {Count} persons", personCount);
             var response = req.CreateResponse(HttpStatusCode.OK);
             await response.WriteAsJsonAsync(persons);
+            logger.LogInformation("[PipedrivePersonsSearch] SUCCESS: Request completed successfully");
             return response;
         }
-        catch (PipedriveUnauthorizedException)
+        catch (PipedriveUnauthorizedException ex)
         {
-            logger.LogWarning("Pipedrive access token is invalid or expired");
+            logger.LogWarning(ex, "[PipedrivePersonsSearch] EXCEPTION: Pipedrive access token is invalid or expired");
             return req.CreateResponse(HttpStatusCode.Unauthorized);
         }
-        catch (PipedriveRateLimitException)
+        catch (PipedriveRateLimitException ex)
         {
-            logger.LogWarning("Pipedrive rate limit exceeded");
+            logger.LogWarning(ex, "[PipedrivePersonsSearch] EXCEPTION: Pipedrive rate limit exceeded");
             return req.CreateResponse((HttpStatusCode)429);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error searching persons in Pipedrive");
+            logger.LogError(ex, "[PipedrivePersonsSearch] EXCEPTION: Error searching persons in Pipedrive - Message: {Message}, StackTrace: {StackTrace}", ex.Message, ex.StackTrace);
             return req.CreateResponse(HttpStatusCode.InternalServerError);
         }
     }

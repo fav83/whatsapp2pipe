@@ -2,13 +2,13 @@
   "manifest_version": 3,
   "name": "Pipedrive for WhatsApp Web",
   "short_name": "Pipedrive WhatsApp",
-  "version": "0.31.0",
+  "version": "0.32.0",
   "description": "Find, create, and link Pipedrive contacts directly from WhatsApp Web conversations.",
   "author": "Your Name",
 
   "permissions": ["storage", "tabs", "identity"],
 
-  "host_permissions": ["*://web.whatsapp.com/*"],
+  "host_permissions": ["*://web.whatsapp.com/*", "http://localhost:7071/*"],
 
   "background": {
     "service_worker": "service-worker.js",
