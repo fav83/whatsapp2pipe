@@ -41,7 +41,12 @@
       "Bash(gh api:*)",
       "Bash(mv:*)",
       "Bash(lsof:*)",
-      "Bash(dotnet clean:*)"
+      "Bash(dotnet clean:*)",
+      "Bash(powershell:*)",
+      "Bash(dotnet new:*)",
+      "Bash(dotnet test:*)",
+      "Bash(find:*)",
+      "Bash(dotnet list package:*)"
     ],
     "deny": [],
     "ask": [

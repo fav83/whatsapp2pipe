@@ -28,7 +28,7 @@ public class OAuthStateValidator
     /// </summary>
     /// <param name="state">Base64-encoded state from extension</param>
     /// <returns>True if state is valid, false otherwise</returns>
-    public bool IsValidStateFormat(string state)
+    public virtual bool IsValidStateFormat(string state)
     {
         if (string.IsNullOrEmpty(state))
         {
@@ -91,7 +91,7 @@ public class OAuthStateValidator
     /// </summary>
     /// <param name="state">Base64-encoded state</param>
     /// <returns>Decoded OAuthState or null if decoding fails</returns>
-    public OAuthState? DecodeState(string state)
+    public virtual OAuthState? DecodeState(string state)
     {
         try
         {
