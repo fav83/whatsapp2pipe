@@ -17,6 +17,7 @@ import { AuthenticatingState } from './components/AuthenticatingState'
 import { ContactInfoCard } from './components/ContactInfoCard'
 import { ContactWarningCard } from './components/ContactWarningCard'
 import { GroupChatState } from './components/GroupChatState'
+import { DevModeIndicator } from './components/DevModeIndicator'
 
 interface ChatStatus {
   phone: string | null
@@ -84,6 +85,9 @@ export default function App() {
 
   return (
     <div className="h-full flex flex-col bg-white border-l border-[#d1d7db]">
+      {/* Dev Mode Indicator - Top Banner */}
+      <DevModeIndicator />
+
       {/* Fixed Header */}
       <header className="flex-shrink-0 px-5 py-4 border-b border-[#d1d7db] flex items-center justify-between">
         <h1 className="text-[17px] font-semibold text-[#111b21]">Pipedrive</h1>
