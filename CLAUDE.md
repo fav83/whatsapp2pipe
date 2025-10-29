@@ -34,6 +34,9 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 - [Spec-103-Implementation-Summary.md](Docs/Specs/Spec-103-Implementation-Summary.md) - Complete implementation summary and manual testing checklist
 - [Spec-105a-Backend-OAuth-Service.md](Docs/Specs/Spec-105a-Backend-OAuth-Service.md) - Backend OAuth Service for Pipedrive authentication (✅ Complete)
 - [Spec-105b-Extension-OAuth-Integration.md](Docs/Specs/Spec-105b-Extension-OAuth-Integration.md) - Extension OAuth integration with hybrid architecture (✅ Complete)
+- [Spec-106a-Backend-Pipedrive-API-Service.md](Docs/Specs/Spec-106a-Backend-Pipedrive-API-Service.md) - Backend Pipedrive API Service (✅ Complete)
+- [Spec-106b-Extension-Pipedrive-API-Integration.md](Docs/Specs/Spec-106b-Extension-Pipedrive-API-Integration.md) - Extension Pipedrive API Integration (✅ Complete)
+- [Spec-106b-Implementation-Summary.md](Docs/Specs/Spec-106b-Implementation-Summary.md) - Complete implementation summary and testing results
 
 ### External Documentation
 - [Pipedrive/](Docs/External/Pipedrive/) - Pipedrive API documentation and development resources
@@ -175,7 +178,8 @@ The sidebar adjusts the WhatsApp Web layout to prevent overlay:
     - OAuth state validation and CSRF protection
     - Dynamic extension ID support (no hardcoding)
     - Automatic popup closure via chromiumapp.org redirect
-    - CORS configured for WhatsApp Web origins
+    - CORS middleware for automatic header injection
+    - 65 unit tests passing (xUnit, Moq, AutoFixture)
   - **Extension (Hybrid Architecture):**
     - Content script OAuth state generation (extensionId + nonce + timestamp)
     - Content script fetches OAuth URL from backend (CORS works)
@@ -183,10 +187,32 @@ The sidebar adjusts the WhatsApp Web layout to prevent overlay:
     - Service worker validates state on callback
     - verification_code extraction and storage
     - Message passing between content script and service worker
+    - Dev mode indicator component
     - Build successful with all tests passing
+- ✅ Pipedrive API Service Layer (Spec-106a + Spec-106b)
+  - **Backend (Azure Functions):**
+    - PersonsSearch endpoint (GET) with phone/name search
+    - PersonsCreate endpoint (POST) with WhatsApp phone labeling
+    - PersonsAttachPhone endpoint (POST) for existing contacts
+    - Authorization via verification_code Bearer token
+    - Session validation with Azure Table Storage
+    - Pipedrive API client with error handling (401, 429, 500)
+    - Person data transformation service (minimal format)
+    - CORS preflight (OPTIONS) support on all endpoints
+    - 65 unit tests passing
+  - **Extension (Service Layer):**
+    - Service worker PipedriveApiClient with 4 API methods
+    - Type-safe message passing (discriminated unions)
+    - React hook usePipedrive() for all operations
+    - Automatic loading and error state management
+    - Graceful degradation (returns null/empty array on errors)
+    - User-friendly error messages
+    - 51 unit tests passing (Vitest + React Testing Library)
+    - Manual testing verified (lookupByPhone working end-to-end)
+    - Chrome manifest updated with localhost:7071 permission
 
 **📋 Next Feature:**
-- Feature 6: Pipedrive API Service Layer
+- Feature 9: Person Auto-Lookup Flow (UI implementation)
 
 ## Code Style Guidelines
 

@@ -37,7 +37,16 @@
       "Bash(findstr:*)",
       "Bash(dotnet restore:*)",
       "Bash(dotnet build:*)",
-      "Bash(func init:*)"
+      "Bash(func init:*)",
+      "Bash(gh api:*)",
+      "Bash(mv:*)",
+      "Bash(lsof:*)",
+      "Bash(dotnet clean:*)",
+      "Bash(powershell:*)",
+      "Bash(dotnet new:*)",
+      "Bash(dotnet test:*)",
+      "Bash(find:*)",
+      "Bash(dotnet list package:*)"
     ],
     "deny": [],
     "ask": [

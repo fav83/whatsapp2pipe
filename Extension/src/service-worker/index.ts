@@ -2,7 +2,14 @@
 // Handles Chrome extension lifecycle and background tasks
 
 import { serviceWorkerAuthService } from './authService'
-import type { ExtensionMessage, AuthSignInSuccess, AuthSignInError } from '../types/messages'
+import { pipedriveApiService } from './pipedriveApiService'
+import type {
+  ExtensionMessage,
+  AuthSignInSuccess,
+  AuthSignInError,
+  PipedriveRequest,
+  PipedriveResponse,
+} from '../types/messages'
 
 console.log('[Service Worker] Loaded')
 
@@ -89,9 +96,150 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
     return true // Keep channel open for async response
   }
 
+  // Handle Pipedrive API requests
+  if (message.type === 'PIPEDRIVE_LOOKUP_BY_PHONE') {
+    handlePipedriveLookup(message, sendResponse)
+    return true
+  }
+
+  if (message.type === 'PIPEDRIVE_SEARCH_BY_NAME') {
+    handlePipedriveSearch(message, sendResponse)
+    return true
+  }
+
+  if (message.type === 'PIPEDRIVE_CREATE_PERSON') {
+    handlePipedriveCreate(message, sendResponse)
+    return true
+  }
+
+  if (message.type === 'PIPEDRIVE_ATTACH_PHONE') {
+    handlePipedriveAttach(message, sendResponse)
+    return true
+  }
+
   sendResponse({ type: 'UNKNOWN_MESSAGE', received: message.type })
   return true
 })
+
+/**
+ * Handle lookup by phone
+ */
+async function handlePipedriveLookup(
+  message: PipedriveRequest,
+  sendResponse: (response: PipedriveResponse) => void
+) {
+  try {
+    if (message.type !== 'PIPEDRIVE_LOOKUP_BY_PHONE') return
+
+    const person = await pipedriveApiService.lookupByPhone(message.phone)
+
+    sendResponse({
+      type: 'PIPEDRIVE_LOOKUP_SUCCESS',
+      person,
+    })
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Lookup failed'
+    const statusCode =
+      typeof error === 'object' && error !== null && 'statusCode' in error
+        ? (error.statusCode as number)
+        : 500
+    sendResponse({
+      type: 'PIPEDRIVE_ERROR',
+      error: errorMessage,
+      statusCode,
+    })
+  }
+}
+
+/**
+ * Handle search by name
+ */
+async function handlePipedriveSearch(
+  message: PipedriveRequest,
+  sendResponse: (response: PipedriveResponse) => void
+) {
+  try {
+    if (message.type !== 'PIPEDRIVE_SEARCH_BY_NAME') return
+
+    const persons = await pipedriveApiService.searchByName(message.name)
+
+    sendResponse({
+      type: 'PIPEDRIVE_SEARCH_SUCCESS',
+      persons,
+    })
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Search failed'
+    const statusCode =
+      typeof error === 'object' && error !== null && 'statusCode' in error
+        ? (error.statusCode as number)
+        : 500
+    sendResponse({
+      type: 'PIPEDRIVE_ERROR',
+      error: errorMessage,
+      statusCode,
+    })
+  }
+}
+
+/**
+ * Handle create person
+ */
+async function handlePipedriveCreate(
+  message: PipedriveRequest,
+  sendResponse: (response: PipedriveResponse) => void
+) {
+  try {
+    if (message.type !== 'PIPEDRIVE_CREATE_PERSON') return
+
+    const person = await pipedriveApiService.createPerson(message.data)
+
+    sendResponse({
+      type: 'PIPEDRIVE_CREATE_SUCCESS',
+      person,
+    })
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Failed to create person'
+    const statusCode =
+      typeof error === 'object' && error !== null && 'statusCode' in error
+        ? (error.statusCode as number)
+        : 500
+    sendResponse({
+      type: 'PIPEDRIVE_ERROR',
+      error: errorMessage,
+      statusCode,
+    })
+  }
+}
+
+/**
+ * Handle attach phone
+ */
+async function handlePipedriveAttach(
+  message: PipedriveRequest,
+  sendResponse: (response: PipedriveResponse) => void
+) {
+  try {
+    if (message.type !== 'PIPEDRIVE_ATTACH_PHONE') return
+
+    const person = await pipedriveApiService.attachPhone(message.data)
+
+    sendResponse({
+      type: 'PIPEDRIVE_ATTACH_SUCCESS',
+      person,
+    })
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Failed to attach phone'
+    const statusCode =
+      typeof error === 'object' && error !== null && 'statusCode' in error
+        ? (error.statusCode as number)
+        : 500
+    sendResponse({
+      type: 'PIPEDRIVE_ERROR',
+      error: errorMessage,
+      statusCode,
+    })
+  }
+}
 
 // Service worker lifecycle events
 self.addEventListener('activate', () => {
