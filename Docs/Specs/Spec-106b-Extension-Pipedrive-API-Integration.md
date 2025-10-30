@@ -1314,7 +1314,6 @@ describe('usePipedrive', () => {
 The following are explicitly **NOT** part of Spec-106b:
 
 - ❌ UI Components - PersonCard, CreatePersonModal, SearchPersonList (Features 9-11)
-- ❌ TanStack Query Integration - Query/mutation hooks, caching (Feature 7)
 - ❌ Auto-lookup on chat switch - Triggering lookup automatically (Feature 9)
 - ❌ Form validation - Email format, name validation (Features 10-11)
 - ❌ Caching strategy - In-memory or time-based caching (Feature 17)
@@ -1391,22 +1390,18 @@ export const AUTH_CONFIG = {
 
 **After Spec-106b Completion:**
 
-1. **Feature 7: TanStack Query Integration**
-   - Wrap `usePipedrive` operations in React Query hooks
-   - Add caching, background refetching, optimistic updates
-   - Better loading states and error retry logic
+1. **Feature 9: Person Auto-Lookup Flow (Recommended Next)**
+   - Trigger `lookupByPhone()` automatically when user switches to WhatsApp chat
+   - Display matched Person card in sidebar
+   - Show "no match" state with Create/Attach buttons
+   - Integrate with existing chat detection (Spec-104)
 
-2. **Feature 9: Person Auto-Lookup Flow**
-   - Trigger `lookupByPhone()` on chat switch
-   - Display matched Person card
-   - Show "no match" state with create/attach options
-
-3. **Feature 10: Create Person Flow**
+2. **Feature 10: Create Person Flow**
    - Modal UI with name/email form
    - Call `createPerson()` from usePipedrive hook
    - Show success/error states
 
-4. **Feature 11: Attach Number Flow**
+3. **Feature 11: Attach Number Flow**
    - Search modal with `searchByName()`
    - Display results list (UI from design screenshot)
    - Call `attachPhone()` on selection

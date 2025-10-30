@@ -24,11 +24,11 @@ Implement DOM observer to detect 1:1 chat switches, extract JID from WhatsApp DO
 ### Feature 5: Pipedrive OAuth Authentication (✅ Complete - Spec-105a + Spec-105b)
 Implement OAuth 2.0 authorization code flow with backend service (Azure Functions + Azure Table Storage) and extension integration using chrome.identity API. Backend handles secure token storage and issues session identifiers. Extension uses hybrid architecture (content script + service worker) with dynamic extension ID support and state-based CSRF protection.
 
-### Feature 6: Pipedrive API Service Layer
-Create centralized API service with TypeScript interfaces for Person lookup by phone, Person search by name, Person creation, and phone attachment to existing Person.
+### Feature 6: Pipedrive API Service Layer (✅ Complete - Spec-106a + Spec-106b)
+Create centralized API service with TypeScript interfaces for Person lookup by phone, Person search by name, Person creation, and phone attachment to existing Person. Includes React hook (usePipedrive) with built-in loading and error state management.
 
-### Feature 7: TanStack Query Integration
-Set up React Query client with caching strategy, implement query hooks for person lookup and search, mutation hooks for create/attach operations, and error handling with retry logic.
+### Feature 7: ~~TanStack Query Integration~~ (❌ Skipped)
+**Decision:** Skipped for MVP. The custom `usePipedrive()` hook (Feature 6) already provides sufficient state management, loading states, and error handling. TanStack Query would add complexity and bundle size without meaningful benefits for the MVP use cases.
 
 ### Feature 8: Authentication UI State
 Build sign-in prompt UI with Pipedrive branding, authenticated/unauthenticated states in sidebar, and sign-out functionality.
@@ -75,8 +75,8 @@ The features are numbered in a suggested implementation order that considers:
 **Phase 1: Foundation (Features 1-4)**
 Get the basic extension working with sidebar injection and WhatsApp chat detection.
 
-**Phase 2: Authentication & API (Features 5-7)**
-Implement Pipedrive connectivity with secure authentication and API layer.
+**Phase 2: Authentication & API (Features 5-6)**
+Implement Pipedrive connectivity with secure authentication and API layer. Feature 7 (TanStack Query) skipped as unnecessary for MVP.
 
 **Phase 3: Core User Flows (Features 8-11)**
 Build the main user-facing features for person lookup, creation, and attachment.

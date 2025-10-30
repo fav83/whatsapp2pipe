@@ -29,8 +29,8 @@ This Chrome extension integrates WhatsApp Web with Pipedrive CRM, enabling users
 - **Styling:** Tailwind CSS 3.x
 
 **State & Data Management:**
-- **Server State:** TanStack Query (React Query) v5
-- **Client State:** React Context API
+- **API State:** Custom React hooks with built-in loading/error management
+- **Client State:** React Context API + React useState
 - **Storage:** chrome.storage.local with Web Crypto API encryption
 
 **Infrastructure & Tooling:**
@@ -57,7 +57,8 @@ This Chrome extension integrates WhatsApp Web with Pipedrive CRM, enabling users
 - Extracts phone numbers and chat metadata from WhatsApp DOM
 - Renders the entire React sidebar application directly into the page
 - Observes DOM for chat switches
-- Handles all Pipedrive API communication via TanStack Query
+- Handles Pipedrive API communication via service worker message passing
+- Uses custom React hooks (usePipedrive) for state management
 - Accesses encrypted tokens from chrome.storage.local
 
 **Popup (optional for MVP):**
@@ -133,20 +134,23 @@ whatsapp2pipe/
 
 ### 3.1 State Management Strategy
 
-**Server State (TanStack Query):**
-- Manages all Pipedrive API data (persons, search results)
-- Automatic caching with stale-while-revalidate strategy
-- Built-in retry logic with exponential backoff for rate limits
-- Request deduplication to prevent API spam
-- Query keys structure:
-  - `['person', phoneNumber]` - Person lookup by phone
-  - `['person-search', searchTerm]` - Person search by name
-  - `['person', personId]` - Individual person details
+**API State (Custom React Hooks):**
+- Custom `usePipedrive()` hook manages all Pipedrive API operations
+- Built-in loading and error state management
+- Graceful degradation (returns null/empty array on errors)
+- Service worker message passing for API calls
+- No caching layer in MVP (simple, straightforward)
+- Hook methods:
+  - `lookupByPhone(phone)` - Person lookup by phone
+  - `searchByName(name)` - Person search by name
+  - `createPerson(data)` - Create new person
+  - `attachPhone(data)` - Attach phone to existing person
 
-**Client State (React Context):**
+**Client State (React Context + useState):**
 - Authentication state (tokens, user info, sign-in status)
-- Current session data
-- Does NOT manage API data (delegated to TanStack Query)
+- Current chat/phone number (from WhatsApp detection)
+- UI state (modals, forms, etc.)
+- Simple, predictable state flow
 
 **Persistent Storage:**
 - `chrome.storage.local` - Encrypted OAuth tokens
@@ -165,11 +169,13 @@ Extract JID → parse phone number (utils/phone-parser.ts)
     ↓
 React sidebar re-renders with new phone
     ↓
-TanStack Query triggers lookup (hooks/usePipedrive.ts)
+Component calls usePipedrive().lookupByPhone() (hooks/usePipedrive.ts)
     ↓
-API service makes request (services/pipedrive.ts)
+Hook sends message to service worker
     ↓
-Response cached, UI updates (components/PersonCard.tsx)
+Service worker makes authenticated API request
+    ↓
+Response sent back to hook, UI updates (components/PersonCard.tsx)
 ```
 
 **Authentication Flow:**
@@ -193,19 +199,23 @@ AuthContext updates, sidebar shows authenticated state
 
 **API Request Flow:**
 ```
-Component triggers mutation/query
+Component calls usePipedrive hook method
     ↓
-TanStack Query calls service function
+Hook sends message to service worker (chrome.runtime.sendMessage)
     ↓
-Service retrieves encrypted token from chrome.storage
+Service worker receives message and validates request
     ↓
-Decrypts token, adds to Authorization header
+Service worker retrieves verification_code from chrome.storage
     ↓
-Makes fetch request to Pipedrive API
+Service worker makes fetch request with Authorization header
     ↓
-Response parsed and returned
+Backend validates session and calls Pipedrive API
     ↓
-TanStack Query updates cache
+Response sent back to service worker
+    ↓
+Service worker sends response message to hook
+    ↓
+Hook updates loading/error state and returns data
     ↓
 Component re-renders with new data
 ```
@@ -249,7 +259,7 @@ Component re-renders with new data
 
 **Data Storage:**
 - No persistent caching of WhatsApp → Pipedrive mappings in MVP
-- TanStack Query cache: in-memory only, cleared on extension reload
+- No caching layer (simple, fresh requests every time)
 - chrome.storage.local: encrypted tokens only
 
 ### 4.3 Error Tracking & Telemetry
@@ -273,82 +283,103 @@ Component re-renders with new data
 ### 5.1 Pipedrive API Service Layer
 
 **Service Architecture:**
-- Centralized API functions in `services/pipedrive.ts`
-- All functions accept auth token as parameter
-- Return typed responses (TypeScript interfaces in `types/pipedrive.ts`)
-- Handle errors uniformly (throw with context for TanStack Query)
+- Service worker API client in `service-worker/pipedriveApiService.ts`
+- Content script hook in `content-script/hooks/usePipedrive.ts`
+- Message passing between content script and service worker
+- Type-safe with discriminated unions (`types/messages.ts`)
+- Return typed responses (TypeScript interfaces in `types/person.ts`)
 
-**Core API Functions:**
+**Service Worker API Client:**
 ```typescript
-// services/pipedrive.ts
-export const pipedriveApi = {
-  // Person lookup by phone (exact match)
-  searchPersonByPhone(phone: string, token: string): Promise<Person | null>
+// service-worker/pipedriveApiService.ts
+class PipedriveApiService {
+  async lookupByPhone(phone: string): Promise<Person | null>
+  async searchByName(name: string): Promise<Person[]>
+  async createPerson(data: CreatePersonData): Promise<Person>
+  async attachPhone(data: AttachPhoneData): Promise<Person>
+}
+```
 
-  // Create new person with WhatsApp phone
-  createPerson(data: CreatePersonInput, token: string): Promise<Person>
-
-  // Search persons by name
-  searchPersonByName(name: string, token: string): Promise<Person[]>
-
-  // Attach phone to existing person
-  attachPhoneToPhone(personId: number, phone: string, token: string): Promise<Person>
+**Content Script Hook:**
+```typescript
+// content-script/hooks/usePipedrive.ts
+export function usePipedrive() {
+  return {
+    isLoading: boolean,
+    error: PipedriveError | null,
+    lookupByPhone: (phone: string) => Promise<Person | null>,
+    searchByName: (name: string) => Promise<Person[]>,
+    createPerson: (data: CreatePersonData) => Promise<Person | null>,
+    attachPhone: (data: AttachPhoneData) => Promise<Person | null>,
+    clearError: () => void
+  }
 }
 ```
 
 **Error Handling:**
-- Detect HTTP status codes (401, 403, 429, 500, etc.)
-- 429 (rate limit): Let TanStack Query retry with backoff
-- 401 (unauthorized): Trigger re-authentication flow
-- Network errors: Retry automatically via TanStack Query defaults
+- Service worker converts HTTP status codes to user-friendly messages
+- 401 (unauthorized): "Authentication expired. Please sign in again."
+- 404 (not found): "Person not found"
+- 429 (rate limit): "Too many requests. Please try again in a moment."
+- 500 (server error): "Server error. Please try again later."
+- Hook returns null/empty array on errors (graceful degradation)
 - All errors logged to Sentry with context
 
-### 5.2 TanStack Query Integration
+### 5.2 Extension Message Passing
 
-**Query Hooks:**
+**Content Script ↔ Service Worker Communication:**
+- All API calls go through message passing architecture
+- Content script sends typed messages via `chrome.runtime.sendMessage()`
+- Service worker handles messages and responds asynchronously
+- Type-safe with discriminated unions for compile-time validation
+
+**Message Types:**
 ```typescript
-// hooks/usePipedrive.ts
+// Request messages (Content Script → Service Worker)
+- PIPEDRIVE_LOOKUP_BY_PHONE
+- PIPEDRIVE_SEARCH_BY_NAME
+- PIPEDRIVE_CREATE_PERSON
+- PIPEDRIVE_ATTACH_PHONE
+- AUTH_SIGN_IN
 
-// Auto-lookup on chat switch
-usePersonLookup(phone: string)
-
-// Search by name for attach flow
-usePersonSearch(name: string, enabled: boolean)
-
-// Mutations
-useCreatePerson()
-useAttachPhone()
+// Response messages (Service Worker → Content Script)
+- PIPEDRIVE_LOOKUP_SUCCESS
+- PIPEDRIVE_SEARCH_SUCCESS
+- PIPEDRIVE_CREATE_SUCCESS
+- PIPEDRIVE_ATTACH_SUCCESS
+- PIPEDRIVE_ERROR
+- AUTH_SIGN_IN_SUCCESS
+- AUTH_SIGN_IN_ERROR
 ```
 
-**Cache Strategy:**
-- Default stale time: 5 minutes
-- Cache time: 30 minutes
-- Refetch on window focus: disabled (WhatsApp Web often backgrounded)
-- Retry: 3 attempts with exponential backoff
-- Deduplication: Automatic for identical queries
-
-### 5.3 Extension Message Passing
-
-**Content Script ↔ Service Worker:**
-- `chrome.runtime.sendMessage()` for one-time requests
-- Used only for OAuth flow coordination
-- Service worker responds with token status
-
-**Communication Patterns:**
+**Communication Flow:**
 ```typescript
-// Content script requests auth
-chrome.runtime.sendMessage({ type: 'AUTH_REQUEST' })
+// Content script hook sends message
+const response = await chrome.runtime.sendMessage({
+  type: 'PIPEDRIVE_LOOKUP_BY_PHONE',
+  phone: '+48123456789'
+})
 
-// Service worker handles OAuth, responds
-chrome.runtime.sendMessage({ type: 'AUTH_SUCCESS', tokens: {...} })
+// Service worker handles message
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === 'PIPEDRIVE_LOOKUP_BY_PHONE') {
+    handleLookup(message, sendResponse)
+    return true  // Keep sendResponse channel open
+  }
+})
 
-// Content script updates AuthContext
+// Service worker responds
+sendResponse({
+  type: 'PIPEDRIVE_LOOKUP_SUCCESS',
+  person: {...}
+})
 ```
 
-**Why Minimal Messaging:**
-- Most logic in content script (sidebar is React app)
-- Service worker dormant except during OAuth
-- No need for long-lived connections (Manifest V3 discouraged)
+**Benefits:**
+- Clean separation: Service worker = API layer, Content script = UI layer
+- Service worker has full chrome API access (storage, identity, fetch)
+- Content script stays focused on React UI and WhatsApp DOM
+- Type safety prevents message type mismatches
 
 ---
 
@@ -473,7 +504,7 @@ async function init() {
   - CreatePersonModal form validation and submission
   - AttachPersonModal search and selection flow
   - AuthContext state changes
-  - TanStack Query integration (with MSW for API mocking)
+  - usePipedrive hook integration (with chrome.runtime.sendMessage mocking)
 
 **E2E Tests (Playwright):**
 - **Target:** Full extension behavior in real Chrome
@@ -864,7 +895,7 @@ Extension/dist/
 **API Errors:**
 - **401 Unauthorized:** Clear auth state, prompt re-login
 - **403 Forbidden:** Show "Permission denied" message
-- **429 Rate Limited:** TanStack Query retries with backoff, show "Please wait" toast
+- **429 Rate Limited:** Show "Too many requests" message, allow manual retry
 - **500 Server Error:** Retry automatically, log to Sentry
 - **Network Error:** Show "Check connection" message, allow retry
 
@@ -959,10 +990,10 @@ const AttachPersonModal = lazy(() => import('./components/AttachPersonModal'))
 - Throttle WhatsApp DOM queries
 
 **API Request Optimization:**
-- TanStack Query automatic deduplication
-- Cache person lookups (5-minute stale time)
-- Prefetch: When user hovers on chat, prefetch person data
-- Abort in-flight requests on chat switch
+- Debounce chat switches (200ms) to prevent rapid-fire lookups
+- Simple fresh requests (no caching complexity for MVP)
+- User can manually retry failed requests
+- Future: Add caching if performance becomes an issue
 
 **Rendering Performance:**
 - React.memo for expensive components
@@ -972,10 +1003,10 @@ const AttachPersonModal = lazy(() => import('./components/AttachPersonModal'))
 
 ### 11.3 Memory Management
 
-**Cache Limits:**
-- TanStack Query: Limit cache size (max 50 persons cached)
-- Automatic garbage collection after 30 minutes
-- Clear cache on extension reload
+**Memory Efficiency:**
+- No caching layer in MVP (minimal memory footprint)
+- React component state only (cleared on unmount)
+- No persistent data structures
 
 **Service Worker Lifecycle:**
 - Designed to be dormant (Manifest V3)
@@ -1025,10 +1056,10 @@ const AttachPersonModal = lazy(() => import('./components/AttachPersonModal'))
 **API Rate Limiting:**
 - **Risk:** Heavy usage triggers Pipedrive rate limits
 - **Mitigation:**
-  - TanStack Query caching reduces requests
-  - Debounce chat switches (500ms)
-  - Exponential backoff on 429 errors
-  - User-facing guidance during rate limit
+  - Debounce chat switches (200ms)
+  - User-friendly error messages on 429 errors
+  - Manual retry option (no automatic retries)
+  - Future: Add caching if rate limiting becomes an issue
 
 **Token Security:**
 - **Risk:** Token theft from storage
@@ -1138,10 +1169,14 @@ const AttachPersonModal = lazy(() => import('./components/AttachPersonModal'))
 - **TypeScript:** Type safety reduces bugs, better IDE support, scales well
 - **Vite:** Fast builds, modern dev experience, excellent HMR
 
-### Why TanStack Query?
-- Built-in caching, retries, and request deduplication
-- Reduces boilerplate for API state management
-- Perfect for auto-lookup on chat switch scenario
+### Why NOT TanStack Query?
+- **Decision:** Custom `usePipedrive()` hook is sufficient for MVP
+- **Rationale:**
+  - Simple use cases don't justify the added complexity
+  - No need for caching, background refetching, or optimistic updates in MVP
+  - Custom hook provides clean loading/error states with minimal code
+  - Reduces bundle size (~15KB saved)
+  - Can add TanStack Query later if caching becomes necessary
 
 ### Why shadcn/ui?
 - Customizable (copy-paste, not locked into npm package)

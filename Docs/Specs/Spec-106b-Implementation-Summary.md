@@ -514,7 +514,7 @@ if (person) {
 - Repeated lookups for the same phone number make duplicate requests
 - No offline support
 
-**Future:** Feature 7 (TanStack Query Integration) will add caching.
+**Decision:** Caching is not critical for MVP. The custom `usePipedrive()` hook provides sufficient state management without the added complexity of TanStack Query.
 
 ### 2. No Rate Limit Handling UI
 
@@ -579,16 +579,11 @@ if (person) {
 
 According to [Spec-106b Section 9](Spec-106b-Extension-Pipedrive-API-Integration.md#9-next-steps), the recommended next features are:
 
-### Feature 9: Person Auto-Lookup Flow (Recommended)
+### Feature 9: Person Auto-Lookup Flow (Recommended Next)
 - Trigger `lookupByPhone()` automatically when user switches to WhatsApp chat
 - Display matched Person card in sidebar
 - Show "no match" state with Create/Attach buttons
 - Integrate with existing chat detection (Spec-104)
-
-### Feature 7: TanStack Query Integration
-- Wrap `usePipedrive` operations in React Query hooks
-- Add caching, background refetching, optimistic updates
-- Better loading states and error retry logic
 
 ### Feature 10: Create Person Flow
 - Modal UI with name/email form

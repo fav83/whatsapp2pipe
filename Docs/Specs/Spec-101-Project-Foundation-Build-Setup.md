@@ -618,7 +618,7 @@ See [Docs/](Docs/) folder for:
 - **Build:** Vite 5.x
 - **Framework:** React 18 + TypeScript
 - **UI:** shadcn/ui + Tailwind CSS (to be added)
-- **State:** TanStack Query + React Context (to be added)
+- **State:** Custom React hooks + React Context
 - **Testing:** Vitest + Testing Library + Playwright
 
 ## License
