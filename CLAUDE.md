@@ -210,6 +210,18 @@ The sidebar adjusts the WhatsApp Web layout to prevent overlay:
     - 51 unit tests passing (Vitest + React Testing Library)
     - Manual testing verified (lookupByPhone working end-to-end)
     - Chrome manifest updated with localhost:7071 permission
+- ✅ Authentication UI State (Feature 8)
+  - Sign-in prompt UI with Pipedrive branding
+  - WelcomeState component for unauthenticated users
+  - AuthenticatingState component with loading spinner
+  - SignInButton component with error handling
+  - useAuth React hook managing authentication lifecycle
+  - Authenticated/unauthenticated state management in sidebar
+  - Sign-out functionality in header
+  - OAuth flow integration with chrome.identity API
+  - Error states with "Try again" functionality
+  - chrome.storage.sync for cross-tab authentication state
+  - Dev mode indicator showing backend URL
 
 **📋 Next Feature:**
 - Feature 9: Person Auto-Lookup Flow (UI implementation)

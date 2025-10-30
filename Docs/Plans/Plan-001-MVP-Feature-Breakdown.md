@@ -30,8 +30,8 @@ Create centralized API service with TypeScript interfaces for Person lookup by p
 ### Feature 7: ~~TanStack Query Integration~~ (❌ Skipped)
 **Decision:** Skipped for MVP. The custom `usePipedrive()` hook (Feature 6) already provides sufficient state management, loading states, and error handling. TanStack Query would add complexity and bundle size without meaningful benefits for the MVP use cases.
 
-### Feature 8: Authentication UI State
-Build sign-in prompt UI with Pipedrive branding, authenticated/unauthenticated states in sidebar, and sign-out functionality.
+### Feature 8: Authentication UI State (✅ Complete)
+Build sign-in prompt UI with Pipedrive branding, authenticated/unauthenticated states in sidebar, and sign-out functionality. Implemented with WelcomeState, AuthenticatingState, SignInButton components, useAuth hook, and full OAuth flow integration.
 
 ### Feature 9: Person Auto-Lookup Flow
 Implement automatic person lookup on chat switch, display matched Person card with details and "Open in Pipedrive" button, and show loading states during lookup.
