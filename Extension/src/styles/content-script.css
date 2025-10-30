@@ -17,6 +17,11 @@
     sans-serif;
   font-size: 14px;
   line-height: 1.5;
+  /* Explicitly enable text selection for accessibility */
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 /* Ensure box-sizing for all children */

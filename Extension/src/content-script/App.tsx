@@ -266,6 +266,18 @@ function SidebarContent({ state, setState }: SidebarContentProps) {
   }
 
   /**
+   * Handle person created callback
+   * Transitions to person-matched state
+   */
+  function handlePersonCreated(person: Person, phone: string) {
+    setState({
+      type: 'person-matched',
+      person,
+      phone,
+    })
+  }
+
+  /**
    * Construct Pipedrive URL
    * TODO: Get company domain from backend/auth session
    */
@@ -296,7 +308,13 @@ function SidebarContent({ state, setState }: SidebarContentProps) {
         />
       )
     case 'person-no-match':
-      return <PersonNoMatchState contactName={state.name} phone={state.phone} />
+      return (
+        <PersonNoMatchState
+          contactName={state.name}
+          phone={state.phone}
+          onPersonCreated={(person) => handlePersonCreated(person, state.phone)}
+        />
+      )
     case 'person-error':
       return (
         <PersonLookupError
