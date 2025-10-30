@@ -20,6 +20,17 @@ global.chrome = {
       set: vi.fn(() => Promise.resolve()),
       remove: vi.fn(() => Promise.resolve()),
     },
+    sync: {
+      get: vi.fn((keys, callback) => {
+        callback({ authState: 'authenticated' })
+      }),
+      set: vi.fn(() => Promise.resolve()),
+      remove: vi.fn(() => Promise.resolve()),
+      onChanged: {
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+      },
+    },
     onChanged: {
       addListener: vi.fn(),
       removeListener: vi.fn(),

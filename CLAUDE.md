@@ -37,6 +37,7 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 - [Spec-106a-Backend-Pipedrive-API-Service.md](Docs/Specs/Spec-106a-Backend-Pipedrive-API-Service.md) - Backend Pipedrive API Service (✅ Complete)
 - [Spec-106b-Extension-Pipedrive-API-Integration.md](Docs/Specs/Spec-106b-Extension-Pipedrive-API-Integration.md) - Extension Pipedrive API Integration (✅ Complete)
 - [Spec-106b-Implementation-Summary.md](Docs/Specs/Spec-106b-Implementation-Summary.md) - Complete implementation summary and testing results
+- [Spec-109-Person-Auto-Lookup-Flow.md](Docs/Specs/Spec-109-Person-Auto-Lookup-Flow.md) - Person auto-lookup flow with UI states (✅ Complete)
 
 ### External Documentation
 - [Pipedrive/](Docs/External/Pipedrive/) - Pipedrive API documentation and development resources
@@ -149,6 +150,30 @@ The sidebar adjusts the WhatsApp Web layout to prevent overlay:
 - Sidebar uses `position: fixed` on the right
 - Result: Sidebar and WhatsApp sit side-by-side without overlap
 
+### Tailwind CSS Setup
+
+The extension uses Tailwind CSS v3 for styling:
+
+**Configuration Files:**
+- `tailwind.config.js` - Tailwind configuration with content path scanning
+- `postcss.config.js` - PostCSS configuration for Tailwind and Autoprefixer
+- `src/styles/content-script.css` - Main CSS file with Tailwind directives
+
+**Key Points:**
+- Tailwind v3 used for better compatibility with Vite and content scanning
+- CSS file includes `@tailwind base`, `@tailwind components`, and `@tailwind utilities` directives
+- All utility classes are scoped within `#pipedrive-whatsapp-sidebar` container
+- No aggressive CSS reset (`all: revert` removed) to allow Tailwind classes to work
+- Content paths configured to scan all `.tsx` and `.ts` files in `src/`
+
+**Build Process:**
+- PostCSS processes Tailwind directives during Vite build
+- Utility classes are generated based on usage in components
+- Final CSS includes only used classes (tree-shaking)
+- Typical CSS bundle size: ~10-11 KB (minified, before gzip)
+
+**Important:** Avoid using `all: revert` or similar aggressive CSS resets as they will override Tailwind utility classes. Use targeted resets only when necessary.
+
 ## Current Implementation Status
 
 **✅ Completed Features:**
@@ -222,9 +247,21 @@ The sidebar adjusts the WhatsApp Web layout to prevent overlay:
   - Error states with "Try again" functionality
   - chrome.storage.sync for cross-tab authentication state
   - Dev mode indicator showing backend URL
+- ✅ Person Auto-Lookup Flow (Feature 9 - Spec-109)
+  - Automatic person lookup when switching to 1:1 chat
+  - PersonLookupLoading component with skeleton UI
+  - PersonMatchedCard component with "Open in Pipedrive" link
+  - PersonNoMatchState component with create/attach form UI (non-functional)
+  - PersonLookupError component with retry functionality
+  - Integrated with existing usePipedrive hook and authentication
+  - Tailwind CSS v3 setup for component styling
+  - WhatsApp-style design matching web interface
+  - 46 unit and integration tests passing
+  - All acceptance criteria met
 
 **📋 Next Feature:**
-- Feature 9: Person Auto-Lookup Flow (UI implementation)
+- Feature 10: Create Person functionality
+- Feature 11: Attach to Existing Person functionality
 
 ## Code Style Guidelines
 

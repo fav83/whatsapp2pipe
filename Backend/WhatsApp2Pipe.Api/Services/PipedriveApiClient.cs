@@ -9,7 +9,7 @@ using WhatsApp2Pipe.Api.Models;
 namespace WhatsApp2Pipe.Api.Services;
 
 /// <summary>
-/// Client for making authenticated requests to Pipedrive API
+/// Client for making authenticated requests to Pipedrive API with automatic token refresh
 /// </summary>
 public class PipedriveApiClient : IPipedriveApiClient
 {
@@ -17,22 +17,36 @@ public class PipedriveApiClient : IPipedriveApiClient
     private readonly PipedriveSettings config;
     private readonly ILogger<PipedriveApiClient> logger;
     private readonly PipedriveApiLogger apiLogger;
+    private readonly IOAuthService oauthService;
+    private readonly ITableStorageService tableStorageService;
 
     public PipedriveApiClient(
         HttpClient httpClient,
         PipedriveSettings config,
-        ILogger<PipedriveApiClient> logger)
+        ILogger<PipedriveApiClient> logger,
+        IOAuthService oauthService,
+        ITableStorageService tableStorageService)
     {
         this.httpClient = httpClient;
         this.config = config;
         this.logger = logger;
         this.apiLogger = new PipedriveApiLogger(logger);
+        this.oauthService = oauthService;
+        this.tableStorageService = tableStorageService;
     }
 
     /// <summary>
-    /// Search for persons by term and fields
+    /// Search for persons by term and fields (with automatic token refresh)
     /// </summary>
-    public async Task<PipedriveSearchResponse> SearchPersonsAsync(string accessToken, string term, string fields)
+    public async Task<PipedriveSearchResponse> SearchPersonsAsync(SessionEntity session, string term, string fields)
+    {
+        return await ExecuteWithRefreshAsync(
+            session,
+            (accessToken) => SearchPersonsInternalAsync(accessToken, term, fields),
+            "SearchPersons");
+    }
+
+    private async Task<PipedriveSearchResponse> SearchPersonsInternalAsync(string accessToken, string term, string fields)
     {
         var url = config.GetApiUrl($"/persons/search?term={Uri.EscapeDataString(term)}&fields={fields}");
         logger.LogInformation($"Searching persons: term={term}, fields={fields}");
@@ -68,9 +82,17 @@ public class PipedriveApiClient : IPipedriveApiClient
     }
 
     /// <summary>
-    /// Create a new person in Pipedrive
+    /// Create a new person in Pipedrive (with automatic token refresh)
     /// </summary>
-    public async Task<PipedrivePersonResponse> CreatePersonAsync(string accessToken, PipedriveCreatePersonRequest request)
+    public async Task<PipedrivePersonResponse> CreatePersonAsync(SessionEntity session, PipedriveCreatePersonRequest request)
+    {
+        return await ExecuteWithRefreshAsync(
+            session,
+            (accessToken) => CreatePersonInternalAsync(accessToken, request),
+            "CreatePerson");
+    }
+
+    private async Task<PipedrivePersonResponse> CreatePersonInternalAsync(string accessToken, PipedriveCreatePersonRequest request)
     {
         var url = config.GetApiUrl("/persons");
         logger.LogInformation($"Creating person: name={request.Name}");
@@ -113,9 +135,17 @@ public class PipedriveApiClient : IPipedriveApiClient
     }
 
     /// <summary>
-    /// Get an existing person by ID
+    /// Get an existing person by ID (with automatic token refresh)
     /// </summary>
-    public async Task<PipedrivePersonResponse> GetPersonAsync(string accessToken, int personId)
+    public async Task<PipedrivePersonResponse> GetPersonAsync(SessionEntity session, int personId)
+    {
+        return await ExecuteWithRefreshAsync(
+            session,
+            (accessToken) => GetPersonInternalAsync(accessToken, personId),
+            "GetPerson");
+    }
+
+    private async Task<PipedrivePersonResponse> GetPersonInternalAsync(string accessToken, int personId)
     {
         var url = config.GetApiUrl($"/persons/{personId}");
         logger.LogInformation($"Getting person: id={personId}");
@@ -156,9 +186,17 @@ public class PipedriveApiClient : IPipedriveApiClient
     }
 
     /// <summary>
-    /// Update an existing person
+    /// Update an existing person (with automatic token refresh)
     /// </summary>
-    public async Task<PipedrivePersonResponse> UpdatePersonAsync(string accessToken, int personId, PipedriveUpdatePersonRequest request)
+    public async Task<PipedrivePersonResponse> UpdatePersonAsync(SessionEntity session, int personId, PipedriveUpdatePersonRequest request)
+    {
+        return await ExecuteWithRefreshAsync(
+            session,
+            (accessToken) => UpdatePersonInternalAsync(accessToken, personId, request),
+            "UpdatePerson");
+    }
+
+    private async Task<PipedrivePersonResponse> UpdatePersonInternalAsync(string accessToken, int personId, PipedriveUpdatePersonRequest request)
     {
         var url = config.GetApiUrl($"/persons/{personId}");
         logger.LogInformation($"Updating person: id={personId}");
@@ -218,6 +256,74 @@ public class PipedriveApiClient : IPipedriveApiClient
         }
 
         throw new PipedriveApiException($"Pipedrive API error: {response.StatusCode}");
+    }
+
+    /// <summary>
+    /// Execute Pipedrive API call with automatic token refresh on 401 errors
+    /// </summary>
+    private async Task<T> ExecuteWithRefreshAsync<T>(
+        SessionEntity session,
+        Func<string, Task<T>> apiCall,
+        string operationName)
+    {
+        try
+        {
+            // First attempt with current access token
+            logger.LogDebug("[{Operation}] Executing API call with current token", operationName);
+            return await apiCall(session.AccessToken);
+        }
+        catch (PipedriveUnauthorizedException ex)
+        {
+            logger.LogWarning("[{Operation}] Access token invalid or expired (401), attempting refresh", operationName);
+
+            try
+            {
+                // Refresh the access token
+                logger.LogInformation("[{Operation}] Calling OAuth service to refresh token", operationName);
+                var tokenResponse = await oauthService.RefreshAccessTokenAsync(session.RefreshToken);
+                logger.LogInformation("[{Operation}] Token refresh successful, expires in {ExpiresIn} seconds",
+                    operationName, tokenResponse.ExpiresIn);
+
+                // Update session with new tokens
+                session.AccessToken = tokenResponse.AccessToken;
+                session.RefreshToken = tokenResponse.RefreshToken;
+                session.SessionExpiresAt = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn);
+
+                logger.LogInformation("[{Operation}] Updating session in table storage", operationName);
+                await tableStorageService.UpdateSessionAsync(session);
+                logger.LogInformation("[{Operation}] Session updated with new tokens", operationName);
+
+                // Retry API call with new access token
+                logger.LogInformation("[{Operation}] Retrying API call with refreshed token", operationName);
+                return await apiCall(session.AccessToken);
+            }
+            catch (HttpRequestException refreshEx) when (refreshEx.Message.Contains("401") || refreshEx.Message.Contains("403"))
+            {
+                // Refresh token is also expired (60 days)
+                logger.LogError(refreshEx, "[{Operation}] Refresh token expired - session_expired", operationName);
+
+                // Delete expired session
+                try
+                {
+                    await tableStorageService.DeleteSessionAsync(session.PartitionKey);
+                    logger.LogInformation("[{Operation}] Deleted expired session from table storage", operationName);
+                }
+                catch (Exception deleteEx)
+                {
+                    logger.LogWarning(deleteEx, "[{Operation}] Failed to delete expired session", operationName);
+                }
+
+                // Throw to trigger re-authentication
+                throw new PipedriveUnauthorizedException("Refresh token expired - session_expired");
+            }
+            catch (Exception refreshEx)
+            {
+                logger.LogError(refreshEx, "[{Operation}] Token refresh failed: {Message}",
+                    operationName, refreshEx.Message);
+                // Re-throw original 401 exception if refresh fails for other reasons
+                throw ex;
+            }
+        }
     }
 }
 

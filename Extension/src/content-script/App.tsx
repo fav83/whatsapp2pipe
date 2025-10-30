@@ -10,15 +10,20 @@
  * - WhatsApp chat detection via 200ms polling
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from './hooks/useAuth'
+import { usePipedrive } from './hooks/usePipedrive'
 import { WelcomeState } from './components/WelcomeState'
 import { AuthenticatingState } from './components/AuthenticatingState'
-import { ContactInfoCard } from './components/ContactInfoCard'
 import { ContactWarningCard } from './components/ContactWarningCard'
 import { GroupChatState } from './components/GroupChatState'
 import { DevModeIndicator } from './components/DevModeIndicator'
+import { PersonLookupLoading } from './components/PersonLookupLoading'
+import { PersonMatchedCard } from './components/PersonMatchedCard'
+import { PersonNoMatchState } from './components/PersonNoMatchState'
+import { PersonLookupError } from './components/PersonLookupError'
 import { exposePipedriveTestHelpers } from './testPipedriveApi'
+import type { Person } from '../types/person'
 
 interface ChatStatus {
   phone: string | null
@@ -31,15 +36,21 @@ interface ChatStatus {
 /**
  * Discriminated union type for sidebar UI states
  *
- * Note: No loading or error states needed. The 200ms polling provides
- * near-instant updates (0-200ms latency), and errors are handled gracefully
- * by the next poll iteration.
+ * Includes person lookup states for Feature 9:
+ * - person-loading: Lookup in progress
+ * - person-matched: Person found in Pipedrive
+ * - person-no-match: No person found
+ * - person-error: Lookup failed
  */
 type SidebarState =
   | { type: 'welcome' }
   | { type: 'contact'; name: string; phone: string }
   | { type: 'contact-warning'; name: string; warning: string }
   | { type: 'group-chat' }
+  | { type: 'person-loading'; name: string; phone: string }
+  | { type: 'person-matched'; person: Person; phone: string }
+  | { type: 'person-no-match'; name: string; phone: string }
+  | { type: 'person-error'; name: string; phone: string; error: string }
 
 /**
  * Main App Component
@@ -122,7 +133,7 @@ export default function App() {
         {authState === 'error' && <WelcomeState onSignIn={signIn} error={error} />}
 
         {/* Authenticated: Show chat-based content */}
-        {authState === 'authenticated' && <SidebarContent state={state} />}
+        {authState === 'authenticated' && <SidebarContent state={state} setState={setState} />}
       </main>
     </div>
   )
@@ -174,20 +185,124 @@ function handleChatStatusChange(
  * SidebarContent Component
  *
  * Renders appropriate content based on current state.
+ * Triggers person lookup when contact state is entered.
  */
 interface SidebarContentProps {
   state: SidebarState
+  setState: React.Dispatch<React.SetStateAction<SidebarState>>
 }
 
-function SidebarContent({ state }: SidebarContentProps) {
+function SidebarContent({ state, setState }: SidebarContentProps) {
+  const { lookupByPhone, error } = usePipedrive()
+
+  /**
+   * Handle person lookup by phone
+   */
+  const handlePersonLookup = useCallback(
+    async (phone: string, name: string) => {
+      try {
+        const person = await lookupByPhone(phone)
+
+        if (error) {
+          setState({
+            type: 'person-error',
+            name,
+            phone,
+            error: error.message,
+          })
+        } else if (person) {
+          setState({
+            type: 'person-matched',
+            person,
+            phone,
+          })
+        } else {
+          setState({
+            type: 'person-no-match',
+            name,
+            phone,
+          })
+        }
+      } catch (err) {
+        setState({
+          type: 'person-error',
+          name,
+          phone,
+          error: err instanceof Error ? err.message : 'Lookup failed',
+        })
+      }
+    },
+    [lookupByPhone, error, setState]
+  )
+
+  // Trigger person lookup when contact state is entered
+  useEffect(() => {
+    if (state.type === 'contact') {
+      const contactPhone = state.phone
+      const contactName = state.name
+
+      // Immediately show loading state
+      setState({
+        type: 'person-loading',
+        name: contactName,
+        phone: contactPhone,
+      })
+
+      // Trigger lookup
+      handlePersonLookup(contactPhone, contactName)
+    }
+  }, [state.type, state.type === 'contact' ? state.phone : null, handlePersonLookup, setState])
+
+  /**
+   * Handle retry button click
+   */
+  function handleRetry(phone: string, name: string) {
+    setState({
+      type: 'person-loading',
+      name,
+      phone,
+    })
+    handlePersonLookup(phone, name)
+  }
+
+  /**
+   * Construct Pipedrive URL
+   * TODO: Get company domain from backend/auth session
+   */
+  function getPipedriveUrl(personId: number): string {
+    // For now, use a placeholder domain
+    // This should be replaced with actual domain from auth session
+    return `https://app.pipedrive.com/person/${personId}`
+  }
+
   switch (state.type) {
     case 'welcome':
       return <WelcomeState />
     case 'contact':
-      return <ContactInfoCard name={state.name} phone={state.phone} />
+      // This state should immediately transition to person-loading via useEffect
+      return null
     case 'contact-warning':
       return <ContactWarningCard name={state.name} warning={state.warning} />
     case 'group-chat':
       return <GroupChatState />
+    case 'person-loading':
+      return <PersonLookupLoading contactName={state.name} phone={state.phone} />
+    case 'person-matched':
+      return (
+        <PersonMatchedCard
+          name={state.person.name}
+          phone={state.phone}
+          pipedriveUrl={getPipedriveUrl(state.person.id)}
+        />
+      )
+    case 'person-no-match':
+      return <PersonNoMatchState contactName={state.name} phone={state.phone} />
+    case 'person-error':
+      return (
+        <PersonLookupError
+          errorMessage={state.error}
+          onRetry={() => handleRetry(state.phone, state.name)}
+        />
+      )
   }
 }

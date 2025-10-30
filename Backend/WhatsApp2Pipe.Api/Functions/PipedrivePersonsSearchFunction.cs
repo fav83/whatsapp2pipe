@@ -14,6 +14,12 @@ public class PipedrivePersonsSearchFunction
     private readonly IPipedriveApiClient pipedriveApiClient;
     private readonly PersonTransformService transformService;
 
+    // Cached JSON serializer options for camelCase output
+    private static readonly System.Text.Json.JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+    };
+
     public PipedrivePersonsSearchFunction(
         ILogger<PipedrivePersonsSearchFunction> logger,
         ITableStorageService tableStorageService,
@@ -99,9 +105,9 @@ public class PipedrivePersonsSearchFunction
 
             logger.LogInformation("[PipedrivePersonsSearch] Step 3 PASSED: Query parameters validated");
 
-            // Call Pipedrive API
+            // Call Pipedrive API (automatic token refresh handled internally)
             logger.LogInformation("[PipedrivePersonsSearch] Step 4: Calling Pipedrive API - term: {Term}, fields: {Fields}, AccessToken length: {TokenLength}", term, fields, session.AccessToken.Length);
-            var pipedriveResponse = await pipedriveApiClient.SearchPersonsAsync(session.AccessToken, term, fields);
+            var pipedriveResponse = await pipedriveApiClient.SearchPersonsAsync(session, term, fields);
             logger.LogInformation("[PipedrivePersonsSearch] Step 4 COMPLETED: Pipedrive API call finished");
 
             // Transform response to minimal format
@@ -129,17 +135,21 @@ public class PipedrivePersonsSearchFunction
             var personCount = persons.Count;
             logger.LogInformation("[PipedrivePersonsSearch] Step 5 COMPLETED: Transformed {Count} persons", personCount);
 
-            // Return transformed persons array
+            // Return transformed persons array with camelCase JSON
             logger.LogInformation("[PipedrivePersonsSearch] Step 6: Returning response with {Count} persons", personCount);
             var response = req.CreateResponse(HttpStatusCode.OK);
-            await response.WriteAsJsonAsync(persons);
+            response.Headers.Add("Content-Type", "application/json");
+            var json = System.Text.Json.JsonSerializer.Serialize(persons, JsonOptions);
+            await response.WriteStringAsync(json);
             logger.LogInformation("[PipedrivePersonsSearch] SUCCESS: Request completed successfully");
             return response;
         }
         catch (PipedriveUnauthorizedException ex)
         {
-            logger.LogWarning(ex, "[PipedrivePersonsSearch] EXCEPTION: Pipedrive access token is invalid or expired");
-            return req.CreateResponse(HttpStatusCode.Unauthorized);
+            logger.LogWarning(ex, "[PipedrivePersonsSearch] EXCEPTION: Token refresh failed - session_expired");
+            var response = req.CreateResponse(HttpStatusCode.Unauthorized);
+            await response.WriteAsJsonAsync(new { error = "session_expired", message = "Refresh token expired, please sign in again" });
+            return response;
         }
         catch (PipedriveRateLimitException ex)
         {

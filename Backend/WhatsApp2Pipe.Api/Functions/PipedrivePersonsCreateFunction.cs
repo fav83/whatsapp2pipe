@@ -15,6 +15,12 @@ public class PipedrivePersonsCreateFunction
     private readonly IPipedriveApiClient pipedriveApiClient;
     private readonly PersonTransformService transformService;
 
+    // Cached JSON serializer options for camelCase output
+    private static readonly System.Text.Json.JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+    };
+
     public PipedrivePersonsCreateFunction(
         ILogger<PipedrivePersonsCreateFunction> logger,
         ITableStorageService tableStorageService,
@@ -143,9 +149,9 @@ public class PipedrivePersonsCreateFunction
                 };
             }
 
-            // Call Pipedrive API
+            // Call Pipedrive API (automatic token refresh handled internally)
             logger.LogInformation($"Creating person in Pipedrive: name={createRequest.Name}, phone={createRequest.Phone}");
-            var pipedriveResponse = await pipedriveApiClient.CreatePersonAsync(session.AccessToken, pipedriveRequest);
+            var pipedriveResponse = await pipedriveApiClient.CreatePersonAsync(session, pipedriveRequest);
 
             if (pipedriveResponse.Data == null)
             {
@@ -158,15 +164,19 @@ public class PipedrivePersonsCreateFunction
 
             logger.LogInformation($"Person created successfully: id={person.Id}");
 
-            // Return 201 Created with person data
+            // Return 201 Created with person data (camelCase JSON)
             var response = req.CreateResponse(HttpStatusCode.Created);
-            await response.WriteAsJsonAsync(person);
+            response.Headers.Add("Content-Type", "application/json");
+            var json = System.Text.Json.JsonSerializer.Serialize(person, JsonOptions);
+            await response.WriteStringAsync(json);
             return response;
         }
-        catch (PipedriveUnauthorizedException)
+        catch (PipedriveUnauthorizedException ex)
         {
-            logger.LogWarning("Pipedrive access token is invalid or expired");
-            return req.CreateResponse(HttpStatusCode.Unauthorized);
+            logger.LogWarning(ex, "Token refresh failed - session_expired");
+            var response = req.CreateResponse(HttpStatusCode.Unauthorized);
+            await response.WriteAsJsonAsync(new { error = "session_expired", message = "Refresh token expired, please sign in again" });
+            return response;
         }
         catch (PipedriveRateLimitException)
         {
