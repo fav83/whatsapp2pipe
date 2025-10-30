@@ -15,6 +15,12 @@ public class PipedrivePersonsAttachPhoneFunction
     private readonly IPipedriveApiClient pipedriveApiClient;
     private readonly PersonTransformService transformService;
 
+    // Cached JSON serializer options for camelCase output
+    private static readonly System.Text.Json.JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+    };
+
     public PipedrivePersonsAttachPhoneFunction(
         ILogger<PipedrivePersonsAttachPhoneFunction> logger,
         ITableStorageService tableStorageService,
@@ -116,9 +122,9 @@ public class PipedrivePersonsAttachPhoneFunction
                 return badRequestResponse;
             }
 
-            // Fetch existing person from Pipedrive
+            // Fetch existing person from Pipedrive (automatic token refresh handled internally)
             logger.LogInformation($"Fetching existing person: id={personIdInt}");
-            var existingPersonResponse = await pipedriveApiClient.GetPersonAsync(session.AccessToken, personIdInt);
+            var existingPersonResponse = await pipedriveApiClient.GetPersonAsync(session, personIdInt);
 
             if (existingPersonResponse.Data == null)
             {
@@ -135,7 +141,9 @@ public class PipedrivePersonsAttachPhoneFunction
                 logger.LogInformation($"Phone {attachRequest.Phone} already exists for person {personIdInt}, returning as-is");
                 var person = transformService.TransformPerson(existingPerson);
                 var duplicateResponse = req.CreateResponse(HttpStatusCode.OK);
-                await duplicateResponse.WriteAsJsonAsync(person);
+                duplicateResponse.Headers.Add("Content-Type", "application/json");
+                var duplicateJson = System.Text.Json.JsonSerializer.Serialize(person, JsonOptions);
+                await duplicateResponse.WriteStringAsync(duplicateJson);
                 return duplicateResponse;
             }
 
@@ -154,14 +162,14 @@ public class PipedrivePersonsAttachPhoneFunction
                 Primary = false  // BRD requirement: NOT primary
             });
 
-            // Update person in Pipedrive
+            // Update person in Pipedrive (automatic token refresh handled internally)
             logger.LogInformation($"Updating person {personIdInt} with new phone {attachRequest.Phone}");
             var updateRequest = new PipedriveUpdatePersonRequest
             {
                 Phone = updatedPhones
             };
 
-            var updatedPersonResponse = await pipedriveApiClient.UpdatePersonAsync(session.AccessToken, personIdInt, updateRequest);
+            var updatedPersonResponse = await pipedriveApiClient.UpdatePersonAsync(session, personIdInt, updateRequest);
 
             if (updatedPersonResponse.Data == null)
             {
@@ -174,9 +182,11 @@ public class PipedrivePersonsAttachPhoneFunction
 
             logger.LogInformation($"Phone attached successfully to person {personIdInt}");
 
-            // Return 200 OK with updated person data
+            // Return 200 OK with updated person data (camelCase JSON)
             var response = req.CreateResponse(HttpStatusCode.OK);
-            await response.WriteAsJsonAsync(updatedPerson);
+            response.Headers.Add("Content-Type", "application/json");
+            var json = System.Text.Json.JsonSerializer.Serialize(updatedPerson, JsonOptions);
+            await response.WriteStringAsync(json);
             return response;
         }
         catch (PipedriveNotFoundException ex)
@@ -184,10 +194,12 @@ public class PipedrivePersonsAttachPhoneFunction
             logger.LogWarning($"Person not found: {ex.Message}");
             return req.CreateResponse(HttpStatusCode.NotFound);
         }
-        catch (PipedriveUnauthorizedException)
+        catch (PipedriveUnauthorizedException ex)
         {
-            logger.LogWarning("Pipedrive access token is invalid or expired");
-            return req.CreateResponse(HttpStatusCode.Unauthorized);
+            logger.LogWarning(ex, "Token refresh failed - session_expired");
+            var response = req.CreateResponse(HttpStatusCode.Unauthorized);
+            await response.WriteAsJsonAsync(new { error = "session_expired", message = "Refresh token expired, please sign in again" });
+            return response;
         }
         catch (PipedriveRateLimitException)
         {

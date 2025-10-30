@@ -387,25 +387,52 @@ sendResponse({
 
 ### 6.1 Component Library & Styling
 
-**shadcn/ui + Tailwind CSS:**
-- Copy-paste component library (not npm package)
-- Components live in `src/components/ui/`
-- Built on Radix UI primitives (accessibility, keyboard nav)
-- Customizable via Tailwind config
-- Supports dark mode (can match WhatsApp theme if desired)
+**Tailwind CSS v3:**
+- Utility-first CSS framework for rapid UI development
+- Configured with PostCSS for build-time processing
+- Custom components built with Tailwind utility classes
+- No component library dependency (custom implementations)
 
-**Key Components for MVP:**
-- `Button`, `Input`, `Label` - Form controls
-- `Card` - Person card display
-- `Dialog` - Create/Attach modals
-- `Command` - Person search with keyboard navigation
-- `Alert` - Error states, notifications
-- `Skeleton` - Loading states
+**Configuration Files:**
+- `tailwind.config.js` - Tailwind configuration with content scanning
+- `postcss.config.js` - PostCSS pipeline (Tailwind + Autoprefixer)
+- `src/styles/content-script.css` - Main stylesheet with Tailwind directives
 
-**Tailwind Configuration:**
-- Custom colors matching Pipedrive brand
-- WhatsApp-compatible neutrals for sidebar
-- Responsive utilities (sidebar adapts to screen size)
+**Content Scanning:**
+```javascript
+// tailwind.config.js
+content: [
+  "./index.html",
+  "./src/**/*.{js,ts,jsx,tsx}",
+]
+```
+
+**Build Integration:**
+- Vite processes CSS through PostCSS during build
+- Tailwind scans all `.tsx` and `.ts` files for utility class usage
+- Only used utility classes are included in final CSS bundle
+- Tree-shaking reduces bundle size (~10-11 KB typical)
+
+**Styling Approach:**
+- All components use Tailwind utility classes
+- WhatsApp Web color palette for consistency:
+  - Primary text: `#111b21`
+  - Secondary text: `#667781`
+  - Borders: `#d1d7db`
+  - Backgrounds: `#f0f2f5`, white
+  - Accent (green): `#00a884`
+- Responsive utilities ensure 350px sidebar width compatibility
+- No aggressive CSS resets (avoids overriding utility classes)
+
+**Key Components Implemented:**
+- `PersonLookupLoading` - Skeleton loading UI
+- `PersonMatchedCard` - Person display with Pipedrive link
+- `PersonNoMatchState` - Create/attach form layout
+- `PersonLookupError` - Error display with retry
+- `ContactWarningCard` - Invalid phone warning
+- `GroupChatState` - Group chat indicator
+- `WelcomeState` - Unauthenticated welcome screen
+- `AuthenticatingState` - OAuth flow loading
 
 ### 6.2 Sidebar Injection Strategy
 
@@ -728,7 +755,98 @@ async function b(){...} // Content script function - NO COLLISION
 - Works in Chrome content script context
 - Popup and service-worker still use normal code-splitting
 
-### 8.2 Development Environment
+### 8.2 CSS in Content Scripts
+
+**Tailwind CSS Integration:**
+
+Content scripts require special CSS handling to avoid conflicts with host page styles (WhatsApp Web). The extension uses Tailwind CSS v3 with PostCSS for utility-first styling.
+
+**Configuration:**
+```javascript
+// tailwind.config.js
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+
+// postcss.config.js
+export default {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+```
+
+**CSS File Structure:**
+```css
+/* Extension/src/styles/content-script.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Sidebar container base styles */
+#pipedrive-whatsapp-sidebar {
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, ...;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Ensure box-sizing for all children */
+#pipedrive-whatsapp-sidebar * {
+  box-sizing: border-box;
+}
+```
+
+**Critical: Avoid Aggressive CSS Resets**
+
+**Problem:** Using `all: revert` or `all: unset` CSS resets will override all Tailwind utility classes, breaking component styling:
+
+```css
+/* ❌ BROKEN - Overrides all Tailwind utilities */
+#pipedrive-whatsapp-sidebar * {
+  all: revert;
+  box-sizing: border-box;
+}
+```
+
+When this reset is applied, utility classes like `text-sm`, `bg-white`, `rounded-lg`, etc., have no effect because `all: revert` resets ALL CSS properties, including those set by utility classes.
+
+**Solution:** Use targeted resets only for necessary properties:
+
+```css
+/* ✅ WORKS - Minimal targeted reset */
+#pipedrive-whatsapp-sidebar {
+  box-sizing: border-box;
+  font-family: system-ui, ...;
+}
+
+#pipedrive-whatsapp-sidebar * {
+  box-sizing: border-box;  /* Only reset box-sizing */
+}
+```
+
+**Build Process:**
+1. Vite triggers PostCSS during CSS processing
+2. Tailwind scans all `.tsx`/`.ts` files for utility class usage
+3. Only used utility classes are included in output CSS
+4. Final CSS bundle: ~10-11 KB (minified, before gzip)
+5. CSS injected into content script via Vite's CSS import handling
+
+**Best Practices:**
+- Scope all custom styles to `#pipedrive-whatsapp-sidebar` selector
+- Use Tailwind utilities instead of custom CSS when possible
+- Avoid global style resets that affect utility classes
+- Test CSS changes in production build (some issues only appear after minification)
+
+### 8.3 Development Environment
 
 **Local Development:**
 - Navigate to `Extension/` directory: `cd Extension`
@@ -772,7 +890,7 @@ VITE_SHOW_DEV_INDICATOR=false
 VITE_BACKEND_URL=https://your-backend-url.azurewebsites.net
 ```
 
-### 8.3 Code Quality Workflow
+### 8.4 Code Quality Workflow
 
 **Pre-commit Hooks (Husky + lint-staged):**
 ```json
