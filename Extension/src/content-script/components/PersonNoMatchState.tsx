@@ -30,8 +30,9 @@ export function isValidName(name: string): boolean {
     return false
   }
 
-  // Only letters, spaces, hyphens, and apostrophes
-  const validPattern = /^[a-zA-Z\s'-]+$/
+  // Only Unicode letters, spaces, hyphens, and apostrophes
+  // Supports international characters (João, Łukasz, Мария, etc.)
+  const validPattern = /^[\p{L}\s'-]+$/u
   return validPattern.test(trimmed)
 }
 

@@ -170,6 +170,26 @@ describe('Person Lookup Components', () => {
       expect(isValidName('John DOE')).toBe(true)
       expect(isValidName('mcdonald')).toBe(true)
     })
+
+    it('returns true for names with diacritics (Latin)', () => {
+      expect(isValidName('João')).toBe(true)
+      expect(isValidName('José García')).toBe(true)
+      expect(isValidName('François')).toBe(true)
+      expect(isValidName('Björn')).toBe(true)
+    })
+
+    it('returns true for names with non-Latin scripts', () => {
+      expect(isValidName('Łukasz')).toBe(true)
+      expect(isValidName('Мария')).toBe(true)
+      expect(isValidName('李明')).toBe(true)
+      expect(isValidName('محمد')).toBe(true)
+    })
+
+    it('returns true for mixed scripts and characters', () => {
+      expect(isValidName("María O'Connor")).toBe(true)
+      expect(isValidName('Jean-François')).toBe(true)
+      expect(isValidName('Łukasz Kowalski')).toBe(true)
+    })
   })
 
   describe('PersonNoMatchState', () => {
