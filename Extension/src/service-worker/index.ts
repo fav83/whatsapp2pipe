@@ -135,7 +135,9 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
     return true
   }
 
-  sendResponse({ type: 'UNKNOWN_MESSAGE', received: message.type })
+  // If all known message types are handled above, TypeScript narrows `message` to `never` here.
+  // Avoid accessing `message.type` to keep this branch type-safe.
+  sendResponse({ type: 'UNKNOWN_MESSAGE' })
   return true
 })
 
