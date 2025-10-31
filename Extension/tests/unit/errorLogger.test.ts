@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { logError } from '../../src/utils/errorLogger'
+import { logError, getErrorMessage } from '../../src/utils/errorLogger'
 
 describe('errorLogger', () => {
   beforeEach(() => {
@@ -165,5 +165,73 @@ describe('errorLogger', () => {
     expect(logMessage).toContain('Cannot find element')
 
     consoleErrorSpy.mockRestore()
+  })
+})
+
+describe('getErrorMessage', () => {
+  it('extracts message from Error instance', () => {
+    const error = new Error('Test error message')
+    const result = getErrorMessage(error, 'Fallback message')
+    expect(result).toBe('Test error message')
+  })
+
+  it('extracts message from structured error object with message property', () => {
+    const error = { statusCode: 401, message: 'Authentication expired' }
+    const result = getErrorMessage(error, 'Fallback message')
+    expect(result).toBe('Authentication expired')
+  })
+
+  it('converts non-string message property to string', () => {
+    const error = { statusCode: 500, message: 12345 }
+    const result = getErrorMessage(error, 'Fallback message')
+    expect(result).toBe('12345')
+  })
+
+  it('returns fallback for string errors', () => {
+    const error = 'Some string error'
+    const result = getErrorMessage(error, 'Fallback message')
+    expect(result).toBe('Fallback message')
+  })
+
+  it('returns fallback for number errors', () => {
+    const error = 404
+    const result = getErrorMessage(error, 'Fallback message')
+    expect(result).toBe('Fallback message')
+  })
+
+  it('returns fallback for null', () => {
+    const error = null
+    const result = getErrorMessage(error, 'Fallback message')
+    expect(result).toBe('Fallback message')
+  })
+
+  it('returns fallback for undefined', () => {
+    const error = undefined
+    const result = getErrorMessage(error, 'Fallback message')
+    expect(result).toBe('Fallback message')
+  })
+
+  it('returns fallback for object without message property', () => {
+    const error = { statusCode: 500, error: 'Server error' }
+    const result = getErrorMessage(error, 'Fallback message')
+    expect(result).toBe('Fallback message')
+  })
+
+  it('handles network error structure (statusCode: 0)', () => {
+    const error = { statusCode: 0, message: 'Unable to connect. Check your internet connection.' }
+    const result = getErrorMessage(error, 'Network error')
+    expect(result).toBe('Unable to connect. Check your internet connection.')
+  })
+
+  it('handles 401 authentication error structure', () => {
+    const error = { statusCode: 401, message: 'Authentication expired. Please sign in again.' }
+    const result = getErrorMessage(error, 'Auth error')
+    expect(result).toBe('Authentication expired. Please sign in again.')
+  })
+
+  it('handles 429 rate limit error structure', () => {
+    const error = { statusCode: 429, message: 'Too many requests. Please try again later.' }
+    const result = getErrorMessage(error, 'Rate limit error')
+    expect(result).toBe('Too many requests. Please try again later.')
   })
 })

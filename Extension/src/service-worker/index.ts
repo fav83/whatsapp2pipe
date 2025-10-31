@@ -3,7 +3,7 @@
 
 import { serviceWorkerAuthService } from './authService'
 import { pipedriveApiService } from './pipedriveApiService'
-import { logError } from '../utils/errorLogger'
+import { logError, getErrorMessage } from '../utils/errorLogger'
 import type {
   ExtensionMessage,
   AuthSignInSuccess,
@@ -156,7 +156,7 @@ async function handlePipedriveLookup(
       person,
     })
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Lookup failed'
+    const errorMessage = getErrorMessage(error, 'Lookup failed')
     const statusCode =
       typeof error === 'object' && error !== null && 'statusCode' in error
         ? (error.statusCode as number)
@@ -186,7 +186,7 @@ async function handlePipedriveSearch(
       persons,
     })
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Search failed'
+    const errorMessage = getErrorMessage(error, 'Search failed')
     const statusCode =
       typeof error === 'object' && error !== null && 'statusCode' in error
         ? (error.statusCode as number)
@@ -216,7 +216,7 @@ async function handlePipedriveCreate(
       person,
     })
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to create person'
+    const errorMessage = getErrorMessage(error, 'Failed to create person')
     const statusCode =
       typeof error === 'object' && error !== null && 'statusCode' in error
         ? (error.statusCode as number)
@@ -246,7 +246,7 @@ async function handlePipedriveAttach(
       person,
     })
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to attach phone'
+    const errorMessage = getErrorMessage(error, 'Failed to attach phone')
     const statusCode =
       typeof error === 'object' && error !== null && 'statusCode' in error
         ? (error.statusCode as number)

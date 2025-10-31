@@ -75,6 +75,14 @@ class PipedriveApiService {
         throw error
       }
 
+      // If error is "Not authenticated" from getVerificationCode(), treat as 401
+      if (error instanceof Error && error.message === 'Not authenticated') {
+        throw {
+          statusCode: 401,
+          message: 'Not authenticated',
+        }
+      }
+
       // Otherwise, this is a network error (fetch threw before getting response)
       throw {
         statusCode: 0,

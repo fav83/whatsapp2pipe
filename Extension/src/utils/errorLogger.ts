@@ -24,3 +24,21 @@ export function logError(context: string, error: unknown, additionalContext?: Er
     additionalContext || {}
   )
 }
+
+/**
+ * Extract error message from unknown error type
+ * Handles Error instances, structured errors with message property, and unknown errors
+ *
+ * @param error - The error to extract message from
+ * @param fallback - Fallback message if error message cannot be extracted
+ * @returns The extracted or fallback error message
+ */
+export function getErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error) {
+    return error.message
+  }
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    return String(error.message)
+  }
+  return fallback
+}
