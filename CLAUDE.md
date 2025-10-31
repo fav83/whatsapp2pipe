@@ -271,9 +271,18 @@ The extension uses Tailwind CSS v3 for styling:
   - Text selection enabled for accessibility
   - 32+ new unit tests for validation and form interactions
   - All acceptance criteria met (Spec-110)
+- ✅ Attach Number to Existing Person Flow (Feature 11 - Spec-111)
+  - Inline person search by name with selection UI
+  - Attach phone as "WhatsApp" label (not primary)
+  - Transition to matched state on success
+  - All acceptance criteria met (Spec-111)
+
+**❌ Skipped Features:**
+- ❌ Feature 7: TanStack Query Integration - Custom `usePipedrive()` hook provides sufficient state management for MVP
+- ❌ Feature 13: shadcn/ui Component Library - Custom React components with Tailwind CSS are sufficient; shadcn/ui would add 30-50 KB bundle size for minimal benefit
 
 **📋 Next Feature:**
-- Feature 11: Attach to Existing Person functionality
+- Feature 12: UI States & Error Handling
 
 ## Code Style Guidelines
 

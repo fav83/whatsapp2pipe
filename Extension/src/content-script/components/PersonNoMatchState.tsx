@@ -23,7 +23,7 @@ interface PersonNoMatchStateProps {
  * Validate person name
  * Returns true if name is valid, false otherwise
  */
-function isValidName(name: string): boolean {
+export function isValidName(name: string): boolean {
   const trimmed = name.trim()
 
   // Must be at least 2 characters

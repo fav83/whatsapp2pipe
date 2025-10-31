@@ -25,7 +25,7 @@ This Chrome extension integrates WhatsApp Web with Pipedrive CRM, enabling users
 **Frontend Framework:**
 - **UI Framework:** React 18.x
 - **Language:** TypeScript
-- **UI Components:** shadcn/ui (Tailwind CSS + Radix UI)
+- **UI Components:** Custom React components with Tailwind CSS utility classes
 - **Styling:** Tailwind CSS 3.x
 
 **State & Data Management:**
@@ -88,11 +88,11 @@ whatsapp2pipe/
 │   │   ├── popup/              # Extension popup (optional)
 │   │   │   └── index.tsx
 │   │   ├── components/         # Shared React components
-│   │   │   ├── ui/             # shadcn/ui components
 │   │   │   ├── PersonMatchedCard.tsx
 │   │   │   ├── PersonNoMatchState.tsx
 │   │   │   ├── PersonLookupLoading.tsx
-│   │   │   └── PersonLookupError.tsx
+│   │   │   ├── PersonLookupError.tsx
+│   │   │   └── Spinner.tsx
 │   │   ├── hooks/              # Custom React hooks
 │   │   │   ├── useAuth.ts      # OAuth authentication hook
 │   │   │   ├── usePipedrive.ts # Pipedrive API operations hook
@@ -1091,7 +1091,7 @@ Sentry.init({
 - Tailwind CSS purging (only include used classes)
 - Code splitting (lazy load modals, non-critical components)
 - Minimize dependencies (evaluate each package size)
-- shadcn/ui components (only copy what's needed, not full library)
+- Custom components with Tailwind CSS (no heavy UI library dependencies)
 
 **Lazy Loading:**
 ```typescript
@@ -1296,11 +1296,15 @@ const PersonLookupError = lazy(() => import('./components/PersonLookupError'))
   - Reduces bundle size (~15KB saved)
   - Can add TanStack Query later if caching becomes necessary
 
-### Why shadcn/ui?
-- Customizable (copy-paste, not locked into npm package)
-- Built on Radix UI (accessibility built-in)
-- Tailwind-based (consistent with modern stack)
-- Lightweight (only include what's needed)
+### Why NOT shadcn/ui?
+- **Decision:** Custom React components with Tailwind CSS utility classes are sufficient for MVP
+- **Rationale:**
+  - Simple UI requirements (buttons, inputs, cards, forms) don't justify the added bundle size
+  - shadcn/ui + Radix UI primitives would add 30-50 KB (doubling/tripling extension size)
+  - No complex interactive components needed (modals, command palettes, dropdowns)
+  - All required components (Features 8-11) built and tested without shadcn/ui
+  - Tailwind utilities provide sufficient styling flexibility
+  - Can add shadcn/ui post-MVP if complex components become necessary
 
 ### Why Sentry?
 - Industry standard for error tracking

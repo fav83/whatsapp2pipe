@@ -191,8 +191,7 @@ whatsapp2pipe/
 │   │   ├── content-script/
 │   │   ├── service-worker/
 │   │   ├── popup/
-│   │   ├── components/
-│   │   │   └── ui/             # shadcn/ui components (future)
+│   │   ├── components/         # Custom React components
 │   │   ├── hooks/
 │   │   ├── contexts/
 │   │   ├── services/
@@ -617,7 +616,7 @@ See [Docs/](Docs/) folder for:
 - **Runtime:** Chrome Extension Manifest V3
 - **Build:** Vite 5.x
 - **Framework:** React 18 + TypeScript
-- **UI:** shadcn/ui + Tailwind CSS (to be added)
+- **UI:** Custom React components with Tailwind CSS utility classes
 - **State:** Custom React hooks + React Context
 - **Testing:** Vitest + Testing Library + Playwright
 

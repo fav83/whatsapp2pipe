@@ -1318,7 +1318,7 @@ The following are explicitly **NOT** part of Spec-106b:
 - ❌ UI Components - PersonCard, CreatePersonModal, SearchPersonList (Features 9-11)
 - ❌ Auto-lookup on chat switch - Triggering lookup automatically (Feature 9)
 - ❌ Form validation - Email format, name validation (Features 10-11)
-- ❌ Caching strategy - In-memory or time-based caching (Feature 17)
+- ❌ Caching strategy - In-memory or time-based caching (Post-MVP)
 - ❌ Rate limit handling UI - User-facing rate limit messages (Feature 12)
 - ❌ Sentry error tracking - Error reporting integration (Feature 14)
 
