@@ -17,6 +17,10 @@ interface PipedriveError {
 export function usePipedrive() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<PipedriveError | null>(null)
+  const [isSearching, setIsSearching] = useState(false)
+  const [isAttaching, setIsAttaching] = useState(false)
+  const [searchError, setSearchError] = useState<PipedriveError | null>(null)
+  const [attachError, setAttachError] = useState<PipedriveError | null>(null)
 
   /**
    * Sends message to service worker and waits for response
@@ -67,8 +71,8 @@ export function usePipedrive() {
    * Returns array of matching persons (empty if none found)
    */
   const searchByName = async (name: string): Promise<Person[]> => {
-    setIsLoading(true)
-    setError(null)
+    setIsSearching(true)
+    setSearchError(null)
 
     try {
       const response = await sendMessage<PipedriveResponse>({
@@ -79,7 +83,7 @@ export function usePipedrive() {
       if (response.type === 'PIPEDRIVE_SEARCH_SUCCESS') {
         return response.persons
       } else if (response.type === 'PIPEDRIVE_ERROR') {
-        setError({
+        setSearchError({
           message: response.error,
           statusCode: response.statusCode,
         })
@@ -89,10 +93,10 @@ export function usePipedrive() {
       throw new Error('Unexpected response type')
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Search failed'
-      setError({ message: errorMessage, statusCode: 500 })
+      setSearchError({ message: errorMessage, statusCode: 500 })
       return []
     } finally {
-      setIsLoading(false)
+      setIsSearching(false)
     }
   }
 
@@ -133,8 +137,8 @@ export function usePipedrive() {
    * Attach WhatsApp phone to existing person
    */
   const attachPhone = async (data: AttachPhoneData): Promise<Person | null> => {
-    setIsLoading(true)
-    setError(null)
+    setIsAttaching(true)
+    setAttachError(null)
 
     try {
       const response = await sendMessage<PipedriveResponse>({
@@ -145,7 +149,7 @@ export function usePipedrive() {
       if (response.type === 'PIPEDRIVE_ATTACH_SUCCESS') {
         return response.person
       } else if (response.type === 'PIPEDRIVE_ERROR') {
-        setError({
+        setAttachError({
           message: response.error,
           statusCode: response.statusCode,
         })
@@ -155,10 +159,10 @@ export function usePipedrive() {
       throw new Error('Unexpected response type')
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to attach phone'
-      setError({ message: errorMessage, statusCode: 500 })
+      setAttachError({ message: errorMessage, statusCode: 500 })
       return null
     } finally {
-      setIsLoading(false)
+      setIsAttaching(false)
     }
   }
 
@@ -166,14 +170,22 @@ export function usePipedrive() {
    * Clear error state
    */
   const clearError = () => setError(null)
+  const clearSearchError = () => setSearchError(null)
+  const clearAttachError = () => setAttachError(null)
 
   return {
     isLoading,
     error,
+    isSearching,
+    isAttaching,
+    searchError,
+    attachError,
     lookupByPhone,
     searchByName,
     createPerson,
     attachPhone,
     clearError,
+    clearSearchError,
+    clearAttachError,
   }
 }

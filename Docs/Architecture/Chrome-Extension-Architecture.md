@@ -89,9 +89,10 @@ whatsapp2pipe/
 │   │   │   └── index.tsx
 │   │   ├── components/         # Shared React components
 │   │   │   ├── ui/             # shadcn/ui components
-│   │   │   ├── PersonCard.tsx
-│   │   │   ├── CreatePersonModal.tsx
-│   │   │   └── AttachPersonModal.tsx
+│   │   │   ├── PersonMatchedCard.tsx
+│   │   │   ├── PersonNoMatchState.tsx
+│   │   │   ├── PersonLookupLoading.tsx
+│   │   │   └── PersonLookupError.tsx
 │   │   ├── hooks/              # Custom React hooks
 │   │   │   ├── useAuth.ts      # OAuth authentication hook
 │   │   │   ├── usePipedrive.ts # Pipedrive API operations hook
@@ -490,17 +491,17 @@ async function init() {
 
 ### 6.3 Application States
 
-**Primary UI States:**
-1. **Not Authenticated:** Sign-in prompt with Pipedrive branding
-2. **No Chat Selected:** Idle state, instructions
-3. **Group Chat / Unsupported:** "1:1 chats only" message
-4. **Loading:** Skeleton UI while querying Pipedrive
-5. **Person Matched:** Person card with details + "Open in Pipedrive"
-6. **No Match:** Create Person + Attach to Existing buttons
-7. **Create Flow:** Modal with form (name, email optional)
-8. **Attach Flow:** Search modal with person picker
-9. **Success:** Confirmation + Person card
-10. **Error:** Clear error message + retry action
+**Primary UI States (SidebarState union):**
+1. **Welcome:** Default splash when no chat context is available.
+2. **Contact:** Transitional state used to kick off lookup; immediately flips to loading.
+3. **Contact Warning:** Shown when a 1:1 chat lacks a phone number.\*
+4. **Group Chat:** Messaging that only direct chats are supported.
+5. **Loading:** Skeleton UI while `lookupByPhone()` is running.
+6. **Person Matched:** Displays `PersonMatchedCard` with "Open in Pipedrive".
+7. **Person No Match:** `PersonNoMatchState` with inline Create + Attach flows.
+8. **Person Error:** Friendly error copy with retry CTA.
+
+\*Contact warning is primarily temporary until WhatsApp exposes the phone number again.
 
 **Visual Consistency:**
 - All states use consistent spacing and typography
@@ -527,9 +528,8 @@ async function init() {
 - **Target:** Component interactions, user flows, context providers
 - **Location:** `tests/integration/`
 - **Coverage:**
-  - PersonCard rendering with real data
-  - CreatePersonModal form validation and submission
-  - AttachPersonModal search and selection flow
+  - PersonMatchedCard rendering with real data
+  - PersonNoMatchState create & attach interactions
   - AuthContext state changes
   - usePipedrive hook integration (with chrome.runtime.sendMessage mocking)
 
@@ -1095,9 +1095,9 @@ Sentry.init({
 
 **Lazy Loading:**
 ```typescript
-// Lazy load modals (not needed on initial render)
-const CreatePersonModal = lazy(() => import('./components/CreatePersonModal'))
-const AttachPersonModal = lazy(() => import('./components/AttachPersonModal'))
+// Example: defer rarely used UI until needed
+const PersonNoMatchState = lazy(() => import('./components/PersonNoMatchState'))
+const PersonLookupError = lazy(() => import('./components/PersonLookupError'))
 ```
 
 ### 11.2 Runtime Performance

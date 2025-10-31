@@ -33,14 +33,14 @@ Create centralized API service with TypeScript interfaces for Person lookup by p
 ### Feature 8: Authentication UI State (✅ Complete)
 Build sign-in prompt UI with Pipedrive branding, authenticated/unauthenticated states in sidebar, and sign-out functionality. Implemented with WelcomeState, AuthenticatingState, SignInButton components, useAuth hook, and full OAuth flow integration.
 
-### Feature 9: Person Auto-Lookup Flow
+### Feature 9: Person Auto-Lookup Flow (✅ Complete - Spec-109)
 Implement automatic person lookup on chat switch, display matched Person card with details and "Open in Pipedrive" button, and show loading states during lookup.
 
-### Feature 10: Create Person Flow
-Build Create Person modal with pre-filled name (from WhatsApp display name), optional email field, form validation, and creation with WhatsApp phone label (not primary).
+### Feature 10: Create Person Flow (✅ Complete - Spec-110)
+Build Create Person form with editable pre-filled name (from WhatsApp display name), client-side validation, inline error handling, and creation with WhatsApp phone label (not primary). Email field removed for MVP simplicity.
 
-### Feature 11: Attach Number to Existing Person Flow
-Implement person search by name with keyboard navigation, person selection UI, attach phone as "WhatsApp" label (not primary), and success confirmation.
+### Feature 11: Attach Number to Existing Person Flow (✅ Complete - Spec-111)
+Implement inline person search by name with selection UI, attach phone as "WhatsApp" label (not primary), and transition to matched state on success.
 
 ### Feature 12: UI States & Error Handling
 Implement all required UI states (no chat selected, loading, matched, no match, success, error), error boundaries, user-friendly error messages, and retry mechanisms.
