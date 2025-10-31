@@ -29,43 +29,58 @@ class PipedriveApiService {
    * Includes verification_code in Authorization header
    */
   private async makeRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const verificationCode = await this.getVerificationCode()
+    try {
+      const verificationCode = await this.getVerificationCode()
 
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      ...options,
-      headers: {
-        Authorization: `Bearer ${verificationCode}`,
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-    })
+      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+        ...options,
+        headers: {
+          Authorization: `Bearer ${verificationCode}`,
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+      })
 
-    // Handle HTTP errors
-    if (!response.ok) {
-      const statusCode = response.status
-      let errorMessage: string
+      // Handle HTTP errors
+      if (!response.ok) {
+        const statusCode = response.status
+        let errorMessage: string
 
-      switch (statusCode) {
-        case 401:
-          errorMessage = 'Authentication expired. Please sign in again.'
-          break
-        case 404:
-          errorMessage = 'Person not found'
-          break
-        case 429:
-          errorMessage = 'Too many requests. Please try again in a moment.'
-          break
-        case 500:
-          errorMessage = 'Server error. Please try again later.'
-          break
-        default:
-          errorMessage = 'An error occurred. Please try again.'
+        switch (statusCode) {
+          case 401:
+            // Clear authentication on 401
+            await chrome.storage.local.remove('verification_code')
+            errorMessage = 'Authentication expired. Please sign in again.'
+            break
+          case 404:
+            errorMessage = 'Person not found'
+            break
+          case 429:
+            errorMessage = 'Too many requests. Please try again in a moment.'
+            break
+          case 500:
+            errorMessage = 'Server error. Please try again later.'
+            break
+          default:
+            errorMessage = 'An error occurred. Please try again.'
+        }
+
+        throw { statusCode, message: errorMessage }
       }
 
-      throw { statusCode, message: errorMessage }
-    }
+      return response.json()
+    } catch (error) {
+      // If error is already structured (thrown from response.ok check), re-throw
+      if (typeof error === 'object' && error !== null && 'statusCode' in error) {
+        throw error
+      }
 
-    return response.json()
+      // Otherwise, this is a network error (fetch threw before getting response)
+      throw {
+        statusCode: 0,
+        message: 'Unable to connect. Check your internet connection.',
+      }
+    }
   }
 
   /**

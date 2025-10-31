@@ -3,6 +3,7 @@
 
 import { serviceWorkerAuthService } from './authService'
 import { pipedriveApiService } from './pipedriveApiService'
+import { logError } from '../utils/errorLogger'
 import type {
   ExtensionMessage,
   AuthSignInSuccess,
@@ -12,6 +13,23 @@ import type {
 } from '../types/messages'
 
 console.log('[Service Worker] Loaded')
+
+// Global error handler for uncaught errors
+self.addEventListener('error', (event: ErrorEvent) => {
+  logError('Service Worker uncaught error', event.error, {
+    message: event.message,
+    filename: event.filename,
+    lineno: event.lineno,
+    colno: event.colno,
+  })
+})
+
+// Global handler for unhandled promise rejections
+self.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
+  logError('Service Worker unhandled promise rejection', event.reason, {
+    promise: event.promise,
+  })
+})
 
 // Listen for extension installation
 chrome.runtime.onInstalled.addListener((details) => {
