@@ -23,10 +23,10 @@ This specification defines the Create Person functionality that enables users to
 - Integration with existing usePipedrive().createPerson() hook
 - Person created with WhatsApp phone label (not primary)
 
-**Out of Scope (Future Features):**
+**Out of Scope (Handled Separately):**
 - Email collection (explicitly removed from Feature 10)
-- Attach to Existing Person functionality (Feature 11)
-- Search functionality (Feature 11)
+- Attach to Existing Person functionality (Feature 11 – see Spec-111 for final behavior)
+- Search functionality (Feature 11 – see Spec-111)
 - Form field additions beyond name
 - Advanced validation (duplicate detection, name formatting)
 - Undo/cancel after creation
@@ -192,9 +192,9 @@ Add focus styling to the input container:
 - 500 Server Error: "Server error. Please try again later."
 - Generic: "Failed to create contact. Please try again."
 
-#### 3.1.5 Keep Search Section Unchanged
+#### 3.1.5 Keep Search Section Present
 
-The "Or add the number... to an existing contact" section remains visible and non-functional (will be implemented in Feature 11).
+The "Or add the number... to an existing contact" section remains visible. Feature 11 (Spec-111) layers on the interactive search + attach flow while preserving the layout introduced here.
 
 ### 3.2 Component Props Interface
 
@@ -210,6 +210,7 @@ interface PersonNoMatchStateProps {
 - Called when person is successfully created
 - Parent (App.tsx) uses this to transition to PersonMatchedCard state
 - Receives the newly created Person object from API
+- Feature 11 adds `onPersonAttached` to this signature (see Spec-111)
 
 ### 3.3 Component Internal State
 
@@ -1344,16 +1345,14 @@ describe('Create Person Integration', () => {
 
 ### 12.7 Why Keep Search Section Visible?
 
-**Decision:** "Attach to existing" section remains visible but disabled
+**Decision:** "Attach to existing" section remains visible in Feature 10, paving the way for Feature 11's interactive flow.
 
 **Rationale:**
-- Shows users what's coming (Feature 11)
 - Communicates two options: create OR attach
-- Maintains consistent layout
-- No jarring changes when Feature 11 is implemented
-- Users understand full capability of the extension
+- Maintains consistent layout across features
+- No jarring changes when Feature 11 shipped
 
-**Tradeoff:** Takes space for non-functional UI. Acceptable for visual consistency.
+**Tradeoff:** Pre-Feature-11 builds surfaced non-interactive controls, which was acceptable for short overlap.
 
 ### 12.8 Why Component-Level State (Not App State)?
 

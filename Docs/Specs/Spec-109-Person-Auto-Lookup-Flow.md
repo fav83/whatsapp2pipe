@@ -21,9 +21,9 @@ This specification defines the automatic person lookup flow that triggers when a
 - Error state with retry functionality
 - Integration with existing authentication and chat detection
 
-**Out of Scope (Future Features):**
-- Create Person functionality (Feature 10)
-- Attach to Existing Person functionality (Feature 11)
+**Out of Scope (Handled by Subsequent Features):**
+- Create Person functionality (Feature 10, see Spec-110)
+- Attach to Existing Person functionality (Feature 11, see Spec-111)
 - Form validation and submission
 - Search implementation
 - Result caching
@@ -170,9 +170,9 @@ interface PersonNoMatchStateProps {
 ```
 
 **Notes:**
-- All input fields and buttons render but are non-functional
-- Actual functionality implemented in Features 10 & 11
-- This feature focuses on UI layout only
+- During Feature 9 these controls shipped as placeholders.
+- Features 10 & 11 (Specs 110/111) layered on full create + attach functionality.
+- This spec focuses on the layout and state transitions only.
 
 ### 2.4 Error State
 
@@ -372,6 +372,7 @@ function SidebarContent({ state }: SidebarContentProps) {
 interface Person {
   id: number
   name: string
+  organizationName?: string | null
   phones: Phone[]
   email: string | null
 }

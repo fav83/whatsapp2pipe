@@ -60,6 +60,7 @@ interface Phone {
 interface Person {
   id: number
   name: string
+  organizationName?: string | null
   phones: Phone[]    // Always array, never undefined
   email: string | null  // null, not optional
 }
@@ -560,40 +561,24 @@ if (person) {
 
 - [x] Lookup by phone returns correct person
 - [x] Lookup by phone returns null when not found
-- [ ] Search by name returns array of persons (not tested manually)
-- [ ] Search by name returns empty array when not found (not tested manually)
-- [ ] Create person returns created person (not tested manually)
-- [ ] Attach phone returns updated person (not tested manually)
+- [x] Search by name returns array of persons (covered in Feature 11 automated tests)
+- [x] Search by name returns empty array when not found (covered in Feature 11 automated tests)
+- [x] Create person returns created person (verified in Feature 10)
+- [x] Attach phone returns updated person (verified in Feature 11)
 - [x] All operations work with E.164 phone format
 
 ### End-to-End Test
 
-- [ ] Complete flow: lookup → not found → create → lookup finds created person
-- [ ] Complete flow: lookup → not found → search by name → attach phone → verify
+- [x] Complete flow: lookup → not found → create → lookup finds created person
+- [x] Complete flow: lookup → not found → search by name → attach phone → verify
 
-**Note:** Only lookup functionality was manually tested. Other operations tested via unit tests only.
+**Note:** Subsequent Features 10 & 11 provided manual + automated coverage for create and attach flows.
 
 ---
 
 ## Next Steps
 
-According to [Spec-106b Section 9](Spec-106b-Extension-Pipedrive-API-Integration.md#9-next-steps), the recommended next features are:
-
-### Feature 9: Person Auto-Lookup Flow (Recommended Next)
-- Trigger `lookupByPhone()` automatically when user switches to WhatsApp chat
-- Display matched Person card in sidebar
-- Show "no match" state with Create/Attach buttons
-- Integrate with existing chat detection (Spec-104)
-
-### Feature 10: Create Person Flow
-- Modal UI with name/email form
-- Call `createPerson()` from usePipedrive hook
-- Show success/error states
-
-### Feature 11: Attach Number Flow
-- Search modal with `searchByName()`
-- Display results list (UI from design screenshot)
-- Call `attachPhone()` on selection
+According to [Spec-106b Section 9](Spec-106b-Extension-Pipedrive-API-Integration.md#9-next-steps), Features 9, 10, and 11 have now shipped (Specs 109, 110, and 111 respectively), fully exercising this service layer.
 
 ---
 

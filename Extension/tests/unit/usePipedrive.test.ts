@@ -21,12 +21,16 @@ describe('usePipedrive', () => {
       const { result } = renderHook(() => usePipedrive())
 
       expect(result.current.isLoading).toBe(false)
+      expect(result.current.isSearching).toBe(false)
+      expect(result.current.isAttaching).toBe(false)
     })
 
     it('initializes with error null', () => {
       const { result } = renderHook(() => usePipedrive())
 
       expect(result.current.error).toBeNull()
+      expect(result.current.searchError).toBeNull()
+      expect(result.current.attachError).toBeNull()
     })
 
     it('exposes all expected methods', () => {
@@ -37,6 +41,8 @@ describe('usePipedrive', () => {
       expect(result.current.createPerson).toBeInstanceOf(Function)
       expect(result.current.attachPhone).toBeInstanceOf(Function)
       expect(result.current.clearError).toBeInstanceOf(Function)
+      expect(result.current.clearSearchError).toBeInstanceOf(Function)
+      expect(result.current.clearAttachError).toBeInstanceOf(Function)
     })
   })
 
@@ -135,26 +141,23 @@ describe('usePipedrive', () => {
   })
 
   describe('searchByName', () => {
-    it('returns empty array on error', async () => {
-      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
-        type: 'PIPEDRIVE_ERROR',
-        error: 'Network error',
-        statusCode: 500,
-      })
+    it('sets isSearching during request', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockImplementation(
+        () => new Promise((resolve) => setTimeout(resolve, 100))
+      )
 
       const { result } = renderHook(() => usePipedrive())
-      const persons = await result.current.searchByName('John')
+      const promise = result.current.searchByName('John')
 
-      expect(persons).toEqual([])
       await waitFor(() => {
-        expect(result.current.error).toMatchObject({
-          message: 'Network error',
-          statusCode: 500,
-        })
+        expect(result.current.isSearching).toBe(true)
       })
+
+      await promise
+      expect(result.current.isSearching).toBe(false)
     })
 
-    it('returns array of persons on success', async () => {
+    it('returns array of persons on success and clears search error', async () => {
       const mockPersons = [
         { id: 123, name: 'John', phones: [], email: null },
         { id: 456, name: 'John Doe', phones: [], email: null },
@@ -168,10 +171,10 @@ describe('usePipedrive', () => {
       const persons = await result.current.searchByName('John')
 
       expect(persons).toEqual(mockPersons)
-      expect(result.current.error).toBeNull()
+      expect(result.current.searchError).toBeNull()
     })
 
-    it('returns empty array when no matches', async () => {
+    it('returns empty array when no matches without error', async () => {
       vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
         type: 'PIPEDRIVE_SEARCH_SUCCESS',
         persons: [],
@@ -181,6 +184,26 @@ describe('usePipedrive', () => {
       const persons = await result.current.searchByName('John')
 
       expect(persons).toEqual([])
+      expect(result.current.searchError).toBeNull()
+    })
+
+    it('returns empty array and sets searchError on failure', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'PIPEDRIVE_ERROR',
+        error: 'Network error',
+        statusCode: 500,
+      })
+
+      const { result } = renderHook(() => usePipedrive())
+      const persons = await result.current.searchByName('John')
+
+      expect(persons).toEqual([])
+      await waitFor(() => {
+        expect(result.current.searchError).toMatchObject({
+          message: 'Network error',
+          statusCode: 500,
+        })
+      })
       expect(result.current.error).toBeNull()
     })
 
@@ -197,22 +220,6 @@ describe('usePipedrive', () => {
         type: 'PIPEDRIVE_SEARCH_BY_NAME',
         name: 'John',
       })
-    })
-
-    it('sets loading state during request', async () => {
-      vi.mocked(chrome.runtime.sendMessage).mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
-      )
-
-      const { result } = renderHook(() => usePipedrive())
-
-      const promise = result.current.searchByName('John')
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(true)
-      })
-
-      await promise
     })
   })
 
@@ -320,7 +327,7 @@ describe('usePipedrive', () => {
       })
     })
 
-    it('returns updated person on success', async () => {
+    it('returns updated person on success and clears attachError', async () => {
       const mockPerson = {
         id: 123,
         name: 'John',
@@ -339,10 +346,10 @@ describe('usePipedrive', () => {
       })
 
       expect(person).toEqual(mockPerson)
-      expect(result.current.error).toBeNull()
+      expect(result.current.attachError).toBeNull()
     })
 
-    it('returns null on error and sets error state', async () => {
+    it('returns null on error and sets attachError state', async () => {
       vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
         type: 'PIPEDRIVE_ERROR',
         error: 'Person not found',
@@ -357,16 +364,36 @@ describe('usePipedrive', () => {
 
       expect(person).toBeNull()
       await waitFor(() => {
-        expect(result.current.error).toMatchObject({
+        expect(result.current.attachError).toMatchObject({
           message: 'Person not found',
           statusCode: 404,
         })
       })
+      expect(result.current.error).toBeNull()
+    })
+
+    it('sets isAttaching during request', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockImplementation(
+        () => new Promise((resolve) => setTimeout(resolve, 100))
+      )
+
+      const { result } = renderHook(() => usePipedrive())
+      const promise = result.current.attachPhone({
+        personId: 123,
+        phone: '+48123456789',
+      })
+
+      await waitFor(() => {
+        expect(result.current.isAttaching).toBe(true)
+      })
+
+      await promise
+      expect(result.current.isAttaching).toBe(false)
     })
   })
 
-  describe('clearError', () => {
-    it('clears error state', async () => {
+  describe('clearError helpers', () => {
+    it('clearError resets general error state', async () => {
       vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
         type: 'PIPEDRIVE_ERROR',
         error: 'Test error',
@@ -387,14 +414,47 @@ describe('usePipedrive', () => {
       })
     })
 
-    it('does nothing when no error exists', () => {
+    it('clearSearchError resets search error state', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'PIPEDRIVE_ERROR',
+        error: 'Network error',
+        statusCode: 500,
+      })
+
       const { result } = renderHook(() => usePipedrive())
+      await result.current.searchByName('John')
 
-      expect(result.current.error).toBeNull()
+      await waitFor(() => {
+        expect(result.current.searchError).not.toBeNull()
+      })
 
-      result.current.clearError()
+      result.current.clearSearchError()
+      await waitFor(() => {
+        expect(result.current.searchError).toBeNull()
+      })
+    })
 
-      expect(result.current.error).toBeNull()
+    it('clearAttachError resets attach error state', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'PIPEDRIVE_ERROR',
+        error: 'Attach failed',
+        statusCode: 500,
+      })
+
+      const { result } = renderHook(() => usePipedrive())
+      await result.current.attachPhone({
+        personId: 1,
+        phone: '+111',
+      })
+
+      await waitFor(() => {
+        expect(result.current.attachError).not.toBeNull()
+      })
+
+      result.current.clearAttachError()
+      await waitFor(() => {
+        expect(result.current.attachError).toBeNull()
+      })
     })
   })
 

@@ -55,6 +55,9 @@ public class PipedrivePerson
     [JsonPropertyName("email")]
     public List<PipedriveEmail>? Email { get; set; }
 
+    [JsonPropertyName("org_name")]
+    public string? OrganizationName { get; set; }
+
     // Note: Many other fields exist in Pipedrive API but we only need these for MVP
 }
 

@@ -39,8 +39,8 @@ Implement automatic person lookup on chat switch, display matched Person card wi
 ### Feature 10: Create Person Flow (✅ Complete - Spec-110)
 Build Create Person form with editable pre-filled name (from WhatsApp display name), client-side validation, inline error handling, and creation with WhatsApp phone label (not primary). Email field removed for MVP simplicity.
 
-### Feature 11: Attach Number to Existing Person Flow
-Implement person search by name with keyboard navigation, person selection UI, attach phone as "WhatsApp" label (not primary), and success confirmation.
+### Feature 11: Attach Number to Existing Person Flow (✅ Complete - Spec-111)
+Implement inline person search by name with selection UI, attach phone as "WhatsApp" label (not primary), and transition to matched state on success.
 
 ### Feature 12: UI States & Error Handling
 Implement all required UI states (no chat selected, loading, matched, no match, success, error), error boundaries, user-friendly error messages, and retry mechanisms.

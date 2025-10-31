@@ -194,26 +194,45 @@ describe('Person Lookup Components', () => {
 
   describe('PersonNoMatchState', () => {
     const mockCreatePerson = vi.fn()
+    const mockSearchByName = vi.fn()
+    const mockAttachPhone = vi.fn()
+    const mockClearError = vi.fn()
+    const mockClearSearchError = vi.fn()
+    const mockClearAttachError = vi.fn()
     const mockOnPersonCreated = vi.fn()
+    const mockOnPersonAttached = vi.fn()
+    let mockHookReturn: ReturnType<
+      typeof import('../../src/content-script/hooks/usePipedrive').usePipedrive
+    >
     const mockProps = {
       contactName: 'Bob Johnson',
       phone: '+48123456789',
       onPersonCreated: mockOnPersonCreated,
+      onPersonAttached: mockOnPersonAttached,
     }
 
     beforeEach(async () => {
       vi.clearAllMocks()
       // Mock usePipedrive hook implementation
       const { usePipedrive } = await import('../../src/content-script/hooks/usePipedrive')
-      vi.mocked(usePipedrive).mockReturnValue({
+      mockHookReturn = {
         createPerson: mockCreatePerson,
+        searchByName: mockSearchByName,
+        attachPhone: mockAttachPhone,
         isLoading: false,
         error: null,
+        isSearching: false,
+        isAttaching: false,
+        searchError: null,
+        attachError: null,
         lookupByPhone: vi.fn(),
-        searchByName: vi.fn(),
-        attachPhone: vi.fn(),
-        clearError: vi.fn(),
-      })
+        clearError: mockClearError,
+        clearSearchError: mockClearSearchError,
+        clearAttachError: mockClearAttachError,
+      }
+      vi.mocked(usePipedrive).mockReturnValue(mockHookReturn)
+      mockSearchByName.mockResolvedValue([])
+      mockAttachPhone.mockResolvedValue(null)
     })
 
     it('pre-fills name field with contact name', () => {
@@ -259,10 +278,131 @@ describe('Person Lookup Components', () => {
       expect(createButton.disabled).toBe(true)
     })
 
-    it('Search field is disabled (Feature 11)', () => {
+    it('Search button disabled until minimum term length reached', async () => {
+      const user = userEvent.setup()
       render(<PersonNoMatchState {...mockProps} />)
-      const searchInput = screen.getByPlaceholderText('Search contact...') as HTMLInputElement
-      expect(searchInput.disabled).toBe(true)
+
+      const searchInput = screen.getByPlaceholderText('Search contact...')
+      const searchButton = screen.getByRole('button', { name: 'Search' }) as HTMLButtonElement
+
+      expect(searchButton.disabled).toBe(true)
+
+      await user.type(searchInput, 'Jo')
+      expect(searchButton.disabled).toBe(false)
+    })
+
+    it('calls searchByName when submitting valid search term', async () => {
+      const user = userEvent.setup()
+      render(<PersonNoMatchState {...mockProps} />)
+
+      const searchInput = screen.getByPlaceholderText('Search contact...')
+      const searchButton = screen.getByRole('button', { name: 'Search' })
+
+      await user.type(searchInput, 'Al')
+      await user.click(searchButton)
+
+      await waitFor(() => {
+        expect(mockSearchByName).toHaveBeenCalledWith('Al')
+      })
+    })
+
+    it('renders search results and enables attach button after selection', async () => {
+      const user = userEvent.setup()
+      const searchResults: Person[] = [
+        {
+          id: 42,
+          name: 'Alice Carter',
+          phones: [{ value: '+111', label: 'Work', isPrimary: false }],
+          email: null,
+        },
+      ]
+      mockSearchByName.mockResolvedValue(searchResults)
+
+      render(<PersonNoMatchState {...mockProps} />)
+
+      const searchInput = screen.getByPlaceholderText('Search contact...')
+      await user.type(searchInput, 'Al')
+      await user.click(screen.getByRole('button', { name: 'Search' }))
+
+      const resultButton = await screen.findByRole('button', { name: /Alice Carter/ })
+      const attachButton = (await screen.findByRole('button', {
+        name: 'Attach number',
+      })) as HTMLButtonElement
+      expect(attachButton.disabled).toBe(true)
+
+      await user.click(resultButton)
+      expect(attachButton.disabled).toBe(false)
+    })
+
+    it('calls attachPhone and onPersonAttached on success', async () => {
+      const user = userEvent.setup()
+      const searchResults: Person[] = [
+        {
+          id: 5,
+          name: 'Charlie West',
+          phones: [{ value: '+222', label: 'Mobile', isPrimary: false }],
+          email: null,
+        },
+      ]
+      const attachedPerson: Person = {
+        ...searchResults[0],
+        phones: [
+          { value: '+222', label: 'Mobile', isPrimary: false },
+          { value: '+48123456789', label: 'WhatsApp', isPrimary: false },
+        ],
+      }
+      mockSearchByName.mockResolvedValue(searchResults)
+      mockAttachPhone.mockResolvedValue(attachedPerson)
+
+      render(<PersonNoMatchState {...mockProps} />)
+
+      const searchInput = screen.getByPlaceholderText('Search contact...')
+      await user.type(searchInput, 'Ch')
+      await user.click(screen.getByRole('button', { name: 'Search' }))
+
+      const resultButton = await screen.findByRole('button', { name: /Charlie West/ })
+      await user.click(resultButton)
+
+      const attachButton = await screen.findByRole('button', { name: 'Attach number' })
+      await user.click(attachButton)
+
+      await waitFor(() => {
+        expect(mockAttachPhone).toHaveBeenCalledWith({
+          personId: 5,
+          phone: '+48123456789',
+        })
+      })
+
+      await waitFor(() => {
+        expect(mockOnPersonAttached).toHaveBeenCalledWith(attachedPerson)
+      })
+    })
+
+    it('shows attach error banner when attach fails', async () => {
+      const user = userEvent.setup()
+      mockSearchByName.mockResolvedValue([
+        {
+          id: 77,
+          name: 'Dana Stone',
+          phones: [],
+          email: null,
+        },
+      ])
+      mockAttachPhone.mockResolvedValue(null)
+
+      render(<PersonNoMatchState {...mockProps} />)
+
+      const searchInput = screen.getByPlaceholderText('Search contact...')
+      await user.type(searchInput, 'Da')
+      await user.click(screen.getByRole('button', { name: 'Search' }))
+
+      const resultButton = await screen.findByRole('button', { name: /Dana Stone/ })
+      await user.click(resultButton)
+      await user.click(await screen.findByRole('button', { name: 'Attach number' }))
+
+      await waitFor(() => {
+        expect(screen.getByText('Failed to attach phone. Please try again.')).toBeInTheDocument()
+      })
     })
 
     it('allows editing the name field', async () => {

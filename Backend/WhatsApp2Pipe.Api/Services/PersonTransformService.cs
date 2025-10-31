@@ -16,6 +16,7 @@ public class PersonTransformService
         {
             Id = pipedrivePerson.Id,
             Name = pipedrivePerson.Name,
+            OrganizationName = pipedrivePerson.OrganizationName,
             Phones = TransformPhones(pipedrivePerson.Phone),
             Emails = TransformEmails(pipedrivePerson.Email)
         };

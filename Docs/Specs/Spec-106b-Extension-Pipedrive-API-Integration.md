@@ -127,6 +127,8 @@ export interface Person {
   id: number
   /** Person's full name */
   name: string
+  /** Organization name if available */
+  organizationName?: string | null
   /** All phone numbers (can be empty array) */
   phones: Phone[]
   /** Primary email or null if none exists */
@@ -1390,21 +1392,9 @@ export const AUTH_CONFIG = {
 
 **After Spec-106b Completion:**
 
-1. **Feature 9: Person Auto-Lookup Flow (Recommended Next)**
-   - Trigger `lookupByPhone()` automatically when user switches to WhatsApp chat
-   - Display matched Person card in sidebar
-   - Show "no match" state with Create/Attach buttons
-   - Integrate with existing chat detection (Spec-104)
-
-2. **Feature 10: Create Person Flow**
-   - Modal UI with name/email form
-   - Call `createPerson()` from usePipedrive hook
-   - Show success/error states
-
-3. **Feature 11: Attach Number Flow**
-   - Search modal with `searchByName()`
-   - Display results list (UI from design screenshot)
-   - Call `attachPhone()` on selection
+1. **Feature 9: Person Auto-Lookup Flow** – ✅ Delivered in [Spec-109](Spec-109-Person-Auto-Lookup-Flow.md).
+2. **Feature 10: Create Person Flow** – ✅ Delivered in [Spec-110](Spec-110-Create-Person-Flow.md).
+3. **Feature 11: Attach Number Flow** – ✅ Delivered in [Spec-111](Spec-111-Attach-Number-To-Existing-Person-Flow.md).
 
 ---
 

@@ -251,7 +251,8 @@ function SidebarContent({ state, setState }: SidebarContentProps) {
       // Trigger lookup
       handlePersonLookup(contactPhone, contactName)
     }
-  }, [state.type, state.type === 'contact' ? state.phone : null, handlePersonLookup, setState])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.type, handlePersonLookup, setState])
 
   /**
    * Handle retry button click
@@ -313,6 +314,7 @@ function SidebarContent({ state, setState }: SidebarContentProps) {
           contactName={state.name}
           phone={state.phone}
           onPersonCreated={(person) => handlePersonCreated(person, state.phone)}
+          onPersonAttached={(person) => handlePersonCreated(person, state.phone)}
         />
       )
     case 'person-error':
