@@ -33,35 +33,26 @@ Create centralized API service with TypeScript interfaces for Person lookup by p
 ### Feature 8: Authentication UI State (✅ Complete)
 Build sign-in prompt UI with Pipedrive branding, authenticated/unauthenticated states in sidebar, and sign-out functionality. Implemented with WelcomeState, AuthenticatingState, SignInButton components, useAuth hook, and full OAuth flow integration.
 
-### Feature 9: Person Auto-Lookup Flow
+### Feature 9: Person Auto-Lookup Flow (✅ Complete - Spec-109)
 Implement automatic person lookup on chat switch, display matched Person card with details and "Open in Pipedrive" button, and show loading states during lookup.
 
-### Feature 10: Create Person Flow
-Build Create Person modal with pre-filled name (from WhatsApp display name), optional email field, form validation, and creation with WhatsApp phone label (not primary).
+### Feature 10: Create Person Flow (✅ Complete - Spec-110)
+Build Create Person form with editable pre-filled name (from WhatsApp display name), client-side validation, inline error handling, and creation with WhatsApp phone label (not primary). Email field removed for MVP simplicity.
 
-### Feature 11: Attach Number to Existing Person Flow
-Implement person search by name with keyboard navigation, person selection UI, attach phone as "WhatsApp" label (not primary), and success confirmation.
+### Feature 11: Attach Number to Existing Person Flow (✅ Complete - Spec-111)
+Implement inline person search by name with selection UI, attach phone as "WhatsApp" label (not primary), and transition to matched state on success.
 
 ### Feature 12: UI States & Error Handling
 Implement all required UI states (no chat selected, loading, matched, no match, success, error), error boundaries, user-friendly error messages, and retry mechanisms.
 
-### Feature 13: shadcn/ui Component Library Setup
-Install and configure shadcn/ui with Tailwind CSS, set up required components (Button, Input, Card, Dialog, Command, Alert, Skeleton), and customize theme.
+### Feature 13: ~~shadcn/ui Component Library Setup~~ (❌ Skipped)
+**Decision:** Skipped for MVP. The current custom React components with Tailwind CSS utility classes are sufficient for the simple UI requirements (buttons, inputs, cards, forms). shadcn/ui and Radix UI primitives would add 30-50 KB to bundle size (doubling/tripling extension size) with minimal benefit for the straightforward UI patterns needed. All components (Features 8-11) are complete and tested without shadcn/ui. Can reconsider post-MVP if complex interactive components (modals, dropdowns, command palettes) are needed.
 
 ### Feature 14: Sentry Error Tracking Integration
 Set up Sentry for content script and service worker, implement PII filtering for phone numbers and names, configure breadcrumbs for user actions, and error boundaries.
 
 ### Feature 15: Testing Infrastructure
 Set up Vitest for unit/integration tests, configure Testing Library for React components, set up Playwright for E2E tests, and create test fixtures and mocks.
-
-### Feature 16: Build & Deployment Pipeline
-Configure Vite build for production with optimization, create Chrome Web Store package, implement versioning strategy, and prepare store listing materials.
-
-### Feature 17: Performance Optimization
-Implement debouncing for chat switches, lazy loading for modals, bundle size optimization, API request deduplication, and memory management.
-
-### Feature 18: Documentation
-Create developer setup guide, user installation guide, privacy policy, and demo video (Loom).
 
 ---
 
@@ -81,11 +72,8 @@ Implement Pipedrive connectivity with secure authentication and API layer. Featu
 **Phase 3: Core User Flows (Features 8-11)**
 Build the main user-facing features for person lookup, creation, and attachment.
 
-**Phase 4: Polish & Quality (Features 12-15)**
-Add error handling, testing, monitoring, and UI refinement.
-
-**Phase 5: Release Preparation (Features 16-18)**
-Optimize, package, and document for public release.
+**Phase 4: Polish & Quality (Features 12, 14-15)**
+Add error handling, testing, and monitoring. Feature 13 (shadcn/ui) skipped as unnecessary for MVP.
 
 ---
 

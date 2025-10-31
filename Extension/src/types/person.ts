@@ -26,6 +26,8 @@ export interface Person {
   id: number
   /** Person's full name */
   name: string
+  /** Organization name if available */
+  organizationName?: string | null
   /** All phone numbers (can be empty array) */
   phones: Phone[]
   /** Primary email or null if none exists */

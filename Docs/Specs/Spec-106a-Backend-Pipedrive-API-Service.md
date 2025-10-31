@@ -1333,10 +1333,10 @@ The following are explicitly **NOT** part of Spec-106a:
 
 - ❌ Extension implementation (covered in Spec-106b)
 - ❌ UI components (Features 9-11)
-- ❌ Caching layer (Feature 17)
+- ❌ Caching layer (Post-MVP)
 - ❌ Advanced error handling UI (Feature 12)
 - ❌ Sentry error tracking (Feature 14)
-- ❌ Rate limit retry logic (Feature 17)
+- ❌ Rate limit retry logic (Post-MVP)
 - ❌ Bulk operations (Post-MVP)
 - ❌ Organization linking (Post-MVP)
 - ❌ Deal operations (Post-MVP)

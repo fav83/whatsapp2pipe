@@ -251,7 +251,13 @@ function SidebarContent({ state, setState }: SidebarContentProps) {
       // Trigger lookup
       handlePersonLookup(contactPhone, contactName)
     }
-  }, [state.type, state.type === 'contact' ? state.phone : null, handlePersonLookup, setState])
+  }, [
+    state.type,
+    state.type === 'contact' ? state.phone : null,
+    state.type === 'contact' ? state.name : null,
+    handlePersonLookup,
+    setState,
+  ])
 
   /**
    * Handle retry button click
@@ -263,6 +269,18 @@ function SidebarContent({ state, setState }: SidebarContentProps) {
       phone,
     })
     handlePersonLookup(phone, name)
+  }
+
+  /**
+   * Handle person created callback
+   * Transitions to person-matched state
+   */
+  function handlePersonCreated(person: Person, phone: string) {
+    setState({
+      type: 'person-matched',
+      person,
+      phone,
+    })
   }
 
   /**
@@ -296,7 +314,14 @@ function SidebarContent({ state, setState }: SidebarContentProps) {
         />
       )
     case 'person-no-match':
-      return <PersonNoMatchState contactName={state.name} phone={state.phone} />
+      return (
+        <PersonNoMatchState
+          contactName={state.name}
+          phone={state.phone}
+          onPersonCreated={(person) => handlePersonCreated(person, state.phone)}
+          onPersonAttached={(person) => handlePersonCreated(person, state.phone)}
+        />
+      )
     case 'person-error':
       return (
         <PersonLookupError

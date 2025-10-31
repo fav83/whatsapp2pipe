@@ -94,7 +94,7 @@ class PipedriveApiService {
       `/api/pipedrive/persons/search?term=${encodeURIComponent(name)}&fields=name`
     )
 
-    return persons
+    return persons.slice(0, 10)
   }
 
   /**

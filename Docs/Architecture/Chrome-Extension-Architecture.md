@@ -25,7 +25,7 @@ This Chrome extension integrates WhatsApp Web with Pipedrive CRM, enabling users
 **Frontend Framework:**
 - **UI Framework:** React 18.x
 - **Language:** TypeScript
-- **UI Components:** shadcn/ui (Tailwind CSS + Radix UI)
+- **UI Components:** Custom React components with Tailwind CSS utility classes
 - **Styling:** Tailwind CSS 3.x
 
 **State & Data Management:**
@@ -88,10 +88,11 @@ whatsapp2pipe/
 │   │   ├── popup/              # Extension popup (optional)
 │   │   │   └── index.tsx
 │   │   ├── components/         # Shared React components
-│   │   │   ├── ui/             # shadcn/ui components
-│   │   │   ├── PersonCard.tsx
-│   │   │   ├── CreatePersonModal.tsx
-│   │   │   └── AttachPersonModal.tsx
+│   │   │   ├── PersonMatchedCard.tsx
+│   │   │   ├── PersonNoMatchState.tsx
+│   │   │   ├── PersonLookupLoading.tsx
+│   │   │   ├── PersonLookupError.tsx
+│   │   │   └── Spinner.tsx
 │   │   ├── hooks/              # Custom React hooks
 │   │   │   ├── useAuth.ts      # OAuth authentication hook
 │   │   │   ├── usePipedrive.ts # Pipedrive API operations hook
@@ -490,17 +491,17 @@ async function init() {
 
 ### 6.3 Application States
 
-**Primary UI States:**
-1. **Not Authenticated:** Sign-in prompt with Pipedrive branding
-2. **No Chat Selected:** Idle state, instructions
-3. **Group Chat / Unsupported:** "1:1 chats only" message
-4. **Loading:** Skeleton UI while querying Pipedrive
-5. **Person Matched:** Person card with details + "Open in Pipedrive"
-6. **No Match:** Create Person + Attach to Existing buttons
-7. **Create Flow:** Modal with form (name, email optional)
-8. **Attach Flow:** Search modal with person picker
-9. **Success:** Confirmation + Person card
-10. **Error:** Clear error message + retry action
+**Primary UI States (SidebarState union):**
+1. **Welcome:** Default splash when no chat context is available.
+2. **Contact:** Transitional state used to kick off lookup; immediately flips to loading.
+3. **Contact Warning:** Shown when a 1:1 chat lacks a phone number.\*
+4. **Group Chat:** Messaging that only direct chats are supported.
+5. **Loading:** Skeleton UI while `lookupByPhone()` is running.
+6. **Person Matched:** Displays `PersonMatchedCard` with "Open in Pipedrive".
+7. **Person No Match:** `PersonNoMatchState` with inline Create + Attach flows.
+8. **Person Error:** Friendly error copy with retry CTA.
+
+\*Contact warning is primarily temporary until WhatsApp exposes the phone number again.
 
 **Visual Consistency:**
 - All states use consistent spacing and typography
@@ -527,9 +528,8 @@ async function init() {
 - **Target:** Component interactions, user flows, context providers
 - **Location:** `tests/integration/`
 - **Coverage:**
-  - PersonCard rendering with real data
-  - CreatePersonModal form validation and submission
-  - AttachPersonModal search and selection flow
+  - PersonMatchedCard rendering with real data
+  - PersonNoMatchState create & attach interactions
   - AuthContext state changes
   - usePipedrive hook integration (with chrome.runtime.sendMessage mocking)
 
@@ -1091,13 +1091,13 @@ Sentry.init({
 - Tailwind CSS purging (only include used classes)
 - Code splitting (lazy load modals, non-critical components)
 - Minimize dependencies (evaluate each package size)
-- shadcn/ui components (only copy what's needed, not full library)
+- Custom components with Tailwind CSS (no heavy UI library dependencies)
 
 **Lazy Loading:**
 ```typescript
-// Lazy load modals (not needed on initial render)
-const CreatePersonModal = lazy(() => import('./components/CreatePersonModal'))
-const AttachPersonModal = lazy(() => import('./components/AttachPersonModal'))
+// Example: defer rarely used UI until needed
+const PersonNoMatchState = lazy(() => import('./components/PersonNoMatchState'))
+const PersonLookupError = lazy(() => import('./components/PersonLookupError'))
 ```
 
 ### 11.2 Runtime Performance
@@ -1296,11 +1296,15 @@ const AttachPersonModal = lazy(() => import('./components/AttachPersonModal'))
   - Reduces bundle size (~15KB saved)
   - Can add TanStack Query later if caching becomes necessary
 
-### Why shadcn/ui?
-- Customizable (copy-paste, not locked into npm package)
-- Built on Radix UI (accessibility built-in)
-- Tailwind-based (consistent with modern stack)
-- Lightweight (only include what's needed)
+### Why NOT shadcn/ui?
+- **Decision:** Custom React components with Tailwind CSS utility classes are sufficient for MVP
+- **Rationale:**
+  - Simple UI requirements (buttons, inputs, cards, forms) don't justify the added bundle size
+  - shadcn/ui + Radix UI primitives would add 30-50 KB (doubling/tripling extension size)
+  - No complex interactive components needed (modals, command palettes, dropdowns)
+  - All required components (Features 8-11) built and tested without shadcn/ui
+  - Tailwind utilities provide sufficient styling flexibility
+  - Can add shadcn/ui post-MVP if complex components become necessary
 
 ### Why Sentry?
 - Industry standard for error tracking

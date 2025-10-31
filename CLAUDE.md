@@ -258,10 +258,31 @@ The extension uses Tailwind CSS v3 for styling:
   - WhatsApp-style design matching web interface
   - 46 unit and integration tests passing
   - All acceptance criteria met
+- ✅ Create Person Flow (Feature 10 - Spec-110)
+  - Editable name field with pre-filled WhatsApp contact name
+  - Client-side validation (≥2 characters, at least 1 letter)
+  - Functional Create button with loading states
+  - Integration with usePipedrive().createPerson() API
+  - Error handling with dismissible inline error banner
+  - Success flow: automatic transition to PersonMatchedCard
+  - Person created with WhatsApp phone label (not primary)
+  - Reusable Spinner component for loading states
+  - Name trimming before submission
+  - Text selection enabled for accessibility
+  - 32+ new unit tests for validation and form interactions
+  - All acceptance criteria met (Spec-110)
+- ✅ Attach Number to Existing Person Flow (Feature 11 - Spec-111)
+  - Inline person search by name with selection UI
+  - Attach phone as "WhatsApp" label (not primary)
+  - Transition to matched state on success
+  - All acceptance criteria met (Spec-111)
+
+**❌ Skipped Features:**
+- ❌ Feature 7: TanStack Query Integration - Custom `usePipedrive()` hook provides sufficient state management for MVP
+- ❌ Feature 13: shadcn/ui Component Library - Custom React components with Tailwind CSS are sufficient; shadcn/ui would add 30-50 KB bundle size for minimal benefit
 
 **📋 Next Feature:**
-- Feature 10: Create Person functionality
-- Feature 11: Attach to Existing Person functionality
+- Feature 12: UI States & Error Handling
 
 ## Code Style Guidelines
 

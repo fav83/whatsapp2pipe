@@ -19,6 +19,11 @@ public class Person
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
+    /// Organization name if the person belongs to one
+    /// </summary>
+    public string? OrganizationName { get; set; }
+
+    /// <summary>
     /// All phone numbers (can be empty array)
     /// </summary>
     public Phone[] Phones { get; set; } = Array.Empty<Phone>();
