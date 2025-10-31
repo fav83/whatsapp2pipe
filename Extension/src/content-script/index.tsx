@@ -4,60 +4,90 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { waitForWhatsAppLoad } from './whatsapp-loader'
+import { logError } from '../utils/errorLogger'
 import '../styles/content-script.css'
 
 console.log('[Content Script] Loading on WhatsApp Web')
 console.log('[Content Script] Development mode:', import.meta.env.DEV)
 console.log('[Content Script] Mode:', import.meta.env.MODE)
 
+// Global error handler for uncaught errors
+window.addEventListener('error', (event: ErrorEvent) => {
+  logError('Uncaught error', event.error, {
+    message: event.message,
+    filename: event.filename,
+    lineno: event.lineno,
+    colno: event.colno,
+    url: window.location.href,
+  })
+})
+
+// Global handler for unhandled promise rejections
+window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
+  logError('Unhandled promise rejection', event.reason, {
+    promise: event.promise,
+    url: window.location.href,
+  })
+})
+
 // Initialize sidebar after WhatsApp is fully loaded
 async function init() {
-  console.log('[Content Script] Waiting for WhatsApp Web to load...')
+  try {
+    console.log('[Content Script] Waiting for WhatsApp Web to load...')
 
-  // Wait for WhatsApp to be ready
-  await waitForWhatsAppLoad()
+    // Wait for WhatsApp to be ready
+    await waitForWhatsAppLoad()
 
-  console.log('[Content Script] Initializing sidebar injection')
+    console.log('[Content Script] Initializing sidebar injection')
 
-  // Adjust WhatsApp Web layout to make room for sidebar
-  const whatsappContainer = document.querySelector('#app > div > div') as HTMLElement
-  if (whatsappContainer) {
-    whatsappContainer.style.marginRight = '350px'
-    console.log('[Content Script] WhatsApp container adjusted for sidebar')
-  }
+    // Adjust WhatsApp Web layout to make room for sidebar
+    const whatsappContainer = document.querySelector('#app > div > div') as HTMLElement
+    if (whatsappContainer) {
+      whatsappContainer.style.marginRight = '350px'
+      console.log('[Content Script] WhatsApp container adjusted for sidebar')
+    }
 
-  // Create sidebar container
-  const sidebarContainer = document.createElement('div')
-  sidebarContainer.id = 'pipedrive-whatsapp-sidebar'
+    // Create sidebar container
+    const sidebarContainer = document.createElement('div')
+    sidebarContainer.id = 'pipedrive-whatsapp-sidebar'
 
-  // Core positioning (inline styles for critical layout)
-  sidebarContainer.style.cssText = `
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 350px;
-    height: 100vh;
-    z-index: 999999;
-  `
+    // Core positioning (inline styles for critical layout)
+    sidebarContainer.style.cssText = `
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 350px;
+      height: 100vh;
+      z-index: 999999;
+    `
 
-  // Append to body
-  document.body.appendChild(sidebarContainer)
-  console.log('[Content Script] Sidebar container injected')
+    // Append to body
+    document.body.appendChild(sidebarContainer)
+    console.log('[Content Script] Sidebar container injected')
 
-  // Render React app into sidebar
-  const root = ReactDOM.createRoot(sidebarContainer)
-  root.render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
-  )
+    // Render React app into sidebar
+    const root = ReactDOM.createRoot(sidebarContainer)
+    root.render(
+      <React.StrictMode>
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
+      </React.StrictMode>
+    )
 
-  console.log('[Content Script] React app rendered')
+    console.log('[Content Script] React app rendered')
 
-  // Test message passing to service worker (development mode)
-  if (import.meta.env.DEV) {
-    testServiceWorkerConnection()
+    // Test message passing to service worker (development mode)
+    if (import.meta.env.DEV) {
+      testServiceWorkerConnection()
+    }
+  } catch (error) {
+    // Log with full context
+    logError('Failed to initialize sidebar', error, {
+      url: window.location.href,
+    })
   }
 }
 

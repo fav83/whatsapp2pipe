@@ -3,6 +3,7 @@
 
 import { serviceWorkerAuthService } from './authService'
 import { pipedriveApiService } from './pipedriveApiService'
+import { logError, getErrorMessage } from '../utils/errorLogger'
 import type {
   ExtensionMessage,
   AuthSignInSuccess,
@@ -12,6 +13,23 @@ import type {
 } from '../types/messages'
 
 console.log('[Service Worker] Loaded')
+
+// Global error handler for uncaught errors
+self.addEventListener('error', (event: ErrorEvent) => {
+  logError('Service Worker uncaught error', event.error, {
+    message: event.message,
+    filename: event.filename,
+    lineno: event.lineno,
+    colno: event.colno,
+  })
+})
+
+// Global handler for unhandled promise rejections
+self.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
+  logError('Service Worker unhandled promise rejection', event.reason, {
+    promise: event.promise,
+  })
+})
 
 // Listen for extension installation
 chrome.runtime.onInstalled.addListener((details) => {
@@ -117,7 +135,9 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
     return true
   }
 
-  sendResponse({ type: 'UNKNOWN_MESSAGE', received: message.type })
+  // If all known message types are handled above, TypeScript narrows `message` to `never` here.
+  // Avoid accessing `message.type` to keep this branch type-safe.
+  sendResponse({ type: 'UNKNOWN_MESSAGE' })
   return true
 })
 
@@ -138,7 +158,7 @@ async function handlePipedriveLookup(
       person,
     })
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Lookup failed'
+    const errorMessage = getErrorMessage(error, 'Lookup failed')
     const statusCode =
       typeof error === 'object' && error !== null && 'statusCode' in error
         ? (error.statusCode as number)
@@ -168,7 +188,7 @@ async function handlePipedriveSearch(
       persons,
     })
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Search failed'
+    const errorMessage = getErrorMessage(error, 'Search failed')
     const statusCode =
       typeof error === 'object' && error !== null && 'statusCode' in error
         ? (error.statusCode as number)
@@ -198,7 +218,7 @@ async function handlePipedriveCreate(
       person,
     })
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to create person'
+    const errorMessage = getErrorMessage(error, 'Failed to create person')
     const statusCode =
       typeof error === 'object' && error !== null && 'statusCode' in error
         ? (error.statusCode as number)
@@ -228,7 +248,7 @@ async function handlePipedriveAttach(
       person,
     })
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to attach phone'
+    const errorMessage = getErrorMessage(error, 'Failed to attach phone')
     const statusCode =
       typeof error === 'object' && error !== null && 'statusCode' in error
         ? (error.statusCode as number)

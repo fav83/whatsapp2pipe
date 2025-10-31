@@ -47,8 +47,7 @@
       "Bash(dotnet test:*)",
       "Bash(find:*)",
       "Bash(dotnet list package:*)",
-      "Bash(del testsintegrationperson-lookup-flow.test.tsx)",
-      "Bash(gh pr checks:*)"
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": [

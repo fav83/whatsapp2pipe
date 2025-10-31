@@ -13,6 +13,12 @@ global.chrome = {
         verificationCode: 'test_code',
       })
     ),
+    // Mock getManifest for error logging
+    getManifest: vi.fn(() => ({
+      version: '1.0.0',
+      manifest_version: 3,
+      name: 'Pipedrive WhatsApp Integration',
+    })),
   },
   storage: {
     local: {

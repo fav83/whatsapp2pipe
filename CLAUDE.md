@@ -276,13 +276,23 @@ The extension uses Tailwind CSS v3 for styling:
   - Attach phone as "WhatsApp" label (not primary)
   - Transition to matched state on success
   - All acceptance criteria met (Spec-111)
+- ✅ UI States & Error Handling (Feature 12 - Spec-112)
+  - React Error Boundary wrapping entire <App />
+  - Global error handlers for content script (uncaught errors, unhandled promises)
+  - Global error handlers for service worker
+  - Try-catch wrapper for sidebar initialization
+  - Network error detection (statusCode: 0 for connection failures)
+  - Automatic sign-out on 401 authentication errors
+  - Structured error logging utility with [chat2deal-pipe][timestamp][version] format
+  - ErrorFallback UI with "Reload Page" button
+  - Silent failure for init errors with comprehensive logging
 
 **❌ Skipped Features:**
 - ❌ Feature 7: TanStack Query Integration - Custom `usePipedrive()` hook provides sufficient state management for MVP
 - ❌ Feature 13: shadcn/ui Component Library - Custom React components with Tailwind CSS are sufficient; shadcn/ui would add 30-50 KB bundle size for minimal benefit
 
 **📋 Next Feature:**
-- Feature 12: UI States & Error Handling
+- Feature 14: Error Analytics (Sentry Integration) - Optional post-MVP enhancement
 
 ## Code Style Guidelines
 

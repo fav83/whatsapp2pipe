@@ -54,6 +54,9 @@ Set up Sentry for content script and service worker, implement PII filtering for
 ### Feature 15: Testing Infrastructure
 Set up Vitest for unit/integration tests, configure Testing Library for React components, set up Playwright for E2E tests, and create test fixtures and mocks.
 
+### Feature 16: User Entity Tracking (Backend) (Spec-116)
+Implement user and company entity tracking in Azure SQL Database using Entity Framework Core. Automatically create/update user records during OAuth flow by fetching profile data from Pipedrive `/users/me` API. Normalized schema with Companies and Users tables, GUID primary keys, and composite unique constraints to support multi-company users.
+
 ---
 
 ## Implementation Order Recommendation
@@ -72,8 +75,8 @@ Implement Pipedrive connectivity with secure authentication and API layer. Featu
 **Phase 3: Core User Flows (Features 8-11)**
 Build the main user-facing features for person lookup, creation, and attachment.
 
-**Phase 4: Polish & Quality (Features 12, 14-15)**
-Add error handling, testing, and monitoring. Feature 13 (shadcn/ui) skipped as unnecessary for MVP.
+**Phase 4: Polish & Quality (Features 12, 14-16)**
+Add error handling, testing, monitoring, and user tracking. Feature 13 (shadcn/ui) skipped as unnecessary for MVP.
 
 ---
 

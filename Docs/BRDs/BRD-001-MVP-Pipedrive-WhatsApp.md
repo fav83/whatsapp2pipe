@@ -132,10 +132,42 @@ Build a lightweight Chrome extension that adds a sidebar to **WhatsApp Web** to 
 ---
 
 ## 6) Data Model & Privacy (Business-Level)
-- **Data read from WhatsApp:** chat JID/phone, display name (no message content).  
-- **Data sent to Pipedrive:** People read/search; People create/update (phones).  
-- **No message content, files, or attachments** are collected or transmitted.  
-- **No persistent caching** of chat→Person mappings in MVP.  
+
+### 6.1 WhatsApp Data Collection
+- **Data read from WhatsApp:** chat JID/phone, display name (no message content).
+- **Data sent to Pipedrive:** People read/search; People create/update (phones).
+- **No message content, files, or attachments** are collected or transmitted.
+- **No persistent caching** of chat→Person mappings in MVP.
+
+### 6.2 Backend User Tracking (Feature 16)
+To enable analytics and multi-tenancy support, the backend maintains user and company records in Azure SQL Database:
+
+**Companies Table:**
+- Stores Pipedrive company information (company name, domain)
+- One record per Pipedrive company
+- Created automatically during first OAuth from that company
+
+**Users Table:**
+- Stores Pipedrive user profile information (name, email)
+- One record per Pipedrive user per company
+- Created automatically during OAuth authentication
+- Activity tracking: CreatedAt (first login), LastLoginAt (most recent login)
+- Supports multi-company users (same person in different Pipedrive accounts)
+
+**Data Flow:**
+- During OAuth sign-in, backend fetches user profile from Pipedrive `/users/me` API
+- User and company records created/updated automatically
+- No manual user registration required
+- Data stored: user name, email, company name, company domain, timestamps
+- **No session linkage in MVP** (Sessions stored separately in Table Storage)
+
+**Privacy & Security:**
+- User data (names, emails) stored in encrypted Azure SQL Database
+- Access restricted to backend only (not exposed to extension)
+- Data used for: business analytics, user activity tracking, future billing
+- Users implicitly consent by signing in with Pipedrive OAuth
+
+### 6.3 Telemetry
 - **Telemetry (optional later):** anonymous event counts only (DAU, lookups, creates, attaches).
 
 ---
