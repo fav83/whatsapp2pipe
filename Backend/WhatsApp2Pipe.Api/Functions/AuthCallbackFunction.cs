@@ -14,17 +14,23 @@ public class AuthCallbackFunction
     private readonly ITableStorageService tableStorageService;
     private readonly IOAuthService oauthService;
     private readonly OAuthStateValidator stateValidator;
+    private readonly IPipedriveApiClient pipedriveApiClient;
+    private readonly IUserService userService;
     private readonly ILogger<AuthCallbackFunction> logger;
 
     public AuthCallbackFunction(
         ITableStorageService tableStorageService,
         IOAuthService oauthService,
         OAuthStateValidator stateValidator,
+        IPipedriveApiClient pipedriveApiClient,
+        IUserService userService,
         ILogger<AuthCallbackFunction> logger)
     {
         this.tableStorageService = tableStorageService;
         this.oauthService = oauthService;
         this.stateValidator = stateValidator;
+        this.pipedriveApiClient = pipedriveApiClient;
+        this.userService = userService;
         this.logger = logger;
     }
 
@@ -103,6 +109,41 @@ public class AuthCallbackFunction
                 return CreateHtmlErrorResponse(req, HttpStatusCode.InternalServerError, "token_exchange_failed");
             }
 
+            // Create temporary session for /users/me call
+            logger.LogInformation("Fetching user profile from Pipedrive");
+            var tempSession = new SessionEntity
+            {
+                AccessToken = tokenResponse.AccessToken,
+                RefreshToken = tokenResponse.RefreshToken,
+                ApiDomain = tokenResponse.ApiDomain,
+                SessionExpiresAt = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn)
+            };
+
+            // Call /users/me to get user profile
+            PipedriveUserResponse userResponse;
+            try
+            {
+                userResponse = await pipedriveApiClient.GetCurrentUserAsync(tempSession);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to fetch user profile from Pipedrive");
+                return CreateHtmlErrorResponse(req, HttpStatusCode.InternalServerError, "user_profile_fetch_failed");
+            }
+
+            // Create or update user in database
+            logger.LogInformation("Creating or updating user in database");
+            try
+            {
+                var user = await userService.CreateOrUpdateUserAsync(userResponse.Data);
+                logger.LogInformation("User {UserId} processed successfully", user.UserId);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to create/update user in database");
+                return CreateHtmlErrorResponse(req, HttpStatusCode.InternalServerError, "user_creation_failed");
+            }
+
             // Generate verification code (session ID)
             logger.LogInformation("Creating session");
             var session = await tableStorageService.CreateSessionAsync(
@@ -157,6 +198,8 @@ public class AuthCallbackFunction
             { "missing_state", "State parameter is missing." },
             { "invalid_state", "Invalid or expired authorization state." },
             { "token_exchange_failed", "Failed to exchange authorization code for tokens." },
+            { "user_profile_fetch_failed", "Failed to fetch your user profile from Pipedrive." },
+            { "user_creation_failed", "Failed to create user record in database." },
             { "internal_error", "An internal error occurred." }
         };
 

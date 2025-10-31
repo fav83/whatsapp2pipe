@@ -40,4 +40,12 @@ public interface IPipedriveApiClient
     /// <param name="request">Updated person data</param>
     /// <returns>Updated person response</returns>
     Task<PipedrivePersonResponse> UpdatePersonAsync(SessionEntity session, int personId, PipedriveUpdatePersonRequest request);
+
+    /// <summary>
+    /// Get current user data from Pipedrive /users/me endpoint
+    /// Includes automatic token refresh on 401
+    /// </summary>
+    /// <param name="session">Session entity containing access token (may be updated if token is refreshed)</param>
+    /// <returns>Current user data including company information</returns>
+    Task<PipedriveUserResponse> GetCurrentUserAsync(SessionEntity session);
 }

@@ -1,9 +1,11 @@
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using WhatsApp2Pipe.Api.Configuration;
 using WhatsApp2Pipe.Api.Middleware;
+using WhatsApp2Pipe.Api.Models;
 using WhatsApp2Pipe.Api.Services;
 
 var host = new HostBuilder()
@@ -11,7 +13,7 @@ var host = new HostBuilder()
     {
         builder.UseMiddleware<CorsMiddleware>();
     })
-    .ConfigureServices(services =>
+    .ConfigureServices((context, services) =>
     {
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
@@ -20,6 +22,14 @@ var host = new HostBuilder()
         services.AddSingleton<ITableStorageService, TableStorageService>();
         services.AddSingleton<IOAuthService, OAuthService>();
         services.AddSingleton<OAuthStateValidator>();
+
+        // Add DbContext with SQL Server
+        var connectionString = context.Configuration.GetConnectionString("Chat2DealDb");
+        services.AddDbContext<Chat2DealDbContext>(options =>
+            options.UseSqlServer(connectionString));
+
+        // Register UserService
+        services.AddScoped<IUserService, UserService>();
 
         // Register Pipedrive configuration
         services.AddSingleton(sp =>

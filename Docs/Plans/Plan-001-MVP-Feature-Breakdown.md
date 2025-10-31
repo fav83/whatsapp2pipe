@@ -42,8 +42,8 @@ Build Create Person form with editable pre-filled name (from WhatsApp display na
 ### Feature 11: Attach Number to Existing Person Flow (✅ Complete - Spec-111)
 Implement inline person search by name with selection UI, attach phone as "WhatsApp" label (not primary), and transition to matched state on success.
 
-### Feature 12: UI States & Error Handling
-Implement all required UI states (no chat selected, loading, matched, no match, success, error), error boundaries, user-friendly error messages, and retry mechanisms.
+### Feature 12: UI States & Error Handling (✅ Complete - Spec-112)
+Implement all required UI states (no chat selected, loading, matched, no match, success, error), error boundaries, user-friendly error messages, and retry mechanisms. Includes React Error Boundary, global error handlers, network error detection, automatic sign-out on 401, and structured error logging.
 
 ### Feature 13: ~~shadcn/ui Component Library Setup~~ (❌ Skipped)
 **Decision:** Skipped for MVP. The current custom React components with Tailwind CSS utility classes are sufficient for the simple UI requirements (buttons, inputs, cards, forms). shadcn/ui and Radix UI primitives would add 30-50 KB to bundle size (doubling/tripling extension size) with minimal benefit for the straightforward UI patterns needed. All components (Features 8-11) are complete and tested without shadcn/ui. Can reconsider post-MVP if complex interactive components (modals, dropdowns, command palettes) are needed.
@@ -54,8 +54,8 @@ Set up Sentry for content script and service worker, implement PII filtering for
 ### Feature 15: Testing Infrastructure
 Set up Vitest for unit/integration tests, configure Testing Library for React components, set up Playwright for E2E tests, and create test fixtures and mocks.
 
-### Feature 16: User Entity Tracking (Backend) (Spec-116)
-Implement user and company entity tracking in Azure SQL Database using Entity Framework Core. Automatically create/update user records during OAuth flow by fetching profile data from Pipedrive `/users/me` API. Normalized schema with Companies and Users tables, GUID primary keys, and composite unique constraints to support multi-company users.
+### Feature 16: User Entity Tracking (Backend) (✅ Complete - Spec-116)
+Implement user and company entity tracking in Azure SQL Database using Entity Framework Core. Automatically create/update user records during OAuth flow by fetching profile data from Pipedrive `/users/me` API. Normalized schema with Companies and Users tables, GUID primary keys, and composite unique constraints to support multi-company users. Database migration applied successfully to `chat2deal-dev` on localhost SQL Server. OAuth scope remains `contacts:full` (no changes needed - `/users/me` uses base scope).
 
 ---
 

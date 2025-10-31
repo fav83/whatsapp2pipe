@@ -2,7 +2,7 @@
 
 **Feature:** Feature 16 - User Entity Tracking
 **Date:** 2025-10-31
-**Status:** Draft
+**Status:** ✅ Complete
 **Dependencies:** Spec-105a (Backend OAuth Service), Spec-106a (Backend Pipedrive API Service)
 
 ---
@@ -26,7 +26,7 @@ Implement user entity tracking system using Azure SQL Database with Entity Frame
 - Create or update User records with activity tracking (LastLoginAt)
 - Support multi-company users (same Pipedrive user across different companies)
 - Fail entire OAuth flow if user creation fails (data integrity)
-- Update OAuth scope to include `users:read` permission
+- No OAuth scope changes required (uses existing `contacts:full` scope)
 
 ---
 
@@ -38,7 +38,7 @@ Implement user entity tracking system using Azure SQL Database with Entity Frame
 - **ORM:** Entity Framework Core 8.x (latest stable)
 - **Language:** C# 12 (.NET 8)
 - **API:** Pipedrive `/users/me` endpoint
-- **OAuth Scope:** `contacts:full users:read` (updated from `contacts:full`)
+- **OAuth Scope:** `contacts:full` (no change - `/users/me` requires only `base` scope which is always granted)
 
 ### 3.2 Component Structure
 
@@ -332,17 +332,17 @@ host.Run();
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
-    "Pipedrive__Scope": "contacts:full users:read"
+    "Pipedrive__Scope": "contacts:full"
   },
   "ConnectionStrings": {
-    "Chat2DealDb": "Server=(localdb)\\mssqllocaldb;Database=Chat2DealDb;Trusted_Connection=True;MultipleActiveResultSets=true"
+    "Chat2DealDb": "Server=localhost;Database=chat2deal-dev;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"
   }
 }
 ```
 
 **Azure App Settings (Production):**
 ```
-Pipedrive__Scope = contacts:full users:read
+Pipedrive__Scope = contacts:full
 ConnectionStrings__Chat2DealDb = Server=tcp:{server}.database.windows.net,1433;Database=Chat2DealDb;User ID={user};Password={password};Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
 ```
 
@@ -810,53 +810,56 @@ Redirect to extension with verification_code (EXISTING)
 
 ---
 
-## 8. OAuth Scope Update
+## 8. OAuth Scope Analysis
 
-### 8.1 Scope Change
+### 8.1 No Scope Change Required
 
 **Current Scope:** `contacts:full`
 
-**New Scope:** `contacts:full users:read`
+**Required Scope for /users/me:** `base` (automatically granted with any OAuth token)
 
-**Reason:** `/users/me` endpoint requires `users:read` permission.
+**Conclusion:** No scope change needed. The `/users/me` endpoint requires only the `base` scope, which is implicitly granted with every Pipedrive OAuth token. The `users:read` scope is only required to fetch information about OTHER users in the company, not your own profile.
 
-### 8.2 Configuration Update
+**Reference:** [Pipedrive Users API Documentation](https://developers.pipedrive.com/docs/api/v1/Users#getCurrentUser) shows `security: [{"api_key":[]},{"oauth2":["base"]}]`
 
-**PipedriveSettings.cs (or equivalent configuration):**
+### 8.2 Configuration (No Changes)
+
+**PipedriveSettings remains unchanged:**
 ```csharp
 public class PipedriveSettings
 {
-    public string Scope { get; set; } = "contacts:full users:read";  // UPDATED
+    public string Scope { get; set; } = "contacts:full";  // NO CHANGE
 }
 ```
 
-**Or via configuration file:**
+**Configuration file (no changes):**
 ```json
 {
   "Pipedrive": {
-    "Scope": "contacts:full users:read"
+    "Scope": "contacts:full"
   }
 }
 ```
 
 ### 8.3 Impact Analysis
 
-**Existing Sessions (created with `contacts:full` only):**
+**Existing Sessions:**
 - ✅ Continue working for Persons API calls
-- ❌ Cannot call `/users/me` (missing `users:read` scope)
-- ✅ No User entity created (expected - these sessions predate this feature)
-- ✅ No action required
+- ✅ Can call `/users/me` (base scope always granted)
+- ✅ User entities will be created on next OAuth (feature enhancement)
+- ✅ No action required from users
 
 **New OAuth Flows (after deployment):**
-- ✅ Request updated scope: `contacts:full users:read`
-- ✅ Users see permission dialog with both scopes
+- ✅ Request same scope: `contacts:full`
+- ✅ Users see same permission dialog (no changes)
 - ✅ Successfully call `/users/me` during callback
 - ✅ Create User entities in SQL database
 
 **Migration Strategy:**
-- ✅ Gradual migration (users re-authenticate naturally over time)
-- ✅ No forced re-authentication required
+- ✅ Zero-impact deployment (no scope changes)
+- ✅ No user re-authentication required
 - ✅ No breaking changes to existing sessions
+- ✅ Feature works immediately for all users (new and existing)
 
 ---
 
@@ -1147,7 +1150,7 @@ public class OAuthFlowE2ETests
 - [ ] Multi-company user (different Pipedrive company) creates separate User record
 - [ ] Failed /users/me call shows error message with close button
 - [ ] Failed database operation shows error message
-- [ ] OAuth scope dialog shows `contacts:full` and `users:read`
+- [ ] OAuth scope dialog shows `contacts:full` only (no changes from existing)
 - [ ] Successful OAuth flow redirects to extension with verification_code
 
 **Database Verification:**
@@ -1211,10 +1214,10 @@ public class OAuthFlowE2ETests
 
 ### 11.4 OAuth Scope
 
-- ✅ Scope updated to `contacts:full users:read`
-- ✅ Existing sessions continue working (no breaking changes)
-- ✅ New OAuth flows request updated scope
-- ✅ Users see permission dialog with both scopes
+- ✅ Scope remains `contacts:full` (no changes required)
+- ✅ `/users/me` accessible with `base` scope (implicitly granted)
+- ✅ Existing sessions work immediately (no re-authentication)
+- ✅ Users see same permission dialog (no changes)
 
 ### 11.5 Business Logic
 
@@ -1285,5 +1288,12 @@ The following are explicitly **NOT** part of this feature:
 
 ---
 
-**Status:** Draft - Ready for review and implementation
-**Estimated Effort:** 3-4 days (development + testing + migrations)
+**Status:** ✅ Complete - Implemented and database migrated
+**Actual Effort:** 1 day (development + database setup + documentation)
+
+**Implementation Notes:**
+- Database: `chat2deal-dev` on localhost SQL Server
+- Migration: `20251031181239_InitialCreate` applied successfully
+- OAuth scope: Remains `contacts:full` (no changes - `/users/me` uses `base` scope)
+- Build: Successful with no errors
+- Unit tests: Need to be updated for new PipedriveApiClient dependencies (in progress)
