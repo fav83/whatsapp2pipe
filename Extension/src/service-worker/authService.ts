@@ -52,9 +52,16 @@ class ServiceWorkerAuthService {
 
       console.log('[SW AuthService] Verification code extracted successfully')
 
-      // Store verification_code
-      await chrome.storage.local.set({ verification_code: verificationCode })
-      console.log('[SW AuthService] Verification code stored in chrome.storage.local')
+      // Extract userName from redirect URL
+      const userName = this.extractUserName(redirectUrl)
+      console.log('[SW AuthService] User name extracted:', userName || 'Not provided')
+
+      // Store verification_code and userName
+      await chrome.storage.local.set({
+        verification_code: verificationCode,
+        userName: userName || 'User', // Fallback to 'User' if not provided
+      })
+      console.log('[SW AuthService] Verification code and userName stored in chrome.storage.local')
 
       // Clean up stored state
       await chrome.storage.session.remove('oauth_state')
@@ -126,6 +133,20 @@ class ServiceWorkerAuthService {
       return url.searchParams.get('verification_code')
     } catch (error) {
       console.error('[SW AuthService] Failed to parse redirect URL:', error)
+      return null
+    }
+  }
+
+  /**
+   * Extracts userName from OAuth callback URL
+   * Example URL: https://.../api/auth/callback?verification_code=xxx&userName=John%20Doe&success=true
+   */
+  private extractUserName(redirectUrl: string): string | null {
+    try {
+      const url = new URL(redirectUrl)
+      return url.searchParams.get('userName')
+    } catch (error) {
+      console.error('[SW AuthService] Failed to parse userName from redirect URL:', error)
       return null
     }
   }

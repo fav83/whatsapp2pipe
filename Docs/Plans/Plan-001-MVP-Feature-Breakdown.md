@@ -57,6 +57,9 @@ Set up Vitest for unit/integration tests, configure Testing Library for React co
 ### Feature 16: User Entity Tracking (Backend) (✅ Complete - Spec-116)
 Implement user and company entity tracking in Azure SQL Database using Entity Framework Core. Automatically create/update user records during OAuth flow by fetching profile data from Pipedrive `/users/me` API. Normalized schema with Companies and Users tables, GUID primary keys, and composite unique constraints to support multi-company users. Database migration applied successfully to `chat2deal-dev` on localhost SQL Server. OAuth scope remains `contacts:full` (no changes needed - `/users/me` uses base scope).
 
+### Feature 17: User Avatar with Profile Dropdown (✅ Complete - Spec-117)
+Replace text sign-out button with circular avatar showing first letter of user's name. Backend passes userName in OAuth callback URL. Extension stores userName in chrome.storage.local. Avatar displays 32px gray circle with white letter, clicking toggles dropdown menu with full name and sign-out option. Supports outside-click and Escape key to close. Header rebranded to "Chat2Deal". DEV indicator moved to bottom of sidebar.
+
 ---
 
 ## Implementation Order Recommendation

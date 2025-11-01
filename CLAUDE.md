@@ -43,6 +43,7 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 - [Spec-112-UI-States-Error-Handling.md](Docs/Specs/Spec-112-UI-States-Error-Handling.md) - UI states and error handling with error boundaries (✅ Complete)
 - [Spec-116-User-Entity-Tracking.md](Docs/Specs/Spec-116-User-Entity-Tracking.md) - User entity tracking with EF Core and Azure SQL (✅ Complete)
 - [Spec-116-Implementation-Summary.md](Docs/Specs/Spec-116-Implementation-Summary.md) - Complete implementation summary and configuration details
+- [Spec-117-User-Avatar-Dropdown.md](Docs/Specs/Spec-117-User-Avatar-Dropdown.md) - User avatar with profile dropdown (✅ Complete)
 
 ### External Documentation
 - [Pipedrive/](Docs/External/Pipedrive/) - Pipedrive API documentation and development resources

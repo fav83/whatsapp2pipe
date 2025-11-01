@@ -133,9 +133,10 @@ public class AuthCallbackFunction
 
             // Create or update user in database
             logger.LogInformation("Creating or updating user in database");
+            User user;
             try
             {
-                var user = await userService.CreateOrUpdateUserAsync(userResponse.Data);
+                user = await userService.CreateOrUpdateUserAsync(userResponse.Data);
                 logger.LogInformation("User {UserId} processed successfully", user.UserId);
             }
             catch (Exception ex)
@@ -155,10 +156,11 @@ public class AuthCallbackFunction
 
             logger.LogInformation("Session created successfully: {VerificationCode}", session.VerificationCode);
 
-            // Redirect to extension with verification code
+            // Redirect to extension with verification code and userName
             // This URL pattern is recognized by Chrome and closes the popup automatically
             var redirectUrl = $"https://{stateData.ExtensionId}.chromiumapp.org/" +
                             $"?verification_code={Uri.EscapeDataString(session.VerificationCode)}" +
+                            $"&userName={Uri.EscapeDataString(user.Name)}" +
                             $"&success=true";
 
             logger.LogInformation("Redirecting to extension URL");

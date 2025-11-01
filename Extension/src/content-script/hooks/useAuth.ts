@@ -13,6 +13,7 @@ export function useAuth() {
   const [authState, setAuthState] = useState<AuthState>('unauthenticated')
   const [error, setError] = useState<string | null>(null)
   const [verificationCode, setVerificationCode] = useState<string | null>(null)
+  const [userName, setUserName] = useState<string | null>(null)
 
   // Check authentication status on mount
   useEffect(() => {
@@ -21,10 +22,14 @@ export function useAuth() {
       const isAuth = await authService.isAuthenticated()
       if (isAuth) {
         const code = await authService.getVerificationCode()
+        const { userName: storedUserName } = await chrome.storage.local.get('userName')
         setVerificationCode(code)
+        setUserName(storedUserName || null)
         setAuthState('authenticated')
-        console.log('[useAuth] User is authenticated')
+        console.log('[useAuth] User is authenticated, userName:', storedUserName || 'Not set')
       } else {
+        setVerificationCode(null)
+        setUserName(null)
         setAuthState('unauthenticated')
         console.log('[useAuth] User is not authenticated')
       }
@@ -38,19 +43,29 @@ export function useAuth() {
       changes: { [key: string]: chrome.storage.StorageChange },
       areaName: string
     ) => {
-      if (areaName === 'local' && changes.verification_code) {
-        const newValue = changes.verification_code.newValue
-        console.log(
-          '[useAuth] Storage change detected:',
-          newValue ? 'authenticated' : 'unauthenticated'
-        )
+      if (areaName === 'local') {
+        // Handle verification_code changes
+        if (changes.verification_code) {
+          const newValue = changes.verification_code.newValue
+          console.log(
+            '[useAuth] Storage change detected:',
+            newValue ? 'authenticated' : 'unauthenticated'
+          )
 
-        if (newValue) {
-          setVerificationCode(newValue)
-          setAuthState('authenticated')
-        } else {
-          setVerificationCode(null)
-          setAuthState('unauthenticated')
+          if (newValue) {
+            setVerificationCode(newValue)
+            setAuthState('authenticated')
+          } else {
+            setVerificationCode(null)
+            setAuthState('unauthenticated')
+          }
+        }
+
+        // Handle userName changes
+        if (changes.userName) {
+          const newUserName = changes.userName.newValue
+          console.log('[useAuth] userName change detected:', newUserName || 'Cleared')
+          setUserName(newUserName || null)
         }
       }
     }
@@ -81,12 +96,14 @@ export function useAuth() {
     console.log('[useAuth] Signing out...')
     await authService.signOut()
     setVerificationCode(null)
+    setUserName(null)
     setAuthState('unauthenticated')
   }
 
   return {
     authState,
     verificationCode,
+    userName,
     error,
     signIn,
     signOut,
