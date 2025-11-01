@@ -139,7 +139,7 @@ Build a lightweight Chrome extension that adds a sidebar to **WhatsApp Web** to 
 - **No message content, files, or attachments** are collected or transmitted.
 - **No persistent caching** of chat→Person mappings in MVP.
 
-### 6.2 Backend User Tracking (Feature 16)
+### 6.2 Backend User Tracking (Feature 16) (✅ Complete - Spec-116)
 To enable analytics and multi-tenancy support, the backend maintains user and company records in Azure SQL Database:
 
 **Companies Table:**
@@ -160,6 +160,13 @@ To enable analytics and multi-tenancy support, the backend maintains user and co
 - No manual user registration required
 - Data stored: user name, email, company name, company domain, timestamps
 - **No session linkage in MVP** (Sessions stored separately in Table Storage)
+
+**Implementation Status:**
+- ✅ Entity Framework Core 8.x with code-first migrations
+- ✅ Normalized database schema: Companies ← Users relationship
+- ✅ Database migration applied: `chat2deal-dev` on localhost SQL Server
+- ✅ OAuth scope unchanged: `contacts:full` (no changes - `/users/me` uses base scope)
+- ✅ Build successful with no errors
 
 **Privacy & Security:**
 - User data (names, emails) stored in encrypted Azure SQL Database

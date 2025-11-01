@@ -47,7 +47,11 @@
       "Bash(dotnet test:*)",
       "Bash(find:*)",
       "Bash(dotnet list package:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(dotnet add package:*)",
+      "Bash(dotnet ef migrations add:*)",
+      "Bash(dotnet ef database update:*)",
+      "Bash(nul)"
     ],
     "deny": [],
     "ask": [

@@ -135,11 +135,11 @@ class AuthService {
   }
 
   /**
-   * Signs out (clears verification_code)
+   * Signs out (clears verification_code and userName)
    */
   async signOut(): Promise<void> {
-    await chrome.storage.local.remove('verification_code')
-    console.log('[AuthService] User signed out, verification code removed')
+    await chrome.storage.local.remove(['verification_code', 'userName'])
+    console.log('[AuthService] User signed out, verification code and userName removed')
   }
 
   /**

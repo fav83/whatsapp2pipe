@@ -239,6 +239,61 @@ public class PipedriveApiClient : IPipedriveApiClient
     }
 
     /// <summary>
+    /// Get current user data from Pipedrive /users/me endpoint (with automatic token refresh)
+    /// </summary>
+    public async Task<PipedriveUserResponse> GetCurrentUserAsync(SessionEntity session)
+    {
+        return await ExecuteWithRefreshAsync(
+            session,
+            (accessToken) => GetCurrentUserInternalAsync(accessToken, session.ApiDomain),
+            "GetCurrentUser");
+    }
+
+    private async Task<PipedriveUserResponse> GetCurrentUserInternalAsync(string accessToken, string apiDomain)
+    {
+        var url = $"{apiDomain}/api/v1/users/me";
+        logger.LogInformation("Fetching current user from Pipedrive API");
+
+        var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        // Log request (sanitize access token)
+        var headers = new Dictionary<string, string>
+        {
+            { "Authorization", "Bearer [REDACTED]" }
+        };
+        apiLogger.LogRequest("GET", url, headers, null);
+
+        var response = await httpClient.SendAsync(request);
+        var content = await response.Content.ReadAsStringAsync();
+
+        // Log response
+        apiLogger.LogResponse("GET", url, (int)response.StatusCode, content);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogWarning($"Pipedrive /users/me failed: {response.StatusCode}");
+            await HandleErrorResponse(response, content);
+        }
+
+        var result = JsonSerializer.Deserialize<PipedriveUserResponse>(content, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        if (result == null || !result.Success)
+        {
+            logger.LogError("Invalid response from Pipedrive /users/me");
+            throw new InvalidOperationException("Failed to deserialize Pipedrive user response");
+        }
+
+        logger.LogInformation("Successfully fetched user {UserId} from company {CompanyId}",
+            result.Data.Id, result.Data.CompanyId);
+
+        return result;
+    }
+
+    /// <summary>
     /// Handle error responses from Pipedrive API
     /// </summary>
     private Task HandleErrorResponse(HttpResponseMessage response, string content)
