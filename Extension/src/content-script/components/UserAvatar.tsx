@@ -65,7 +65,7 @@ export function UserAvatar({ userName, onSignOut }: UserAvatarProps) {
         aria-label="User menu"
         aria-expanded={isMenuOpen}
       >
-        <span className="text-white text-sm font-semibold">{avatarLetter}</span>
+        <span className="text-white text-sm font-semibold leading-none">{avatarLetter}</span>
       </div>
 
       {/* Dropdown Menu */}
