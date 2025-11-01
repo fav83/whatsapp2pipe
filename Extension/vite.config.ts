@@ -206,7 +206,7 @@ export default defineConfig({
       // Disable automatic vendor chunking
       preserveEntrySignatures: 'strict',
     },
-    sourcemap: process.env.NODE_ENV === 'development',
+    sourcemap: true, // Generate source maps for Sentry error tracking
     // Increase chunk size warning limit since content-script bundles React
     chunkSizeWarningLimit: 1000,
   },

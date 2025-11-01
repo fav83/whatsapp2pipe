@@ -8,6 +8,9 @@
 
 import { AUTH_CONFIG } from '../config'
 import type { Person, CreatePersonData, AttachPhoneData } from '../types/person'
+import { logError } from '../utils/errorLogger'
+import { logBreadcrumb } from '../utils/breadcrumbs'
+import { sentryScope } from './sentry'
 
 class PipedriveApiService {
   private readonly baseUrl = AUTH_CONFIG.backendUrl
@@ -30,6 +33,13 @@ class PipedriveApiService {
    */
   private async makeRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     try {
+      logBreadcrumb(
+        'API request started',
+        'api.request_started',
+        { endpoint, method: options.method || 'GET' },
+        sentryScope
+      )
+
       const verificationCode = await this.getVerificationCode()
 
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
@@ -65,8 +75,36 @@ class PipedriveApiService {
             errorMessage = 'An error occurred. Please try again.'
         }
 
+        // Log API errors to Sentry (except 404 - expected state)
+        if (statusCode !== 404) {
+          logBreadcrumb(
+            'API request failed',
+            'api.request_failed',
+            { endpoint, statusCode, errorMessage },
+            sentryScope
+          )
+
+          logError(
+            'API request failed',
+            new Error(errorMessage),
+            {
+              endpoint,
+              statusCode,
+              method: options.method || 'GET',
+            },
+            sentryScope
+          )
+        }
+
         throw { statusCode, message: errorMessage }
       }
+
+      logBreadcrumb(
+        'API request success',
+        'api.request_success',
+        { endpoint, statusCode: response.status },
+        sentryScope
+      )
 
       return response.json()
     } catch (error) {
@@ -84,6 +122,23 @@ class PipedriveApiService {
       }
 
       // Otherwise, this is a network error (fetch threw before getting response)
+      logBreadcrumb(
+        'API network error',
+        'api.network_error',
+        { endpoint, errorMessage: error instanceof Error ? error.message : String(error) },
+        sentryScope
+      )
+
+      logError(
+        'Network error',
+        error,
+        {
+          endpoint,
+          method: options.method || 'GET',
+        },
+        sentryScope
+      )
+
       throw {
         statusCode: 0,
         message: 'Unable to connect. Check your internet connection.',

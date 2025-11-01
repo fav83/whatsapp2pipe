@@ -1,5 +1,7 @@
 import React from 'react'
 import { logError } from '../../utils/errorLogger'
+import { sentryScope } from '../sentry'
+import { logBreadcrumb } from '../../utils/breadcrumbs'
 
 interface ErrorBoundaryProps {
   children: React.ReactNode
@@ -28,11 +30,24 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Log error with structured format
-    logError('React component error', error, {
-      componentStack: errorInfo.componentStack,
-      url: window.location.href,
-    })
+    // Add breadcrumb for Sentry
+    logBreadcrumb(
+      'React component crashed',
+      'react.error_boundary',
+      { componentStack: errorInfo.componentStack?.slice(0, 500) }, // Truncate for brevity
+      sentryScope
+    )
+
+    // Log error with structured format (dual logging: console + Sentry)
+    logError(
+      'React component error',
+      error,
+      {
+        componentStack: errorInfo.componentStack,
+        url: window.location.href,
+      },
+      sentryScope // Pass scope to logError
+    )
   }
 
   render() {

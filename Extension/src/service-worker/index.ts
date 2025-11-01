@@ -4,6 +4,7 @@
 import { serviceWorkerAuthService } from './authService'
 import { pipedriveApiService } from './pipedriveApiService'
 import { logError, getErrorMessage } from '../utils/errorLogger'
+import { sentryScope } from './sentry'
 import type {
   ExtensionMessage,
   AuthSignInSuccess,
@@ -16,19 +17,29 @@ console.log('[Service Worker] Loaded')
 
 // Global error handler for uncaught errors
 self.addEventListener('error', (event: ErrorEvent) => {
-  logError('Service Worker uncaught error', event.error, {
-    message: event.message,
-    filename: event.filename,
-    lineno: event.lineno,
-    colno: event.colno,
-  })
+  logError(
+    'Service Worker uncaught error',
+    event.error,
+    {
+      message: event.message,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    },
+    sentryScope
+  )
 })
 
 // Global handler for unhandled promise rejections
 self.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
-  logError('Service Worker unhandled promise rejection', event.reason, {
-    promise: event.promise,
-  })
+  logError(
+    'Service Worker unhandled promise rejection',
+    event.reason,
+    {
+      promise: event.promise,
+    },
+    sentryScope
+  )
 })
 
 // Listen for extension installation
