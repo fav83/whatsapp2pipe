@@ -22,6 +22,16 @@ public class Chat2DealDbContext : DbContext
     /// </summary>
     public DbSet<User> Users { get; set; } = null!;
 
+    /// <summary>
+    /// Sessions table - OAuth session management.
+    /// </summary>
+    public DbSet<Session> Sessions { get; set; } = null!;
+
+    /// <summary>
+    /// States table - OAuth CSRF protection.
+    /// </summary>
+    public DbSet<State> States { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -80,6 +90,97 @@ public class Chat2DealDbContext : DbContext
                   .IsRequired();
 
             entity.Property(u => u.LastLoginAt)
+                  .IsRequired();
+        });
+
+        // Configure Session entity
+        modelBuilder.Entity<Session>(entity =>
+        {
+            entity.ToTable("Sessions");
+
+            entity.HasKey(s => s.SessionId);
+
+            // Unique index on VerificationCode (used as Bearer token)
+            entity.HasIndex(s => s.VerificationCode)
+                  .IsUnique()
+                  .HasDatabaseName("IX_Sessions_VerificationCode");
+
+            // Index on UserId for user session queries
+            entity.HasIndex(s => s.UserId)
+                  .HasDatabaseName("IX_Sessions_UserId");
+
+            // Index on CompanyId for company session queries
+            entity.HasIndex(s => s.CompanyId)
+                  .HasDatabaseName("IX_Sessions_CompanyId");
+
+            // Composite index on UserId + CompanyId
+            entity.HasIndex(s => new { s.UserId, s.CompanyId })
+                  .HasDatabaseName("IX_Sessions_UserId_CompanyId");
+
+            // Required fields
+            entity.Property(s => s.VerificationCode)
+                  .IsRequired()
+                  .HasMaxLength(32);
+
+            entity.Property(s => s.AccessToken)
+                  .IsRequired();
+
+            entity.Property(s => s.RefreshToken)
+                  .IsRequired();
+
+            entity.Property(s => s.ApiDomain)
+                  .IsRequired()
+                  .HasMaxLength(255);
+
+            entity.Property(s => s.ExpiresAt)
+                  .IsRequired();
+
+            entity.Property(s => s.SessionExpiresAt)
+                  .IsRequired();
+
+            entity.Property(s => s.ExtensionId)
+                  .IsRequired()
+                  .HasMaxLength(255);
+
+            entity.Property(s => s.CreatedAt)
+                  .IsRequired();
+
+            // Foreign key relationships
+            entity.HasOne(s => s.User)
+                  .WithMany()
+                  .HasForeignKey(s => s.UserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(s => s.Company)
+                  .WithMany()
+                  .HasForeignKey(s => s.CompanyId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Configure State entity
+        modelBuilder.Entity<State>(entity =>
+        {
+            entity.ToTable("States");
+
+            entity.HasKey(s => s.StateId);
+
+            // Unique index on StateHash for fast lookup
+            entity.HasIndex(s => s.StateHash)
+                  .IsUnique()
+                  .HasDatabaseName("IX_States_StateHash");
+
+            // Required fields
+            entity.Property(s => s.StateHash)
+                  .IsRequired()
+                  .HasMaxLength(64);
+
+            entity.Property(s => s.StateValue)
+                  .IsRequired();
+
+            entity.Property(s => s.CreatedAt)
+                  .IsRequired();
+
+            entity.Property(s => s.ExpiresAt)
                   .IsRequired();
         });
     }

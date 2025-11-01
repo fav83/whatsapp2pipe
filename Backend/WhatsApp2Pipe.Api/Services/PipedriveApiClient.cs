@@ -18,27 +18,27 @@ public class PipedriveApiClient : IPipedriveApiClient
     private readonly ILogger<PipedriveApiClient> logger;
     private readonly PipedriveApiLogger apiLogger;
     private readonly IOAuthService oauthService;
-    private readonly ITableStorageService tableStorageService;
+    private readonly ISessionService sessionService;
 
     public PipedriveApiClient(
         HttpClient httpClient,
         PipedriveSettings config,
         ILogger<PipedriveApiClient> logger,
         IOAuthService oauthService,
-        ITableStorageService tableStorageService)
+        ISessionService sessionService)
     {
         this.httpClient = httpClient;
         this.config = config;
         this.logger = logger;
         this.apiLogger = new PipedriveApiLogger(logger);
         this.oauthService = oauthService;
-        this.tableStorageService = tableStorageService;
+        this.sessionService = sessionService;
     }
 
     /// <summary>
     /// Search for persons by term and fields (with automatic token refresh)
     /// </summary>
-    public async Task<PipedriveSearchResponse> SearchPersonsAsync(SessionEntity session, string term, string fields)
+    public async Task<PipedriveSearchResponse> SearchPersonsAsync(Session session, string term, string fields)
     {
         return await ExecuteWithRefreshAsync(
             session,
@@ -84,7 +84,7 @@ public class PipedriveApiClient : IPipedriveApiClient
     /// <summary>
     /// Create a new person in Pipedrive (with automatic token refresh)
     /// </summary>
-    public async Task<PipedrivePersonResponse> CreatePersonAsync(SessionEntity session, PipedriveCreatePersonRequest request)
+    public async Task<PipedrivePersonResponse> CreatePersonAsync(Session session, PipedriveCreatePersonRequest request)
     {
         return await ExecuteWithRefreshAsync(
             session,
@@ -137,7 +137,7 @@ public class PipedriveApiClient : IPipedriveApiClient
     /// <summary>
     /// Get an existing person by ID (with automatic token refresh)
     /// </summary>
-    public async Task<PipedrivePersonResponse> GetPersonAsync(SessionEntity session, int personId)
+    public async Task<PipedrivePersonResponse> GetPersonAsync(Session session, int personId)
     {
         return await ExecuteWithRefreshAsync(
             session,
@@ -188,7 +188,7 @@ public class PipedriveApiClient : IPipedriveApiClient
     /// <summary>
     /// Update an existing person (with automatic token refresh)
     /// </summary>
-    public async Task<PipedrivePersonResponse> UpdatePersonAsync(SessionEntity session, int personId, PipedriveUpdatePersonRequest request)
+    public async Task<PipedrivePersonResponse> UpdatePersonAsync(Session session, int personId, PipedriveUpdatePersonRequest request)
     {
         return await ExecuteWithRefreshAsync(
             session,
@@ -241,7 +241,7 @@ public class PipedriveApiClient : IPipedriveApiClient
     /// <summary>
     /// Get current user data from Pipedrive /users/me endpoint (with automatic token refresh)
     /// </summary>
-    public async Task<PipedriveUserResponse> GetCurrentUserAsync(SessionEntity session)
+    public async Task<PipedriveUserResponse> GetCurrentUserAsync(Session session)
     {
         return await ExecuteWithRefreshAsync(
             session,
@@ -317,7 +317,7 @@ public class PipedriveApiClient : IPipedriveApiClient
     /// Execute Pipedrive API call with automatic token refresh on 401 errors
     /// </summary>
     private async Task<T> ExecuteWithRefreshAsync<T>(
-        SessionEntity session,
+        Session session,
         Func<string, Task<T>> apiCall,
         string operationName)
     {
@@ -342,10 +342,10 @@ public class PipedriveApiClient : IPipedriveApiClient
                 // Update session with new tokens
                 session.AccessToken = tokenResponse.AccessToken;
                 session.RefreshToken = tokenResponse.RefreshToken;
-                session.SessionExpiresAt = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn);
+                session.ExpiresAt = DateTime.UtcNow.AddSeconds(tokenResponse.ExpiresIn);
 
-                logger.LogInformation("[{Operation}] Updating session in table storage", operationName);
-                await tableStorageService.UpdateSessionAsync(session);
+                logger.LogInformation("[{Operation}] Updating session in database", operationName);
+                await sessionService.UpdateSessionAsync(session);
                 logger.LogInformation("[{Operation}] Session updated with new tokens", operationName);
 
                 // Retry API call with new access token
@@ -360,8 +360,8 @@ public class PipedriveApiClient : IPipedriveApiClient
                 // Delete expired session
                 try
                 {
-                    await tableStorageService.DeleteSessionAsync(session.PartitionKey);
-                    logger.LogInformation("[{Operation}] Deleted expired session from table storage", operationName);
+                    await sessionService.DeleteSessionAsync(session.VerificationCode);
+                    logger.LogInformation("[{Operation}] Deleted expired session from database", operationName);
                 }
                 catch (Exception deleteEx)
                 {

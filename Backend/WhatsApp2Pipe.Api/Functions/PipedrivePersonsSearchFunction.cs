@@ -10,7 +10,7 @@ namespace WhatsApp2Pipe.Api.Functions;
 public class PipedrivePersonsSearchFunction
 {
     private readonly ILogger<PipedrivePersonsSearchFunction> logger;
-    private readonly ITableStorageService tableStorageService;
+    private readonly ISessionService sessionService;
     private readonly IPipedriveApiClient pipedriveApiClient;
     private readonly PersonTransformService transformService;
 
@@ -22,12 +22,12 @@ public class PipedrivePersonsSearchFunction
 
     public PipedrivePersonsSearchFunction(
         ILogger<PipedrivePersonsSearchFunction> logger,
-        ITableStorageService tableStorageService,
+        ISessionService sessionService,
         IPipedriveApiClient pipedriveApiClient,
         PersonTransformService transformService)
     {
         this.logger = logger;
-        this.tableStorageService = tableStorageService;
+        this.sessionService = sessionService;
         this.pipedriveApiClient = pipedriveApiClient;
         this.transformService = transformService;
     }
@@ -56,7 +56,7 @@ public class PipedrivePersonsSearchFunction
             }
 
             var authHeader = authHeaders.FirstOrDefault();
-            logger.LogInformation("[PipedrivePersonsSearch] Authorization header found: {AuthHeader}", authHeader);
+            logger.LogInformation("[PipedrivePersonsSearch] Authorization header present");
 
             if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
             {
@@ -67,25 +67,18 @@ public class PipedrivePersonsSearchFunction
             var verificationCode = authHeader.Substring("Bearer ".Length);
             logger.LogInformation("[PipedrivePersonsSearch] Step 1 PASSED: Verification code extracted (length: {Length})", verificationCode.Length);
 
-            // Retrieve session from Azure Table Storage
-            logger.LogInformation("[PipedrivePersonsSearch] Step 2: Retrieving session from Table Storage");
-            var session = await tableStorageService.GetSessionAsync(verificationCode);
+            // Retrieve session from SQL Database (expiration checked automatically)
+            logger.LogInformation("[PipedrivePersonsSearch] Step 2: Retrieving session from database");
+            var session = await sessionService.GetSessionAsync(verificationCode);
 
             if (session == null)
             {
-                logger.LogWarning("[PipedrivePersonsSearch] FAILED Step 2: Session not found for verification code");
+                logger.LogWarning("[PipedrivePersonsSearch] FAILED Step 2: Session not found or expired");
                 return req.CreateResponse(HttpStatusCode.Unauthorized);
             }
 
-            logger.LogInformation("[PipedrivePersonsSearch] Session found - ExpiresAt: {ExpiresAt}, Now: {Now}", session.SessionExpiresAt, DateTimeOffset.UtcNow);
-
-            if (session.SessionExpiresAt < DateTimeOffset.UtcNow)
-            {
-                logger.LogWarning("[PipedrivePersonsSearch] FAILED Step 2: Session expired - ExpiresAt: {ExpiresAt}, Now: {Now}", session.SessionExpiresAt, DateTimeOffset.UtcNow);
-                return req.CreateResponse(HttpStatusCode.Unauthorized);
-            }
-
-            logger.LogInformation("[PipedrivePersonsSearch] Step 2 PASSED: Valid session retrieved");
+            logger.LogInformation("[PipedrivePersonsSearch] Step 2 PASSED: Valid session retrieved - User: {UserId}, Company: {CompanyId}",
+                session.UserId, session.CompanyId);
 
             // Extract query parameters
             logger.LogInformation("[PipedrivePersonsSearch] Step 3: Extracting query parameters");
@@ -106,7 +99,7 @@ public class PipedrivePersonsSearchFunction
             logger.LogInformation("[PipedrivePersonsSearch] Step 3 PASSED: Query parameters validated");
 
             // Call Pipedrive API (automatic token refresh handled internally)
-            logger.LogInformation("[PipedrivePersonsSearch] Step 4: Calling Pipedrive API - term: {Term}, fields: {Fields}, AccessToken length: {TokenLength}", term, fields, session.AccessToken.Length);
+            logger.LogInformation("[PipedrivePersonsSearch] Step 4: Calling Pipedrive API - term: {Term}, fields: {Fields}", term, fields);
             var pipedriveResponse = await pipedriveApiClient.SearchPersonsAsync(session, term, fields);
             logger.LogInformation("[PipedrivePersonsSearch] Step 4 COMPLETED: Pipedrive API call finished");
 

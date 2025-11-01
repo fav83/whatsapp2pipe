@@ -19,14 +19,16 @@ var host = new HostBuilder()
         services.ConfigureFunctionsApplicationInsights();
 
         // Register OAuth services
-        services.AddSingleton<ITableStorageService, TableStorageService>();
         services.AddSingleton<IOAuthService, OAuthService>();
         services.AddSingleton<OAuthStateValidator>();
 
-        // Add DbContext with SQL Server
+        // Add DbContextFactory with SQL Server (factory-safe for singleton consumers)
         var connectionString = context.Configuration.GetConnectionString("Chat2DealDb");
-        services.AddDbContext<Chat2DealDbContext>(options =>
+        services.AddDbContextFactory<Chat2DealDbContext>(options =>
             options.UseSqlServer(connectionString));
+
+        // Register session service as Singleton (uses DbContextFactory per-call)
+        services.AddSingleton<ISessionService, SqlSessionService>();
 
         // Register UserService
         services.AddScoped<IUserService, UserService>();
