@@ -149,6 +149,35 @@ The build system includes a custom Vite plugin (`inline-chunks`) that solves Chr
 
 **Documentation:** See [Chrome-Extension-Architecture.md](Docs/Architecture/Chrome-Extension-Architecture.md#81-vite-configuration) for complete technical details.
 
+### Source Map Separation for Security
+
+The build system includes a custom Vite plugin (`separate-sourcemaps`) that ensures source maps are never accidentally shipped to users:
+
+**Problem:** Source maps expose original TypeScript source code and should never be included in production builds distributed to users.
+
+**Solution:** The `separate-sourcemaps` plugin automatically:
+- Runs after all other build plugins complete
+- Recursively finds all `.map` files in the `dist/` directory
+- Moves them to a separate `sourcemaps/` directory with flattened names
+- Ensures `dist/` contains ONLY production code, ready to ship
+
+**Directory Structure After Build:**
+```
+Extension/
+  dist/              ← Production code ONLY (safe to ship)
+    *.js, *.css, *.html, manifest.json
+  sourcemaps/        ← Source maps ONLY (for Sentry upload)
+    *.js.map, *.css.map
+  release/           ← Created by npm run package
+  chat2deal-vX.X.X.zip ← Distribution package
+```
+
+**Security Benefit:** Even if you accidentally package `dist/` directly instead of using `npm run package`, it contains NO source maps!
+
+**Sentry Integration:** Source maps are uploaded separately to Sentry via `npm run upload-sourcemaps`, which reads from the `sourcemaps/` directory.
+
+**Documentation:** See [DEPLOYMENT.md](Extension/DEPLOYMENT.md) for complete deployment workflow.
+
 ### WhatsApp Web Integration
 
 The sidebar adjusts the WhatsApp Web layout to prevent overlay:

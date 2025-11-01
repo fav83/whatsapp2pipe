@@ -83,8 +83,23 @@ export function sanitizeEvent(event: Event, _hint?: EventHint): Event | null {
   }
 
   // Sanitize contexts (extra data)
+  // IMPORTANT: Skip Sentry's internal contexts (trace, app, browser, os, device, runtime)
+  // These contain technical data, not PII
   if (event.contexts) {
-    event.contexts = sanitizeValue(event.contexts)
+    const SENTRY_INTERNAL_CONTEXTS = ['trace', 'app', 'browser', 'os', 'device', 'runtime']
+    const sanitizedContexts: Record<string, unknown> = {}
+
+    for (const [contextName, contextValue] of Object.entries(event.contexts)) {
+      if (SENTRY_INTERNAL_CONTEXTS.includes(contextName)) {
+        // Keep Sentry's internal contexts untouched
+        sanitizedContexts[contextName] = contextValue
+      } else {
+        // Sanitize user-provided contexts
+        sanitizedContexts[contextName] = sanitizeValue(contextValue)
+      }
+    }
+
+    event.contexts = sanitizedContexts
   }
 
   // Sanitize request data

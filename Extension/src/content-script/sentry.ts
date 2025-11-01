@@ -15,7 +15,7 @@ const sentryClient = new BrowserClient({
   transport: makeFetchTransport,
   stackParser: defaultStackParser,
 
-  // PII filtering
+  // PII filtering only (debug IDs handle source map matching)
   beforeSend: sanitizeEvent,
 
   // No performance monitoring

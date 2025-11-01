@@ -1,11 +1,34 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { resolve } from 'path'
-import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'fs'
+// import { sentryVitePlugin } from '@sentry/vite-plugin'
+import { resolve, dirname } from 'path'
+import {
+  copyFileSync,
+  existsSync,
+  readFileSync,
+  writeFileSync,
+  mkdirSync,
+  readdirSync,
+  renameSync,
+  unlinkSync,
+} from 'fs'
 
 export default defineConfig({
   base: './', // Enable relative asset loading for Chrome extension compatibility
   plugins: [
+    // Sentry plugin - injects debug IDs for sourcemap matching (disabled, we use manual upload)
+    // sentryVitePlugin({
+    //   org: process.env.SENTRY_ORG,
+    //   project: process.env.SENTRY_PROJECT,
+    //   authToken: process.env.SENTRY_AUTH_TOKEN,
+    //   sourcemaps: {
+    //     assets: './sourcemaps/**',
+    //     filesToDeleteAfterUpload: './sourcemaps/**/*.map',
+    //   },
+    //   release: {
+    //     inject: false, // We set release manually in sentry.ts
+    //   },
+    // }),
     react(),
     // Copy manifest to dist after build
     {
@@ -164,6 +187,65 @@ export default defineConfig({
             console.log(`✓ Inlined chunks into ${fileName}.js`)
           }
         }
+      },
+    },
+    // Separate source maps from dist to prevent accidental deployment
+    // But keep sourceMappingURL references in JS files for Sentry
+    {
+      name: 'separate-sourcemaps',
+      closeBundle() {
+        const distDir = resolve(__dirname, 'dist')
+        const sourcemapsDir = resolve(__dirname, 'sourcemaps')
+
+        // Create sourcemaps directory (clean it completely if it exists)
+        if (existsSync(sourcemapsDir)) {
+          // Remove entire directory and recreate it
+          const removeDir = (dir: string) => {
+            const entries = readdirSync(dir, { withFileTypes: true })
+            for (const entry of entries) {
+              const fullPath = resolve(dir, entry.name)
+              if (entry.isDirectory()) {
+                removeDir(fullPath)
+              } else {
+                unlinkSync(fullPath)
+              }
+            }
+          }
+          removeDir(sourcemapsDir)
+        }
+        mkdirSync(sourcemapsDir, { recursive: true })
+
+        // Function to recursively find and move .map files
+        const moveSourceMaps = (dir: string) => {
+          if (!existsSync(dir)) return
+          const entries = readdirSync(dir, { withFileTypes: true })
+
+          for (const entry of entries) {
+            const fullPath = resolve(dir, entry.name)
+            if (entry.isDirectory()) {
+              moveSourceMaps(fullPath)
+            } else if (entry.name.endsWith('.map')) {
+              // For .map files, move them but keep the sourceMappingURL comment in the JS file
+              const relativePath = fullPath.replace(distDir, '').replace(/^[\\/]/, '')
+              const targetPath = resolve(sourcemapsDir, relativePath)
+              const targetDir = dirname(targetPath)
+
+              // Create subdirectories if needed
+              if (!existsSync(targetDir)) {
+                mkdirSync(targetDir, { recursive: true })
+              }
+
+              renameSync(fullPath, targetPath)
+            }
+          }
+        }
+
+        moveSourceMaps(distDir)
+        const mapCount = readdirSync(sourcemapsDir).filter((f) => f.endsWith('.map')).length
+        console.log(`✓ Moved ${mapCount} source map(s) to sourcemaps/`)
+        console.log(
+          'Note: sourceMappingURL comments remain in JS files for Sentry (maps not deployed)'
+        )
       },
     },
   ],

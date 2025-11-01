@@ -7,9 +7,18 @@ import { sentryClient, sentryScope } from '../sentry'
 import { logError } from '../../utils/errorLogger'
 import { logBreadcrumb } from '../../utils/breadcrumbs'
 
-export function SentryTest() {
-  if (import.meta.env.MODE !== 'development') {
-    return null // Only show in development mode
+interface SentryTestProps {
+  isExpanded: boolean
+}
+
+export function SentryTest({ isExpanded }: SentryTestProps) {
+  // TEMPORARY OVERRIDE: Show in production for Sentry testing
+  // TODO: REVERT THIS AFTER TESTING!
+  // const isDevelopment =
+  //   import.meta.env.MODE === 'development' && import.meta.env.VITE_ENV === 'development'
+
+  if (!isExpanded) {
+    return null
   }
 
   const showSentryConfig = () => {
@@ -81,8 +90,8 @@ export function SentryTest() {
   }
 
   return (
-    <div className="p-4 bg-yellow-50 border-t border-yellow-200">
-      <div className="text-xs font-bold text-yellow-800 mb-2">🧪 SENTRY TEST (DEV ONLY)</div>
+    <div className="border-t border-yellow-200 bg-yellow-50 p-4">
+      <div className="text-xs font-bold text-yellow-800 mb-3">🧪 SENTRY TEST PANEL</div>
       <div className="flex flex-col gap-2">
         <button
           onClick={showSentryConfig}

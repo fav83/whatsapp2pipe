@@ -2,23 +2,19 @@
   "manifest_version": 3,
   "name": "Pipedrive for WhatsApp Web",
   "short_name": "Pipedrive WhatsApp",
-  "version": "0.32.0",
+  "version": "0.32.31",
   "description": "Find, create, and link Pipedrive contacts directly from WhatsApp Web conversations.",
   "author": "Your Name",
-
   "permissions": ["storage", "tabs", "identity"],
-
   "host_permissions": [
     "*://web.whatsapp.com/*",
     "http://localhost:7071/*",
     "https://pipe-tmp-func-h0crhzghhsczbph9.eastus2-01.azurewebsites.net/*"
   ],
-
   "background": {
     "service_worker": "service-worker.js",
     "type": "module"
   },
-
   "content_scripts": [
     {
       "matches": ["*://web.whatsapp.com/*"],
@@ -33,7 +29,6 @@
       "world": "MAIN"
     }
   ],
-
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -43,20 +38,17 @@
     },
     "default_title": "Pipedrive for WhatsApp"
   },
-
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
-
   "web_accessible_resources": [
     {
       "resources": ["assets/*", "chunks/*"],
       "matches": ["*://web.whatsapp.com/*"]
     }
   ],
-
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
   }

@@ -43,6 +43,16 @@ window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => 
   )
 })
 
+// Expose test function for console testing (production-safe, only triggers Sentry)
+interface WindowWithSentryTest extends Window {
+  __testSentry?: (message?: string) => void
+}
+;(window as WindowWithSentryTest).__testSentry = (message?: string) => {
+  const testError = new Error(message || `Manual Sentry test at ${new Date().toISOString()}`)
+  logError('Manual Sentry test', testError, { triggered_from: 'console' }, sentryScope)
+  console.log('✓ Sentry test error logged:', testError.message)
+}
+
 // Initialize sidebar after WhatsApp is fully loaded
 async function init() {
   try {

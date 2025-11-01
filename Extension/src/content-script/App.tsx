@@ -63,6 +63,7 @@ type SidebarState =
 export default function App() {
   const { authState, userName, signIn, signOut, error } = useAuth()
   const [state, setState] = useState<SidebarState>({ type: 'welcome' })
+  const [sentryTestExpanded, setSentryTestExpanded] = useState(false)
 
   // Listen for chat status events from MAIN world
   useEffect(() => {
@@ -130,10 +131,13 @@ export default function App() {
       </main>
 
       {/* Dev Mode Indicator - Bottom Banner */}
-      <DevModeIndicator />
+      <DevModeIndicator
+        sentryTestExpanded={sentryTestExpanded}
+        onToggleSentryTest={() => setSentryTestExpanded(!sentryTestExpanded)}
+      />
 
       {/* Sentry Test Panel - REMOVE BEFORE PRODUCTION */}
-      <SentryTest />
+      <SentryTest isExpanded={sentryTestExpanded} />
     </div>
   )
 }

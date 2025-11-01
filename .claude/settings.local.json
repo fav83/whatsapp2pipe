@@ -54,7 +54,9 @@
       "Bash(nul)",
       "Bash(del ServicesITableStorageService.cs ServicesTableStorageService.cs ModelsSessionEntity.cs ModelsStateEntity.cs)",
       "Bash(dotnet remove:*)",
-      "Bash(dotnet add:*)"
+      "Bash(dotnet add:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(bash:*)"
     ],
     "deny": [],
     "ask": [

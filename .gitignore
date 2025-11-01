@@ -6,6 +6,9 @@ package-lock.json
 # Build outputs
 Extension/dist/
 Extension/build/
+Extension/release/
+Extension/sourcemaps/
+Extension/upload-temp/
 *.crx
 *.pem
 *.zip
@@ -15,6 +18,9 @@ Extension/.env.local
 Extension/.env*.local
 .env.local
 .env*.local
+
+# Sentry configuration (contains auth tokens)
+.sentryclirc
 
 # Testing
 Extension/coverage/
