@@ -219,15 +219,15 @@ export function PersonNoMatchState({
     manualAttachError ?? attachError?.message ?? manualSearchError ?? searchError?.message ?? null
 
   return (
-    <div className="px-5 pt-5">
-      {/* Contact Info Header */}
-      <div className="mb-4">
+    <div className="p-5 space-y-5">
+      {/* Section 2: Contact Info Card */}
+      <div className="p-4 bg-white rounded-lg border border-[#e9edef] shadow-sm">
         <div className="text-base font-semibold text-[#111b21] mb-1">{contactName}</div>
         <div className="text-sm text-[#667781]">{phone}</div>
       </div>
 
-      {/* Section 1: Create New Person */}
-      <div className="mb-6">
+      {/* Section 3: Create New Person */}
+      <div className="p-4 bg-white rounded-lg border border-[#e9edef] shadow-sm">
         <h3 className="text-sm font-semibold text-[#111b21] mb-3">Add this contact to Pipedrive</h3>
 
         {/* Error Banner */}
@@ -253,7 +253,7 @@ export function PersonNoMatchState({
 
         {/* Name Input */}
         <div className="mb-4">
-          <div className="flex items-center gap-2 px-3 py-2 border border-[#d1d7db] rounded-lg bg-white">
+          <div className="flex items-center gap-2 px-3 py-2 border border-solid border-[#d1d7db] rounded-lg bg-white focus-within:border-[#00a884] focus-within:ring-1 focus-within:ring-[#00a884]">
             <span className="text-[#667781] text-sm font-medium">T</span>
             <input
               type="text"
@@ -261,7 +261,7 @@ export function PersonNoMatchState({
               onChange={handleNameChange}
               placeholder="Name"
               disabled={isCreating}
-              className="flex-1 text-sm text-[#111b21] bg-transparent border-none outline-none disabled:opacity-60"
+              className="flex-1 text-sm text-[#111b21] bg-transparent border-none outline-none disabled:opacity-60 placeholder:text-[#94a3b8]"
             />
           </div>
         </div>
@@ -270,15 +270,14 @@ export function PersonNoMatchState({
         <button
           onClick={handleCreate}
           disabled={isCreateDisabled}
-          className="w-full px-4 py-2 bg-[#00a884] text-white text-sm font-medium rounded-lg disabled:opacity-60 disabled:cursor-not-allowed hover:bg-[#008f6f] transition-colors flex items-center justify-center gap-2"
+          className="w-full h-[38px] px-4 py-2 bg-[#00a884] text-white text-sm font-medium rounded-lg disabled:opacity-60 disabled:cursor-not-allowed hover:bg-[#008f6f] transition-colors flex items-center justify-center gap-2"
         >
-          {isCreating && <Spinner size="sm" color="white" />}
-          {isCreating ? 'Creating...' : 'Create'}
+          {isCreating ? <Spinner size="md" color="white" /> : 'Create'}
         </button>
       </div>
 
-      {/* Section 2: Link to Existing Person */}
-      <div className="pt-4 border-t border-[#d1d7db]">
+      {/* Section 4: Link to Existing Person */}
+      <div className="p-4 bg-white rounded-lg border border-[#e9edef] shadow-sm">
         <p className="text-sm text-[#667781] mb-3">
           Or add the number <span className="font-medium text-[#111b21]">{phone}</span> to an
           existing contact
@@ -314,9 +313,9 @@ export function PersonNoMatchState({
         )}
 
         <form onSubmit={handleSearch}>
-          <div className="flex items-center gap-2 px-3 py-2 border border-[#d1d7db] rounded-lg bg-white">
+          <div className="w-full flex items-center gap-2 px-3 py-2 border border-solid border-[#d1d7db] rounded-lg bg-white focus-within:border-[#00a884] focus-within:ring-1 focus-within:ring-[#00a884]">
             <svg
-              className="w-4 h-4 text-[#667781]"
+              className="w-4 h-4 text-[#667781] shrink-0"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -334,16 +333,37 @@ export function PersonNoMatchState({
               value={searchTerm}
               onChange={handleSearchTermChange}
               readOnly={isSearching}
-              className="flex-1 text-sm text-[#111b21] bg-transparent border-none outline-none disabled:opacity-60"
+              className="flex-1 min-w-0 text-sm text-[#111b21] bg-transparent border-none outline-none disabled:opacity-60 placeholder:text-[#94a3b8]"
               aria-label="Search existing contacts"
             />
             <button
               type="submit"
               disabled={isSearchDisabled}
-              className="px-3 py-1.5 bg-[#00a884] text-white text-sm font-medium rounded-lg disabled:opacity-60 disabled:cursor-not-allowed hover:bg-[#008f6f] transition-colors flex items-center gap-2"
+              className="w-[34px] h-[34px] bg-[#00a884] text-white text-sm font-medium rounded-lg disabled:opacity-60 disabled:cursor-not-allowed hover:bg-[#008f6f] transition-colors flex items-center justify-center shrink-0"
+              aria-label="Search"
+              title="Search"
             >
-              {isSearching && <Spinner size="sm" color="white" />}
-              {isSearching ? 'Searching...' : 'Search'}
+              {isSearching ? (
+                <Spinner size="md" color="white" />
+              ) : (
+                <>
+                  <svg
+                    className="w-4 h-4 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                  <span className="sr-only">Search</span>
+                </>
+              )}
             </button>
           </div>
         </form>
@@ -377,10 +397,10 @@ export function PersonNoMatchState({
                     key={person.id}
                     type="button"
                     onClick={() => setSelectedPersonId(person.id)}
-                    className={`w-full text-left px-3 py-2 border rounded-lg transition-colors ${
+                    className={`w-full text-left px-3 py-2 border-2 rounded-lg transition-colors cursor-pointer ${
                       isSelected
-                        ? 'border-[#00a884] bg-[#e7f8f3]'
-                        : 'border-[#d1d7db] bg-white hover:border-[#b3bcc2]'
+                        ? 'border-[#00a884] hover:border-[#008f6f] bg-[#b3ead4] hover:bg-[#72d4b7]'
+                        : 'border-[#d1d7db] bg-white hover:border-[#94a3b8] hover:bg-[#e5e7eb]'
                     }`}
                   >
                     <div className="text-sm font-semibold text-[#111b21]">{person.name}</div>
@@ -402,10 +422,9 @@ export function PersonNoMatchState({
               type="button"
               onClick={handleAttach}
               disabled={disableAttach}
-              className="mt-3 w-full px-4 py-2 bg-[#00a884] text-white text-sm font-medium rounded-lg disabled:opacity-60 disabled:cursor-not-allowed hover:bg-[#008f6f] transition-colors flex items-center justify-center gap-2"
+              className="mt-3 w-full h-[38px] px-4 py-2 bg-[#00a884] text-white text-sm font-medium rounded-lg disabled:opacity-60 disabled:cursor-not-allowed hover:bg-[#008f6f] transition-colors flex items-center justify-center gap-2"
             >
-              {isAttaching && <Spinner size="sm" color="white" />}
-              {isAttaching ? 'Attaching...' : 'Attach number'}
+              {isAttaching ? <Spinner size="md" color="white" /> : 'Attach number'}
             </button>
           </div>
         )}

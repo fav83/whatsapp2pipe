@@ -106,7 +106,7 @@ export default function App() {
   return (
     <div className="h-full flex flex-col bg-white border-l border-[#d1d7db]">
       {/* Fixed Header */}
-      <header className="flex-shrink-0 px-5 py-4 border-b border-[#d1d7db] flex items-center justify-between">
+      <header className="flex-shrink-0 h-14 px-5 border-b border-[#e9edef] flex items-center justify-between bg-white">
         <h1 className="text-[17px] font-semibold text-[#111b21]">Chat2Deal</h1>
         {authState === 'authenticated' && userName && (
           <UserAvatar userName={userName} onSignOut={signOut} />
@@ -114,7 +114,7 @@ export default function App() {
       </header>
 
       {/* Scrollable Body */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto bg-[#e5e7eb]">
         {/* Unauthenticated: Show sign-in UI */}
         {authState === 'unauthenticated' && <WelcomeState onSignIn={signIn} />}
 

@@ -24,7 +24,7 @@ export function Spinner({ size = 'md', color = 'white' }: SpinnerProps) {
 
   return (
     <div
-      className={`${sizeClasses[size]} ${colorClasses[color]} border-2 rounded-full animate-spin`}
+      className={`${sizeClasses[size]} ${colorClasses[color]} border-2 border-solid rounded-full animate-spin`}
       role="status"
       aria-label="Loading"
     />

@@ -20,6 +20,7 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 
 ### Architecture
 - [Chrome-Extension-Architecture.md](Docs/Architecture/Chrome-Extension-Architecture.md) - Technical architecture and component design
+- [UI-Design-Specification.md](Docs/Architecture/UI-Design-Specification.md) - Complete UI design specification with visual system, components, and states (✅ Complete)
 
 ### BRDs (Business Requirements Documents)
 - [BRD-001-MVP-Pipedrive-WhatsApp.md](Docs/BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md) - MVP requirements and specifications

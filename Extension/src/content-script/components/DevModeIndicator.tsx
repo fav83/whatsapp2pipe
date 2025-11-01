@@ -18,7 +18,7 @@ export function DevModeIndicator() {
     width: '100%',
     padding: '8px 16px',
     backgroundColor: '#fed7aa', // orange-200
-    borderBottom: '2px solid #fb923c', // orange-400
+    borderTop: '2px solid #fb923c', // orange-400
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'flex-start', // Left-aligned
