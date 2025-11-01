@@ -13,18 +13,18 @@ public class AuthStartFunction
 {
     private readonly IOAuthService oauthService;
     private readonly OAuthStateValidator stateValidator;
-    private readonly ITableStorageService tableStorageService;
+    private readonly ISessionService sessionService;
     private readonly ILogger<AuthStartFunction> logger;
 
     public AuthStartFunction(
         IOAuthService oauthService,
         OAuthStateValidator stateValidator,
-        ITableStorageService tableStorageService,
+        ISessionService sessionService,
         ILogger<AuthStartFunction> logger)
     {
         this.oauthService = oauthService;
         this.stateValidator = stateValidator;
-        this.tableStorageService = tableStorageService;
+        this.sessionService = sessionService;
         this.logger = logger;
     }
 
@@ -65,7 +65,7 @@ public class AuthStartFunction
             }
 
             // Store the extension-provided state for CSRF validation (5-minute expiration)
-            await tableStorageService.StoreStateAsync(extensionState);
+            await sessionService.StoreStateAsync(extensionState);
             logger.LogInformation("Stored extension state for CSRF protection");
 
             // Build Pipedrive authorization URL with extension's state

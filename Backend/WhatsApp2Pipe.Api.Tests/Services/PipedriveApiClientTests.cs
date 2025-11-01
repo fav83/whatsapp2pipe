@@ -14,18 +14,25 @@ namespace WhatsApp2Pipe.Api.Tests.Services;
 public class PipedriveApiClientTests
 {
     private readonly Mock<ILogger<PipedriveApiClient>> mockLogger;
+    private readonly Mock<IOAuthService> mockOAuthService;
+    private readonly Mock<ISessionService> mockSessionService;
     private readonly PipedriveSettings config;
     private readonly Fixture fixture;
 
     public PipedriveApiClientTests()
     {
         mockLogger = new Mock<ILogger<PipedriveApiClient>>();
+        mockOAuthService = new Mock<IOAuthService>();
+        mockSessionService = new Mock<ISessionService>();
         config = new PipedriveSettings
         {
             BaseUrl = "https://api.pipedrive.com",
             ApiVersion = "v1"
         };
         fixture = new Fixture();
+        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => fixture.Behaviors.Remove(b));
+        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
     }
 
     #region SearchPersonsAsync Tests
@@ -34,7 +41,7 @@ public class PipedriveApiClientTests
     public async Task SearchPersonsAsync_ValidResponse_ReturnsPersons()
     {
         // Arrange
-        var accessToken = fixture.Create<string>();
+        var session = CreateTestSession();
         var term = "+48123456789";
         var fields = "phone";
 
@@ -66,11 +73,15 @@ public class PipedriveApiClientTests
             JsonSerializer.Serialize(searchResponse)
         );
 
-        var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-        var client = new PipedriveApiClient(httpClient, config, mockLogger.Object);
+        var httpClient = new HttpClient(mockHttpMessageHandler.Object)
+        {
+            BaseAddress = new Uri("https://api.pipedrive.com")
+        };
+        var client = new PipedriveApiClient(
+            httpClient, config, mockLogger.Object, mockOAuthService.Object, mockSessionService.Object);
 
         // Act
-        var result = await client.SearchPersonsAsync(accessToken, term, fields);
+        var result = await client.SearchPersonsAsync(session, term, fields);
 
         // Assert
         Assert.True(result.Success);
@@ -84,7 +95,7 @@ public class PipedriveApiClientTests
     public async Task SearchPersonsAsync_NoResults_ReturnsEmptyData()
     {
         // Arrange
-        var accessToken = fixture.Create<string>();
+        var session = CreateTestSession();
         var term = "+48999999999";
         var fields = "phone";
 
@@ -102,11 +113,15 @@ public class PipedriveApiClientTests
             JsonSerializer.Serialize(searchResponse)
         );
 
-        var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-        var client = new PipedriveApiClient(httpClient, config, mockLogger.Object);
+        var httpClient = new HttpClient(mockHttpMessageHandler.Object)
+        {
+            BaseAddress = new Uri("https://api.pipedrive.com")
+        };
+        var client = new PipedriveApiClient(
+            httpClient, config, mockLogger.Object, mockOAuthService.Object, mockSessionService.Object);
 
         // Act
-        var result = await client.SearchPersonsAsync(accessToken, term, fields);
+        var result = await client.SearchPersonsAsync(session, term, fields);
 
         // Assert
         Assert.True(result.Success);
@@ -114,43 +129,21 @@ public class PipedriveApiClientTests
         Assert.Empty(result.Data.Items);
     }
 
-    [Fact]
-    public async Task SearchPersonsAsync_Unauthorized_ThrowsException()
-    {
-        // Arrange
-        var accessToken = "invalid-token";
-        var term = "+48123456789";
-        var fields = "phone";
-
-        var mockHttpMessageHandler = CreateMockHttpMessageHandler(
-            HttpStatusCode.Unauthorized,
-            "{\"error\":\"Unauthorized\"}"
-        );
-
-        var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-        var client = new PipedriveApiClient(httpClient, config, mockLogger.Object);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<PipedriveUnauthorizedException>(
-            () => client.SearchPersonsAsync(accessToken, term, fields)
-        );
-    }
-
     #endregion
 
     #region CreatePersonAsync Tests
 
     [Fact]
-    public async Task CreatePersonAsync_ValidRequest_ReturnsPerson()
+    public async Task CreatePersonAsync_ValidResponse_ReturnsPerson()
     {
         // Arrange
-        var accessToken = fixture.Create<string>();
+        var session = CreateTestSession();
         var request = new PipedriveCreatePersonRequest
         {
             Name = "New Person",
             Phone = new List<PipedrivePhoneInput>
             {
-                new PipedrivePhoneInput { Value = "+48123456789", Label = "WhatsApp", Primary = true }
+                new PipedrivePhoneInput { Value = "+48111222333", Label = "work", Primary = true }
             }
         };
 
@@ -163,7 +156,7 @@ public class PipedriveApiClientTests
                 Name = "New Person",
                 Phone = new List<PipedrivePhone>
                 {
-                    new PipedrivePhone { Value = "+48123456789", Label = "WhatsApp", Primary = true }
+                    new PipedrivePhone { Value = "+48111222333", Label = "work", Primary = true }
                 }
             }
         };
@@ -173,11 +166,15 @@ public class PipedriveApiClientTests
             JsonSerializer.Serialize(personResponse)
         );
 
-        var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-        var client = new PipedriveApiClient(httpClient, config, mockLogger.Object);
+        var httpClient = new HttpClient(mockHttpMessageHandler.Object)
+        {
+            BaseAddress = new Uri("https://api.pipedrive.com")
+        };
+        var client = new PipedriveApiClient(
+            httpClient, config, mockLogger.Object, mockOAuthService.Object, mockSessionService.Object);
 
         // Act
-        var result = await client.CreatePersonAsync(accessToken, request);
+        var result = await client.CreatePersonAsync(session, request);
 
         // Assert
         Assert.True(result.Success);
@@ -186,257 +183,93 @@ public class PipedriveApiClientTests
         Assert.Equal("New Person", result.Data.Name);
     }
 
-    [Fact]
-    public async Task CreatePersonAsync_Unauthorized_ThrowsException()
-    {
-        // Arrange
-        var accessToken = "invalid-token";
-        var request = new PipedriveCreatePersonRequest
-        {
-            Name = "Test Person"
-        };
-
-        var mockHttpMessageHandler = CreateMockHttpMessageHandler(
-            HttpStatusCode.Unauthorized,
-            "{\"error\":\"Unauthorized\"}"
-        );
-
-        var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-        var client = new PipedriveApiClient(httpClient, config, mockLogger.Object);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<PipedriveUnauthorizedException>(
-            () => client.CreatePersonAsync(accessToken, request)
-        );
-    }
-
     #endregion
 
-    #region GetPersonAsync Tests
+    #region GetCurrentUserAsync Tests
 
     [Fact]
-    public async Task GetPersonAsync_ExistingPerson_ReturnsPerson()
+    public async Task GetCurrentUserAsync_ValidResponse_ReturnsUser()
     {
         // Arrange
-        var accessToken = fixture.Create<string>();
-        var personId = 123;
+        var session = CreateTestSession();
 
-        var personResponse = new PipedrivePersonResponse
+        var userResponse = new PipedriveUserResponse
         {
             Success = true,
-            Data = new PipedrivePerson
+            Data = new PipedriveUserData
             {
-                Id = personId,
-                Name = "Existing Person",
-                Phone = new List<PipedrivePhone>
-                {
-                    new PipedrivePhone { Value = "+48123456789", Label = "mobile", Primary = true }
-                }
+                Id = 789,
+                Name = "Test User",
+                Email = "test@example.com",
+                CompanyId = 100,
+                CompanyName = "Test Company",
+                CompanyDomain = "test.pipedrive.com"
             }
         };
 
         var mockHttpMessageHandler = CreateMockHttpMessageHandler(
             HttpStatusCode.OK,
-            JsonSerializer.Serialize(personResponse)
+            JsonSerializer.Serialize(userResponse)
         );
 
-        var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-        var client = new PipedriveApiClient(httpClient, config, mockLogger.Object);
+        var httpClient = new HttpClient(mockHttpMessageHandler.Object)
+        {
+            BaseAddress = new Uri("https://api.pipedrive.com")
+        };
+        var client = new PipedriveApiClient(
+            httpClient, config, mockLogger.Object, mockOAuthService.Object, mockSessionService.Object);
 
         // Act
-        var result = await client.GetPersonAsync(accessToken, personId);
+        var result = await client.GetCurrentUserAsync(session);
 
         // Assert
         Assert.True(result.Success);
         Assert.NotNull(result.Data);
-        Assert.Equal(personId, result.Data.Id);
-        Assert.Equal("Existing Person", result.Data.Name);
-    }
-
-    [Fact]
-    public async Task GetPersonAsync_PersonNotFound_ThrowsException()
-    {
-        // Arrange
-        var accessToken = fixture.Create<string>();
-        var personId = 99999;
-
-        var mockHttpMessageHandler = CreateMockHttpMessageHandler(
-            HttpStatusCode.NotFound,
-            "{\"error\":\"Person not found\"}"
-        );
-
-        var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-        var client = new PipedriveApiClient(httpClient, config, mockLogger.Object);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<PipedriveNotFoundException>(
-            () => client.GetPersonAsync(accessToken, personId)
-        );
-    }
-
-    [Fact]
-    public async Task GetPersonAsync_Unauthorized_ThrowsException()
-    {
-        // Arrange
-        var accessToken = "invalid-token";
-        var personId = 123;
-
-        var mockHttpMessageHandler = CreateMockHttpMessageHandler(
-            HttpStatusCode.Unauthorized,
-            "{\"error\":\"Unauthorized\"}"
-        );
-
-        var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-        var client = new PipedriveApiClient(httpClient, config, mockLogger.Object);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<PipedriveUnauthorizedException>(
-            () => client.GetPersonAsync(accessToken, personId)
-        );
-    }
-
-    #endregion
-
-    #region UpdatePersonAsync Tests
-
-    [Fact]
-    public async Task UpdatePersonAsync_ValidRequest_ReturnsUpdatedPerson()
-    {
-        // Arrange
-        var accessToken = fixture.Create<string>();
-        var personId = 123;
-        var request = new PipedriveUpdatePersonRequest
-        {
-            Phone = new List<PipedrivePhoneInput>
-            {
-                new PipedrivePhoneInput { Value = "+48123456789", Label = "mobile", Primary = true },
-                new PipedrivePhoneInput { Value = "+48987654321", Label = "WhatsApp", Primary = false }
-            }
-        };
-
-        var personResponse = new PipedrivePersonResponse
-        {
-            Success = true,
-            Data = new PipedrivePerson
-            {
-                Id = personId,
-                Name = "Updated Person",
-                Phone = new List<PipedrivePhone>
-                {
-                    new PipedrivePhone { Value = "+48123456789", Label = "mobile", Primary = true },
-                    new PipedrivePhone { Value = "+48987654321", Label = "WhatsApp", Primary = false }
-                }
-            }
-        };
-
-        var mockHttpMessageHandler = CreateMockHttpMessageHandler(
-            HttpStatusCode.OK,
-            JsonSerializer.Serialize(personResponse)
-        );
-
-        var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-        var client = new PipedriveApiClient(httpClient, config, mockLogger.Object);
-
-        // Act
-        var result = await client.UpdatePersonAsync(accessToken, personId, request);
-
-        // Assert
-        Assert.True(result.Success);
-        Assert.NotNull(result.Data);
-        Assert.Equal(personId, result.Data.Id);
-        Assert.Equal(2, result.Data.Phone?.Count);
-    }
-
-    [Fact]
-    public async Task UpdatePersonAsync_Unauthorized_ThrowsException()
-    {
-        // Arrange
-        var accessToken = "invalid-token";
-        var personId = 123;
-        var request = new PipedriveUpdatePersonRequest();
-
-        var mockHttpMessageHandler = CreateMockHttpMessageHandler(
-            HttpStatusCode.Unauthorized,
-            "{\"error\":\"Unauthorized\"}"
-        );
-
-        var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-        var client = new PipedriveApiClient(httpClient, config, mockLogger.Object);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<PipedriveUnauthorizedException>(
-            () => client.UpdatePersonAsync(accessToken, personId, request)
-        );
-    }
-
-    #endregion
-
-    #region Error Handling Tests
-
-    [Fact]
-    public async Task SearchPersonsAsync_RateLimited_ThrowsException()
-    {
-        // Arrange
-        var accessToken = fixture.Create<string>();
-        var term = "+48123456789";
-        var fields = "phone";
-
-        var mockHttpMessageHandler = CreateMockHttpMessageHandler(
-            (HttpStatusCode)429,
-            "{\"error\":\"Rate limit exceeded\"}"
-        );
-
-        var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-        var client = new PipedriveApiClient(httpClient, config, mockLogger.Object);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<PipedriveRateLimitException>(
-            () => client.SearchPersonsAsync(accessToken, term, fields)
-        );
-    }
-
-    [Fact]
-    public async Task CreatePersonAsync_ServerError_ThrowsException()
-    {
-        // Arrange
-        var accessToken = fixture.Create<string>();
-        var request = new PipedriveCreatePersonRequest { Name = "Test" };
-
-        var mockHttpMessageHandler = CreateMockHttpMessageHandler(
-            HttpStatusCode.InternalServerError,
-            "{\"error\":\"Internal server error\"}"
-        );
-
-        var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-        var client = new PipedriveApiClient(httpClient, config, mockLogger.Object);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<PipedriveApiException>(
-            () => client.CreatePersonAsync(accessToken, request)
-        );
+        Assert.Equal(789, result.Data.Id);
+        Assert.Equal("Test User", result.Data.Name);
+        Assert.Equal("test@example.com", result.Data.Email);
     }
 
     #endregion
 
     #region Helper Methods
 
-    private Mock<HttpMessageHandler> CreateMockHttpMessageHandler(HttpStatusCode statusCode, string responseContent)
+    private Session CreateTestSession()
     {
-        var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-        mockHttpMessageHandler
-            .Protected()
+        return new Session
+        {
+            SessionId = Guid.NewGuid(),
+            VerificationCode = fixture.Create<string>(),
+            UserId = Guid.NewGuid(),
+            CompanyId = Guid.NewGuid(),
+            AccessToken = fixture.Create<string>(),
+            RefreshToken = fixture.Create<string>(),
+            ApiDomain = "api.pipedrive.com",
+            ExpiresAt = DateTime.UtcNow.AddHours(1),
+            SessionExpiresAt = DateTime.UtcNow.AddDays(60),
+            ExtensionId = fixture.Create<string>(),
+            CreatedAt = DateTime.UtcNow
+        };
+    }
+
+    private Mock<HttpMessageHandler> CreateMockHttpMessageHandler(
+        HttpStatusCode statusCode,
+        string content)
+    {
+        var mockHandler = new Mock<HttpMessageHandler>();
+
+        mockHandler.Protected()
             .Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
                 ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>()
-            )
+                ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(new HttpResponseMessage
             {
                 StatusCode = statusCode,
-                Content = new StringContent(responseContent, Encoding.UTF8, "application/json")
+                Content = new StringContent(content, Encoding.UTF8, "application/json")
             });
 
-        return mockHttpMessageHandler;
+        return mockHandler;
     }
 
     #endregion

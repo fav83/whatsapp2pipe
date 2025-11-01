@@ -19,16 +19,24 @@ var host = new HostBuilder()
         services.ConfigureFunctionsApplicationInsights();
 
         // Register OAuth services
-        services.AddSingleton<ITableStorageService, TableStorageService>();
         services.AddSingleton<IOAuthService, OAuthService>();
         services.AddSingleton<OAuthStateValidator>();
 
-        // Add DbContext with SQL Server
+        // Add DbContext and DbContextFactory with SQL Server
+        // - DbContextFactory: For singleton services (SqlSessionService)
+        // - DbContext: For scoped services (UserService)
         var connectionString = context.Configuration.GetConnectionString("Chat2DealDb");
+
+        services.AddDbContextFactory<Chat2DealDbContext>(options =>
+            options.UseSqlServer(connectionString));
+
         services.AddDbContext<Chat2DealDbContext>(options =>
             options.UseSqlServer(connectionString));
 
-        // Register UserService
+        // Register session service as Singleton (uses DbContextFactory per-call)
+        services.AddSingleton<ISessionService, SqlSessionService>();
+
+        // Register UserService as Scoped (uses DbContext directly)
         services.AddScoped<IUserService, UserService>();
 
         // Register Pipedrive configuration

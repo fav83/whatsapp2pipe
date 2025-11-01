@@ -11,7 +11,7 @@ namespace WhatsApp2Pipe.Api.Functions;
 
 public class AuthCallbackFunction
 {
-    private readonly ITableStorageService tableStorageService;
+    private readonly ISessionService sessionService;
     private readonly IOAuthService oauthService;
     private readonly OAuthStateValidator stateValidator;
     private readonly IPipedriveApiClient pipedriveApiClient;
@@ -19,14 +19,14 @@ public class AuthCallbackFunction
     private readonly ILogger<AuthCallbackFunction> logger;
 
     public AuthCallbackFunction(
-        ITableStorageService tableStorageService,
+        ISessionService sessionService,
         IOAuthService oauthService,
         OAuthStateValidator stateValidator,
         IPipedriveApiClient pipedriveApiClient,
         IUserService userService,
         ILogger<AuthCallbackFunction> logger)
     {
-        this.tableStorageService = tableStorageService;
+        this.sessionService = sessionService;
         this.oauthService = oauthService;
         this.stateValidator = stateValidator;
         this.pipedriveApiClient = pipedriveApiClient;
@@ -89,7 +89,7 @@ public class AuthCallbackFunction
 
             // Verify state was issued by server and consume it (one-time use, prevents replay attacks)
             logger.LogInformation("Validating state against server-issued records");
-            if (!await tableStorageService.ValidateAndConsumeStateAsync(state))
+            if (!await sessionService.ValidateAndConsumeStateAsync(state))
             {
                 logger.LogError("State validation failed - not issued by server, expired, or already consumed");
                 return CreateHtmlErrorResponse(req, HttpStatusCode.BadRequest, "invalid_state");
@@ -111,12 +111,12 @@ public class AuthCallbackFunction
 
             // Create temporary session for /users/me call
             logger.LogInformation("Fetching user profile from Pipedrive");
-            var tempSession = new SessionEntity
+            var tempSession = new Session
             {
                 AccessToken = tokenResponse.AccessToken,
                 RefreshToken = tokenResponse.RefreshToken,
                 ApiDomain = tokenResponse.ApiDomain,
-                SessionExpiresAt = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn)
+                ExpiresAt = DateTime.UtcNow.AddSeconds(tokenResponse.ExpiresIn)
             };
 
             // Call /users/me to get user profile
@@ -145,9 +145,11 @@ public class AuthCallbackFunction
                 return CreateHtmlErrorResponse(req, HttpStatusCode.InternalServerError, "user_creation_failed");
             }
 
-            // Generate verification code (session ID)
-            logger.LogInformation("Creating session");
-            var session = await tableStorageService.CreateSessionAsync(
+            // Generate verification code (session ID) linked to user and company
+            logger.LogInformation("Creating session for user {UserId} in company {CompanyId}", user.UserId, user.CompanyId);
+            var session = await sessionService.CreateSessionAsync(
+                user.UserId,
+                user.CompanyId,
                 tokenResponse.AccessToken,
                 tokenResponse.RefreshToken,
                 tokenResponse.ApiDomain,

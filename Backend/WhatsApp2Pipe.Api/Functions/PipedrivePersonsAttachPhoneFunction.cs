@@ -11,7 +11,7 @@ namespace WhatsApp2Pipe.Api.Functions;
 public class PipedrivePersonsAttachPhoneFunction
 {
     private readonly ILogger<PipedrivePersonsAttachPhoneFunction> logger;
-    private readonly ITableStorageService tableStorageService;
+    private readonly ISessionService sessionService;
     private readonly IPipedriveApiClient pipedriveApiClient;
     private readonly PersonTransformService transformService;
 
@@ -23,12 +23,12 @@ public class PipedrivePersonsAttachPhoneFunction
 
     public PipedrivePersonsAttachPhoneFunction(
         ILogger<PipedrivePersonsAttachPhoneFunction> logger,
-        ITableStorageService tableStorageService,
+        ISessionService sessionService,
         IPipedriveApiClient pipedriveApiClient,
         PersonTransformService transformService)
     {
         this.logger = logger;
-        this.tableStorageService = tableStorageService;
+        this.sessionService = sessionService;
         this.pipedriveApiClient = pipedriveApiClient;
         this.transformService = transformService;
     }
@@ -73,11 +73,11 @@ public class PipedrivePersonsAttachPhoneFunction
 
             var verificationCode = authHeader.Substring("Bearer ".Length);
 
-            // Retrieve session from Azure Table Storage
-            var session = await tableStorageService.GetSessionAsync(verificationCode);
-            if (session == null || session.SessionExpiresAt < DateTimeOffset.UtcNow)
+            // Retrieve session from SQL Database (expiration checked automatically)
+            var session = await sessionService.GetSessionAsync(verificationCode);
+            if (session == null)
             {
-                logger.LogWarning($"Invalid or expired verification code");
+                logger.LogWarning("Invalid or expired verification code");
                 return req.CreateResponse(HttpStatusCode.Unauthorized);
             }
 

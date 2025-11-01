@@ -51,7 +51,10 @@
       "Bash(dotnet add package:*)",
       "Bash(dotnet ef migrations add:*)",
       "Bash(dotnet ef database update:*)",
-      "Bash(nul)"
+      "Bash(nul)",
+      "Bash(del ServicesITableStorageService.cs ServicesTableStorageService.cs ModelsSessionEntity.cs ModelsStateEntity.cs)",
+      "Bash(dotnet remove:*)",
+      "Bash(dotnet add:*)"
     ],
     "deny": [],
     "ask": [
