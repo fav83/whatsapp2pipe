@@ -12,9 +12,11 @@
     "lint": "eslint . --ext ts,tsx",
     "format": "prettier --write \"**/*.{ts,tsx,css,json,md}\"",
     "type-check": "tsc --noEmit",
+    "upload-sourcemaps": "bash ./scripts/upload-sourcemaps.sh",
     "prepare": "husky"
   },
   "dependencies": {
+    "@sentry/browser": "^10.22.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

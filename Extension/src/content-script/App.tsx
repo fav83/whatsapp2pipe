@@ -23,6 +23,7 @@ import { PersonMatchedCard } from './components/PersonMatchedCard'
 import { PersonNoMatchState } from './components/PersonNoMatchState'
 import { PersonLookupError } from './components/PersonLookupError'
 import { UserAvatar } from './components/UserAvatar'
+import { SentryTest } from './components/SentryTest'
 import { exposePipedriveTestHelpers } from './testPipedriveApi'
 import type { Person } from '../types/person'
 
@@ -130,6 +131,9 @@ export default function App() {
 
       {/* Dev Mode Indicator - Bottom Banner */}
       <DevModeIndicator />
+
+      {/* Sentry Test Panel - REMOVE BEFORE PRODUCTION */}
+      <SentryTest />
     </div>
   )
 }
