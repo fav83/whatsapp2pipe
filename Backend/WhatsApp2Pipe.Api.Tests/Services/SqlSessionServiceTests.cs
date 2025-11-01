@@ -23,9 +23,10 @@ public class SqlSessionServiceTests : IDisposable
             .ForEach(b => fixture.Behaviors.Remove(b));
         fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        // Create in-memory database
+        // Create in-memory database with transaction warning suppressed
         var options = new DbContextOptionsBuilder<Chat2DealDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.InMemoryEventId.TransactionIgnoredWarning))
             .Options;
         dbContext = new Chat2DealDbContext(options);
 
@@ -180,6 +181,7 @@ public class SqlSessionServiceTests : IDisposable
 
         // Assert
         Assert.Null(result);
+        dbContext.ChangeTracker.Clear(); // Clear tracked entities
         var deletedSession = await dbContext.Sessions.FindAsync(expiredSession.SessionId);
         Assert.Null(deletedSession);
     }
@@ -364,6 +366,7 @@ public class SqlSessionServiceTests : IDisposable
 
         // Assert
         Assert.False(result);
+        dbContext.ChangeTracker.Clear(); // Clear tracked entities
         var deletedState = await dbContext.States.FindAsync(expiredStateEntity.StateId);
         Assert.Null(deletedState); // Should be deleted
     }

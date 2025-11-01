@@ -149,24 +149,47 @@ public class SqlSessionService : ISessionService
         var stateHash = ComputeStateHash(state);
         var now = DateTime.UtcNow;
 
-        // Atomic consume: delete only if matches and not expired
-        var affected = await dbContext.States
-            .Where(s => s.StateHash == stateHash && s.StateValue == state && s.ExpiresAt >= now)
-            .ExecuteDeleteAsync();
+        // Use transaction to ensure atomic validate-and-consume
+        using var transaction = await dbContext.Database.BeginTransactionAsync();
 
-        if (affected > 0)
+        try
         {
+            // Find matching state
+            var stateEntity = await dbContext.States
+                .FirstOrDefaultAsync(s => s.StateHash == stateHash && s.StateValue == state);
+
+            if (stateEntity == null)
+            {
+                await transaction.RollbackAsync();
+                logger.LogWarning("State not found: {StateHash}", stateHash);
+                return false;
+            }
+
+            // Check if expired
+            if (stateEntity.ExpiresAt < now)
+            {
+                // Clean up expired state
+                dbContext.States.Remove(stateEntity);
+                await dbContext.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                logger.LogWarning("State expired: {StateHash}", stateHash);
+                return false;
+            }
+
+            // Valid state - consume it (delete)
+            dbContext.States.Remove(stateEntity);
+            await dbContext.SaveChangesAsync();
+            await transaction.CommitAsync();
+
             logger.LogInformation("Validated and consumed state {StateHash}", stateHash);
             return true;
         }
-
-        // Clean up expired entry if present (best-effort)
-        await dbContext.States
-            .Where(s => s.StateHash == stateHash && s.StateValue == state && s.ExpiresAt < now)
-            .ExecuteDeleteAsync();
-
-        logger.LogWarning("State not found or expired: {StateHash}", stateHash);
-        return false;
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     // Private helpers
