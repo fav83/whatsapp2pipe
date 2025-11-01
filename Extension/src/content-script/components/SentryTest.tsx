@@ -3,7 +3,7 @@
  * Tests Sentry error tracking integration
  */
 
-import { sentryScope } from '../sentry'
+import { sentryClient, sentryScope } from '../sentry'
 import { logError } from '../../utils/errorLogger'
 import { logBreadcrumb } from '../../utils/breadcrumbs'
 
@@ -75,7 +75,7 @@ export function SentryTest() {
     console.log('[Sentry Test] Testing direct Sentry capture...')
     const timestamp = new Date().toISOString()
     const testError = new Error(`Direct Sentry test error at ${timestamp}`)
-    sentryScope.captureException(testError)
+    sentryClient.captureException(testError, {}, sentryScope)
     console.log('[Sentry Test] Sent exception directly to Sentry')
     alert('Direct exception sent! Check console for network requests to sentry.io')
   }

@@ -54,13 +54,18 @@ export function logError(
         ...additionalContext,
       })
 
-      if (error instanceof Error) {
-        isolatedScope.captureException(error)
+      // Get the client from the scope and use it to capture
+      const client = scope.getClient()
+      if (client) {
+        if (error instanceof Error) {
+          client.captureException(error, {}, isolatedScope)
+        } else {
+          client.captureMessage(`${context}: ${String(error)}`, 'error', {}, isolatedScope)
+        }
+        console.log('[errorLogger] Sentry capture completed')
       } else {
-        isolatedScope.captureMessage(`${context}: ${String(error)}`, 'error')
+        console.warn('[errorLogger] No Sentry client available')
       }
-
-      console.log('[errorLogger] Sentry capture completed')
     } else {
       console.log('[errorLogger] Skipping Sentry (expected error):', context)
     }
