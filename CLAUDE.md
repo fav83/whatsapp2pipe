@@ -4,6 +4,7 @@
 
 This project uses a structured organization:
 - **Extension/** - All Chrome extension source code, build configurations, and dependencies
+- **Website/** - User dashboard web application (React + TypeScript)
 - **Docs/** - All project documentation (architecture, BRDs, plans, specs)
 
 **IMPORTANT:** All extension source code must be located under the `Extension/` folder. This includes:
@@ -20,6 +21,7 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 
 ### Architecture
 - [Chrome-Extension-Architecture.md](Docs/Architecture/Chrome-Extension-Architecture.md) - Technical architecture and component design
+- [Website-Architecture.md](Docs/Architecture/Website-Architecture.md) - User dashboard web application architecture (✅ Complete)
 - [UI-Design-Specification.md](Docs/Architecture/UI-Design-Specification.md) - Complete UI design specification with visual system, components, and states (✅ Complete)
 
 ### BRDs (Business Requirements Documents)

@@ -267,11 +267,20 @@ To enable analytics and multi-tenancy support, the backend maintains user and co
 
 ---
 
-## 14) Acceptance — Definition of “Done” (MVP)
-- [ ] Public Chrome listing live; installation works.  
-- [ ] User can **sign in** with Pipedrive.  
-- [ ] 1:1 chat → **auto-lookup** executes reliably.  
-- [ ] **Match path** shows Person + deep link.  
-- [ ] **No-match paths**: **Create Person** and **Attach to existing** both work with label “WhatsApp”, not primary.  
-- [ ] Error and empty states are implemented and understandable.  
+## 14) Acceptance — Definition of "Done" (MVP)
+- [ ] Public Chrome listing live; installation works.
+- [ ] User can **sign in** with Pipedrive.
+- [ ] 1:1 chat → **auto-lookup** executes reliably.
+- [ ] **Match path** shows Person + deep link.
+- [ ] **No-match paths**: **Create Person** and **Attach to existing** both work with label "WhatsApp", not primary.
+- [ ] Error and empty states are implemented and understandable.
 - [ ] Documentation (README + short Loom demo) published.
+
+---
+
+## Related Documentation
+
+- [Chrome Extension Architecture](../Architecture/Chrome-Extension-Architecture.md) - Technical architecture for the Chrome extension
+- [Website Architecture](../Architecture/Website-Architecture.md) - User dashboard web application architecture
+- [UI Design Specification](../Architecture/UI-Design-Specification.md) - Complete UI design specification with visual system
+- [Plan-001: MVP Feature Breakdown](../Plans/Plan-001-MVP-Feature-Breakdown.md) - MVP broken down into implementable features

@@ -1314,4 +1314,12 @@ const PersonLookupError = lazy(() => import('./components/PersonLookupError'))
 
 ---
 
+## Related Documentation
+
+- [Website Architecture](Website-Architecture.md) - User dashboard web application architecture
+- [UI Design Specification](UI-Design-Specification.md) - Complete UI design specification with visual system
+- [BRD-001: MVP Pipedrive WhatsApp](../BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md) - Business requirements for the MVP
+
+---
+
 **End of Architecture Document**
