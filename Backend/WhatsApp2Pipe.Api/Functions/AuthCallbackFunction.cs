@@ -2,6 +2,7 @@ using System.Net;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using WhatsApp2Pipe.Api.Models;
 using WhatsApp2Pipe.Api.Services;
@@ -16,6 +17,7 @@ public class AuthCallbackFunction
     private readonly OAuthStateValidator stateValidator;
     private readonly IPipedriveApiClient pipedriveApiClient;
     private readonly IUserService userService;
+    private readonly IConfiguration configuration;
     private readonly ILogger<AuthCallbackFunction> logger;
 
     public AuthCallbackFunction(
@@ -24,6 +26,7 @@ public class AuthCallbackFunction
         OAuthStateValidator stateValidator,
         IPipedriveApiClient pipedriveApiClient,
         IUserService userService,
+        IConfiguration configuration,
         ILogger<AuthCallbackFunction> logger)
     {
         this.sessionService = sessionService;
@@ -31,6 +34,7 @@ public class AuthCallbackFunction
         this.stateValidator = stateValidator;
         this.pipedriveApiClient = pipedriveApiClient;
         this.userService = userService;
+        this.configuration = configuration;
         this.logger = logger;
     }
 
@@ -68,17 +72,17 @@ public class AuthCallbackFunction
                 return CreateHtmlErrorResponse(req, HttpStatusCode.BadRequest, "missing_state");
             }
 
-            // Decode state to extract extension ID
+            // Decode state to extract client info
             logger.LogInformation("Decoding state parameter");
             var stateData = stateValidator.DecodeState(state);
 
-            if (stateData == null || string.IsNullOrEmpty(stateData.ExtensionId))
+            if (stateData == null)
             {
-                logger.LogError("Invalid state - missing extension ID");
+                logger.LogError("Invalid state - failed to decode");
                 return CreateHtmlErrorResponse(req, HttpStatusCode.BadRequest, "invalid_state");
             }
 
-            logger.LogInformation("Extracted extension ID: {ExtensionId}", stateData.ExtensionId);
+            logger.LogInformation("Extracted client type: {Type}", stateData.Type);
 
             // Validate state format and timestamp (CSRF protection)
             if (!stateValidator.IsValidStateFormat(state))
@@ -147,6 +151,12 @@ public class AuthCallbackFunction
 
             // Generate verification code (session ID) linked to user and company
             logger.LogInformation("Creating session for user {UserId} in company {CompanyId}", user.UserId, user.CompanyId);
+
+            // Use extension ID if provided, otherwise use "web" as identifier
+            var clientIdentifier = !string.IsNullOrEmpty(stateData.ExtensionId)
+                ? stateData.ExtensionId
+                : "web";
+
             var session = await sessionService.CreateSessionAsync(
                 user.UserId,
                 user.CompanyId,
@@ -154,23 +164,50 @@ public class AuthCallbackFunction
                 tokenResponse.RefreshToken,
                 tokenResponse.ApiDomain,
                 tokenResponse.ExpiresIn,
-                stateData.ExtensionId);
+                clientIdentifier);
 
             logger.LogInformation("Session created successfully: {VerificationCode}", session.VerificationCode);
 
-            // Redirect to extension with verification code and userName
-            // This URL pattern is recognized by Chrome and closes the popup automatically
-            var redirectUrl = $"https://{stateData.ExtensionId}.chromiumapp.org/" +
-                            $"?verification_code={Uri.EscapeDataString(session.VerificationCode)}" +
-                            $"&userName={Uri.EscapeDataString(user.Name)}" +
-                            $"&success=true";
+            // Detect client type and redirect accordingly
+            if (stateData.Type == "web")
+            {
+                // Website flow - redirect to website callback URL
+                var websiteCallbackUrl = configuration["WEBSITE_CALLBACK_URL"];
 
-            logger.LogInformation("Redirecting to extension URL");
+                if (string.IsNullOrEmpty(websiteCallbackUrl))
+                {
+                    logger.LogError("WEBSITE_CALLBACK_URL configuration is missing");
+                    return CreateHtmlErrorResponse(req, HttpStatusCode.InternalServerError, "config_error");
+                }
 
-            var response = req.CreateResponse(HttpStatusCode.Redirect);
-            response.Headers.Add("Location", redirectUrl);
+                var redirectUrl = $"{websiteCallbackUrl}?verification_code={Uri.EscapeDataString(session.VerificationCode)}";
 
-            return response;
+                logger.LogInformation("Redirecting to website callback URL");
+
+                var response = req.CreateResponse(HttpStatusCode.Redirect);
+                response.Headers.Add("Location", redirectUrl);
+                return response;
+            }
+            else
+            {
+                // Extension flow - redirect to chromiumapp.org URL
+                if (string.IsNullOrEmpty(stateData.ExtensionId))
+                {
+                    logger.LogError("Invalid state - missing extension ID for extension client");
+                    return CreateHtmlErrorResponse(req, HttpStatusCode.BadRequest, "invalid_state");
+                }
+
+                var redirectUrl = $"https://{stateData.ExtensionId}.chromiumapp.org/" +
+                                $"?verification_code={Uri.EscapeDataString(session.VerificationCode)}" +
+                                $"&userName={Uri.EscapeDataString(user.Name)}" +
+                                $"&success=true";
+
+                logger.LogInformation("Redirecting to extension URL");
+
+                var response = req.CreateResponse(HttpStatusCode.Redirect);
+                response.Headers.Add("Location", redirectUrl);
+                return response;
+            }
         }
         catch (Exception ex)
         {
@@ -204,6 +241,7 @@ public class AuthCallbackFunction
             { "token_exchange_failed", "Failed to exchange authorization code for tokens." },
             { "user_profile_fetch_failed", "Failed to fetch your user profile from Pipedrive." },
             { "user_creation_failed", "Failed to create user record in database." },
+            { "config_error", "Server configuration error. Please contact support." },
             { "internal_error", "An internal error occurred." }
         };
 

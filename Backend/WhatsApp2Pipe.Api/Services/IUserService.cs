@@ -21,4 +21,17 @@ public interface IUserService
     /// <param name="pipedriveCompanyId">Pipedrive company ID</param>
     /// <returns>User entity or null if not found</returns>
     Task<User?> GetUserByPipedriveIdAsync(int pipedriveUserId, int pipedriveCompanyId);
+
+    /// <summary>
+    /// Get user by user ID.
+    /// </summary>
+    /// <param name="userId">User ID (GUID)</param>
+    /// <returns>User entity with Company navigation property, or null if not found</returns>
+    Task<User?> GetUserByIdAsync(Guid userId);
+
+    /// <summary>
+    /// Update user entity.
+    /// </summary>
+    /// <param name="user">User entity to update</param>
+    Task UpdateUserAsync(User user);
 }

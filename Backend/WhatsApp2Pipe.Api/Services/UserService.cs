@@ -105,4 +105,23 @@ public class UserService : IUserService
             .FirstOrDefaultAsync(u => u.PipedriveUserId == pipedriveUserId
                                    && u.CompanyId == company.CompanyId);
     }
+
+    /// <summary>
+    /// Get user by user ID with Company navigation property.
+    /// </summary>
+    public async Task<User?> GetUserByIdAsync(Guid userId)
+    {
+        return await dbContext.Users
+            .Include(u => u.Company)
+            .FirstOrDefaultAsync(u => u.UserId == userId);
+    }
+
+    /// <summary>
+    /// Update user entity.
+    /// </summary>
+    public async Task UpdateUserAsync(User user)
+    {
+        dbContext.Users.Update(user);
+        await dbContext.SaveChangesAsync();
+    }
 }

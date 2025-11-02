@@ -7,7 +7,7 @@ using WhatsApp2Pipe.Api.Models;
 namespace WhatsApp2Pipe.Api.Services;
 
 /// <summary>
-/// Validates OAuth state parameters received from Chrome extension.
+/// Validates OAuth state parameters received from Chrome extension or website.
 /// Provides CSRF protection and state integrity validation.
 /// </summary>
 public class OAuthStateValidator
@@ -26,7 +26,7 @@ public class OAuthStateValidator
     /// <summary>
     /// Validates the state parameter format and contents.
     /// </summary>
-    /// <param name="state">Base64-encoded state from extension</param>
+    /// <param name="state">Base64-encoded state from extension or website</param>
     /// <returns>True if state is valid, false otherwise</returns>
     public virtual bool IsValidStateFormat(string state)
     {
@@ -44,13 +44,14 @@ public class OAuthStateValidator
                 return false;
             }
 
-            // Validate required fields
-            if (string.IsNullOrEmpty(decodedState.ExtensionId))
+            // Validate type field
+            if (string.IsNullOrEmpty(decodedState.Type))
             {
-                logger.LogWarning("State missing extensionId");
+                logger.LogWarning("State missing type");
                 return false;
             }
 
+            // Validate required fields
             if (string.IsNullOrEmpty(decodedState.Nonce))
             {
                 logger.LogWarning("State missing nonce");
@@ -63,11 +64,20 @@ public class OAuthStateValidator
                 return false;
             }
 
-            // Validate extension ID format
-            if (!IsValidExtensionId(decodedState.ExtensionId))
+            // Validate extension ID for extension clients only
+            if (decodedState.Type == "extension")
             {
-                logger.LogWarning("Invalid extension ID format: {ExtensionId}", decodedState.ExtensionId);
-                return false;
+                if (string.IsNullOrEmpty(decodedState.ExtensionId))
+                {
+                    logger.LogWarning("Extension client state missing extensionId");
+                    return false;
+                }
+
+                if (!IsValidExtensionId(decodedState.ExtensionId))
+                {
+                    logger.LogWarning("Invalid extension ID format: {ExtensionId}", decodedState.ExtensionId);
+                    return false;
+                }
             }
 
             // Validate timestamp freshness

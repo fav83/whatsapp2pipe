@@ -60,6 +60,12 @@ Implement user and company entity tracking in Azure SQL Database using Entity Fr
 ### Feature 17: User Avatar with Profile Dropdown (✅ Complete - Spec-117)
 Replace text sign-out button with circular avatar showing first letter of user's name. Backend passes userName in OAuth callback URL. Extension stores userName in chrome.storage.local. Avatar displays 32px gray circle with white letter, clicking toggles dropdown menu with full name and sign-out option. Supports outside-click and Escape key to close. Header rebranded to "Chat2Deal". DEV indicator moved to bottom of sidebar.
 
+### Feature 18: Extension Initialization & Loading States (✅ Complete - Spec-118)
+Display visual feedback during extension initialization (webpack detection, module raid, chat monitoring setup). Full-height loading overlay with spinner and "Initializing Chat2Deal..." text, shown when sidebar container exists. 300ms dwell time on success, 1000ms on timeout. Module raid failures logged to console and reported to Sentry. Sidebar loads in degraded mode if initialization fails.
+
+### Feature 19: Website Pipedrive Authentication (Draft - Spec-119)
+Implement Pipedrive OAuth authentication for Chat2Deal user dashboard website using redirect-based flow. Backend OAuth endpoints extended to support both extension and website clients (detect via state parameter). Website receives verification_code after OAuth, stores in localStorage, and uses for API calls. Three pages: landing (/), callback (/auth/callback), dashboard (/dashboard). Dashboard displays user profile (name, email, company) fetched from database via GET /api/user/me endpoint. Database migration adds UserId foreign key to Sessions table. Technology: React 18 + TypeScript + Vite + React Router v6 + Tailwind CSS + shadcn/ui, hosted on Azure Static Web Apps.
+
 ---
 
 ## Implementation Order Recommendation
@@ -78,8 +84,11 @@ Implement Pipedrive connectivity with secure authentication and API layer. Featu
 **Phase 3: Core User Flows (Features 8-11)**
 Build the main user-facing features for person lookup, creation, and attachment.
 
-**Phase 4: Polish & Quality (Features 12, 14-16)**
-Add error handling, testing, monitoring, and user tracking. Feature 13 (shadcn/ui) skipped as unnecessary for MVP.
+**Phase 4: Polish & Quality (Features 12, 14-18)**
+Add error handling, testing, monitoring, user tracking, user avatar, and initialization states. Feature 13 (shadcn/ui) skipped as unnecessary for MVP.
+
+**Phase 5: Website Dashboard (Feature 19)**
+Build user dashboard website with Pipedrive authentication, extending backend OAuth to support both extension and website clients.
 
 ---
 

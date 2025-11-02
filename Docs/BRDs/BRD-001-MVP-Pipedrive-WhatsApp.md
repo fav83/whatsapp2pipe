@@ -202,7 +202,66 @@ To enable analytics and multi-tenancy support, the backend maintains user and co
 - Data used for: business analytics, user activity tracking, future billing
 - Users implicitly consent by signing in with Pipedrive OAuth
 
-### 6.3 Telemetry
+### 6.3 Website User Dashboard (Feature 19) (Draft - Spec-119)
+To provide users with account management capabilities outside the Chrome extension, a web-based dashboard enables sign-in and profile viewing:
+
+**Purpose:**
+- Provide web-based Pipedrive authentication for non-extension use cases
+- Display user profile and account information
+- Foundation for future features (settings, billing, analytics)
+
+**User Authentication:**
+- Users sign in with Pipedrive OAuth using redirect-based flow (standard web OAuth)
+- Backend OAuth endpoints shared with extension (detect client type via state parameter)
+- Session-based authentication using verification_code (same security model as extension)
+- OAuth tokens stored in backend only, never exposed to browser
+
+**Dashboard Pages:**
+- Landing page (/) - "Sign in with Pipedrive" for unauthenticated users
+- OAuth callback (/auth/callback) - Handles Pipedrive redirect, stores verification_code
+- Dashboard (/dashboard) - Shows user profile (name, email, company domain, sign-out button)
+
+**Technical Implementation:**
+- React 18 + TypeScript + Vite + React Router v6 + Tailwind CSS + shadcn/ui
+- Hosted on Azure Static Web Apps with custom domain
+- Backend extends existing OAuth endpoints to support both extension and website clients
+- Database: Sessions table extended with UserId foreign key to link sessions to users
+- New endpoint: GET /api/user/me (returns user info from database, not Pipedrive)
+
+**Data Flow:**
+1. User visits website → clicks "Sign in with Pipedrive"
+2. Website redirects to backend /api/auth/start with state type="web"
+3. Backend redirects to Pipedrive OAuth authorization
+4. User authorizes → Pipedrive redirects to backend /api/auth/callback
+5. Backend exchanges code for tokens, calls Pipedrive /users/me
+6. Backend creates/updates User and Company in database
+7. Backend generates verification_code, links session to user
+8. Backend redirects to website /auth/callback?verification_code=xxx
+9. Website stores verification_code in localStorage, redirects to dashboard
+10. Dashboard calls GET /api/user/me with verification_code
+11. Backend returns user info from database
+
+**Implementation Status:**
+- 📝 Spec complete: Spec-119-Website-Pipedrive-Auth.md
+- ⏳ Backend extensions: Pending implementation
+- ⏳ Frontend implementation: Pending implementation
+- ⏳ Deployment: Pending
+
+**Privacy & Security:**
+- OAuth tokens (access_token, refresh_token) stored in backend database only
+- Website stores only verification_code in browser localStorage (session identifier)
+- Same CSRF protection as extension (state parameter with nonce)
+- HTTPS enforced on all endpoints
+- Session expires after 60 days of inactivity
+
+**Future Enhancements (Post-MVP):**
+- Account settings and preferences
+- Subscription and billing management
+- Usage analytics and metrics
+- Chrome extension connection status
+- Team/organization management
+
+### 6.4 Telemetry
 - **Telemetry (optional later):** anonymous event counts only (DAU, lookups, creates, attaches).
 
 ---
@@ -284,3 +343,4 @@ To enable analytics and multi-tenancy support, the backend maintains user and co
 - [Website Architecture](../Architecture/Website-Architecture.md) - User dashboard web application architecture
 - [UI Design Specification](../Architecture/UI-Design-Specification.md) - Complete UI design specification with visual system
 - [Plan-001: MVP Feature Breakdown](../Plans/Plan-001-MVP-Feature-Breakdown.md) - MVP broken down into implementable features
+- [Spec-119: Website Pipedrive Authentication](../Specs/Spec-119-Website-Pipedrive-Auth.md) - Website OAuth implementation and user dashboard
