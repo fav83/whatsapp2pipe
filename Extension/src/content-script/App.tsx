@@ -23,6 +23,7 @@ import { PersonMatchedCard } from './components/PersonMatchedCard'
 import { PersonNoMatchState } from './components/PersonNoMatchState'
 import { PersonLookupError } from './components/PersonLookupError'
 import { UserAvatar } from './components/UserAvatar'
+import { SentryTest } from './components/SentryTest'
 import { exposePipedriveTestHelpers } from './testPipedriveApi'
 import type { Person } from '../types/person'
 
@@ -62,6 +63,7 @@ type SidebarState =
 export default function App() {
   const { authState, userName, signIn, signOut, error } = useAuth()
   const [state, setState] = useState<SidebarState>({ type: 'welcome' })
+  const [sentryTestExpanded, setSentryTestExpanded] = useState(false)
 
   // Listen for chat status events from MAIN world
   useEffect(() => {
@@ -128,8 +130,14 @@ export default function App() {
         {authState === 'authenticated' && <SidebarContent state={state} setState={setState} />}
       </main>
 
-      {/* Dev Mode Indicator - Bottom Banner */}
-      <DevModeIndicator />
+      {/* Dev Mode Indicator - Only visible in development */}
+      <DevModeIndicator
+        sentryTestExpanded={sentryTestExpanded}
+        onToggleSentryTest={() => setSentryTestExpanded(!sentryTestExpanded)}
+      />
+
+      {/* Sentry Test Panel - Only visible in development */}
+      <SentryTest isExpanded={sentryTestExpanded} />
     </div>
   )
 }

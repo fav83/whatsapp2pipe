@@ -7,6 +7,7 @@ import App from './App'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { waitForWhatsAppLoad } from './whatsapp-loader'
 import { logError } from '../utils/errorLogger'
+import { sentryScope } from './sentry'
 import '../styles/content-script.css'
 
 console.log('[Content Script] Loading on WhatsApp Web')
@@ -15,22 +16,42 @@ console.log('[Content Script] Mode:', import.meta.env.MODE)
 
 // Global error handler for uncaught errors
 window.addEventListener('error', (event: ErrorEvent) => {
-  logError('Uncaught error', event.error, {
-    message: event.message,
-    filename: event.filename,
-    lineno: event.lineno,
-    colno: event.colno,
-    url: window.location.href,
-  })
+  logError(
+    'Uncaught error',
+    event.error,
+    {
+      message: event.message,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+      url: window.location.href,
+    },
+    sentryScope
+  )
 })
 
 // Global handler for unhandled promise rejections
 window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
-  logError('Unhandled promise rejection', event.reason, {
-    promise: event.promise,
-    url: window.location.href,
-  })
+  logError(
+    'Unhandled promise rejection',
+    event.reason,
+    {
+      promise: event.promise,
+      url: window.location.href,
+    },
+    sentryScope
+  )
 })
+
+// Expose test function for console testing (production-safe, only triggers Sentry)
+interface WindowWithSentryTest extends Window {
+  __testSentry?: (message?: string) => void
+}
+;(window as WindowWithSentryTest).__testSentry = (message?: string) => {
+  const testError = new Error(message || `Manual Sentry test at ${new Date().toISOString()}`)
+  logError('Manual Sentry test', testError, { triggered_from: 'console' }, sentryScope)
+  console.log('✓ Sentry test error logged:', testError.message)
+}
 
 // Initialize sidebar after WhatsApp is fully loaded
 async function init() {
@@ -85,9 +106,14 @@ async function init() {
     }
   } catch (error) {
     // Log with full context
-    logError('Failed to initialize sidebar', error, {
-      url: window.location.href,
-    })
+    logError(
+      'Failed to initialize sidebar',
+      error,
+      {
+        url: window.location.href,
+      },
+      sentryScope
+    )
   }
 }
 

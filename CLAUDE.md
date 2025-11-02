@@ -134,20 +134,87 @@ The build system uses Vite with Chrome extension-specific configurations:
 
 ### Chrome Extension Module Bundling
 
-The build system includes a custom Vite plugin (`inline-chunks`) that solves Chrome Manifest V3 ES module compatibility issues:
+The build system uses separate Vite configurations to solve Chrome Manifest V3 ES module compatibility issues:
 
 **Problem:** Chrome content scripts don't support ES modules, but Vite creates code-split chunks with import/export statements.
 
-**Solution:** The `inline-chunks` plugin automatically:
-- Detects and reads chunk files after build
-- Removes export statements
-- Wraps chunks in IIFE to prevent variable collisions
-- Inlines all React dependencies (~142KB) into content-script.js
-- Produces a single self-contained file with no import/export statements
+**Solution:** The build system uses three separate Vite configurations:
+- **vite.content.config.ts** - Builds content-script.js with `inlineDynamicImports: true`
+- **vite.inspector.config.ts** - Builds inspector-main.js with `inlineDynamicImports: true`
+- **vite.config.ts** - Builds service worker and popup, separates source maps
 
-**Result:** content-script.js works in Chrome without "Cannot use import statement outside a module" errors.
+**Build Command:**
+```bash
+npm run build
+# Executes three sequential builds:
+# 1. vite build --config vite.content.config.ts --mode production
+# 2. vite build --config vite.inspector.config.ts --mode production
+# 3. vite build --mode production
+```
+
+**Result:**
+- content-script.js: Single file bundle (~142KB) with no import/export statements
+- inspector-main.js: Single file bundle with no import/export statements
+- Accurate source maps for each entry point (moved to `sourcemaps/` directory)
+- Works in Chrome without "Cannot use import statement outside a module" errors
 
 **Documentation:** See [Chrome-Extension-Architecture.md](Docs/Architecture/Chrome-Extension-Architecture.md#81-vite-configuration) for complete technical details.
+
+### Source Map Separation for Security
+
+The build system includes a custom Vite plugin (`separate-sourcemaps`) that ensures source maps are never accidentally shipped to users:
+
+**Problem:** Source maps expose original TypeScript source code and should never be included in production builds distributed to users.
+
+**Solution:** The `separate-sourcemaps` plugin automatically:
+- Runs after all other build plugins complete
+- Recursively finds all `.map` files in the `dist/` directory
+- Moves them to a separate `sourcemaps/` directory with flattened names
+- Ensures `dist/` contains ONLY production code, ready to ship
+
+**Directory Structure After Build:**
+```
+Extension/
+  dist/              ← Production code ONLY (safe to ship)
+    *.js, *.css, *.html, manifest.json
+  sourcemaps/        ← Source maps ONLY (for Sentry upload)
+    *.js.map, *.css.map
+  release/           ← Created by npm run package
+  chat2deal-vX.X.X.zip ← Distribution package
+```
+
+**Security Benefit:** Even if you accidentally package `dist/` directly instead of using `npm run package`, it contains NO source maps!
+
+**Sentry Integration:** Source maps are uploaded separately to Sentry via `npm run upload-sourcemaps`, which reads from the `sourcemaps/` directory.
+
+**Documentation:** See [DEPLOYMENT.md](Extension/DEPLOYMENT.md) for complete deployment workflow.
+
+### Sentry Error Tracking
+
+The extension uses Sentry for error tracking and performance monitoring with PII filtering.
+
+**Setup:**
+- Sentry enabled in production (`VITE_SENTRY_ENABLED=true`)
+- Disabled in development by default
+- PII filtering removes phone numbers, names, and tokens from error reports
+
+**Source Maps and Debug IDs:**
+- Debug IDs are injected during `npm run upload-sourcemaps` (not during build)
+- **CRITICAL:** After uploading source maps, you MUST reload the extension in Chrome
+- Without reload, old code runs without Debug IDs, causing "Missing source file with a matching Debug ID" errors
+
+**Workflow:**
+1. Build: `npm run build`
+2. Upload: `npm run upload-sourcemaps` (injects Debug IDs and uploads to Sentry)
+3. Reload: Open `chrome://extensions` and click Reload button
+4. Test: Hard-refresh WhatsApp Web and reproduce errors
+
+**Dev Mode Components:**
+- `<DevModeIndicator />` - Shows dev mode banner with Sentry test button (only in development)
+- `<SentryTest />` - Test component for verifying Sentry integration (only in development)
+- Both components are automatically hidden in production builds
+
+**Documentation:** See [DEPLOYMENT.md](Extension/DEPLOYMENT.md#debug-ids-and-reload-workflow) for complete Sentry workflow.
 
 ### WhatsApp Web Integration
 
