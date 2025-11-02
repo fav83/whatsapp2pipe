@@ -6,7 +6,7 @@
  * Only visible when VITE_ENV=development AND VITE_SHOW_DEV_INDICATOR=true.
  */
 
-import { AUTH_CONFIG } from '../../config'
+import { AUTH_CONFIG, config } from '../../config'
 
 interface DevModeIndicatorProps {
   sentryTestExpanded?: boolean
@@ -17,18 +17,15 @@ export function DevModeIndicator({
   sentryTestExpanded: _sentryTestExpanded,
   onToggleSentryTest,
 }: DevModeIndicatorProps) {
-  // TEMPORARY OVERRIDE: Show in production for Sentry testing
-  // TODO: REVERT THIS AFTER TESTING!
-  // Normal check would be:
-  // const isDevelopment =
-  //   import.meta.env.MODE === 'development' &&
-  //   import.meta.env.VITE_ENV === 'development' &&
-  //   config.env === 'development' &&
-  //   config.showDevIndicator
-  //
-  // if (!isDevelopment) {
-  //   return null
-  // }
+  const isDevelopment =
+    import.meta.env.MODE === 'development' &&
+    import.meta.env.VITE_ENV === 'development' &&
+    config.env === 'development' &&
+    config.showDevIndicator
+
+  if (!isDevelopment) {
+    return null
+  }
 
   const bannerStyle: React.CSSProperties = {
     width: '100%',
@@ -91,7 +88,6 @@ export function DevModeIndicator({
         <span style={badgeStyle}>DEV</span>
         <span style={urlStyle}>{AUTH_CONFIG.backendUrl}</span>
       </div>
-      {/* TEMPORARY: S button shown in production for testing */}
       {onToggleSentryTest && (
         <button
           onClick={onToggleSentryTest}

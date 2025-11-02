@@ -42,6 +42,16 @@ npm run build                # Just build (for local testing)
 - Moves source maps to `sourcemaps/`
 - Use for local testing of production build
 
+### Build Pipeline Notes (Sentry + Single-File Content Script)
+
+- The build now runs in 3 passes to produce accurate source maps:
+  1. Build `content-script.js` as a single file (`inlineDynamicImports: true`).
+  2. Build `inspector-main.js` as a single file.
+  3. Build service worker + popup and move all `.map` files to `sourcemaps/`.
+- The content script CSS is emitted to `assets/content-script.css` (stable path referenced by `manifest.json`).
+- Debug IDs are injected by `sentry-cli` during `npm run upload-sourcemaps` (not during build) to avoid mismatches.
+- After building and uploading, reload the extension in `chrome://extensions` and hard‑reload WhatsApp before testing.
+
 ### 3. Upload Source Maps to Sentry
 
 ```bash
@@ -54,6 +64,26 @@ npm run upload-sourcemaps
 ```
 
 Verify: [Sentry](https://sentry.io) → Settings → Projects → Your Project → Source Maps
+
+#### Debug IDs and Reload Workflow
+
+This project uses Sentry Debug IDs to reliably de-minify stack traces. Debug IDs are injected by `sentry-cli` during `npm run upload-sourcemaps` (not during build).
+
+**Critical: After uploading source maps, you MUST reload the extension:**
+
+1. Open `chrome://extensions`
+2. Click the **Reload** button on your extension
+3. Hard-refresh the WhatsApp tab (Ctrl+Shift+R / Cmd+Shift+R)
+4. Reproduce the error
+
+**Why?** Chrome must run the JavaScript files that contain the injected Debug IDs. Without reloading, the old code (without Debug IDs) is still running, causing source map mismatches.
+
+**Troubleshooting "Missing source file with a matching Debug ID":**
+
+- Rebuild, re-upload, and reload the extension, then reproduce the error
+- Ensure you didn't rebuild after uploading without re-uploading
+- In Sentry Issue details, verify the Debug ID in the stack frame matches an uploaded artifact under Settings → Source Maps
+- Remember: Debug IDs are injected during upload, not build
 
 ### 4. Deploy to Chrome Web Store
 
@@ -122,7 +152,8 @@ Get your values from:
 
 - Check Sentry → Settings → Source Maps for uploaded files
 - Verify Sentry release version matches `manifest.json`
-- Re-run: `npm run upload-sourcemaps`
+- **Did you reload the extension after uploading?** See "Debug IDs and Reload Workflow" above
+- Re-run: `npm run upload-sourcemaps` and reload the extension
 
 **Verify no source maps in package:**
 

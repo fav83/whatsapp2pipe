@@ -56,7 +56,8 @@
       "Bash(dotnet remove:*)",
       "Bash(dotnet add:*)",
       "Bash(git rev-parse:*)",
-      "Bash(bash:*)"
+      "Bash(bash:*)",
+      "Bash(del DEBUG_IDS.md)"
     ],
     "deny": [],
     "ask": [

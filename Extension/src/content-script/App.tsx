@@ -130,13 +130,13 @@ export default function App() {
         {authState === 'authenticated' && <SidebarContent state={state} setState={setState} />}
       </main>
 
-      {/* Dev Mode Indicator - Bottom Banner */}
+      {/* Dev Mode Indicator - Only visible in development */}
       <DevModeIndicator
         sentryTestExpanded={sentryTestExpanded}
         onToggleSentryTest={() => setSentryTestExpanded(!sentryTestExpanded)}
       />
 
-      {/* Sentry Test Panel - REMOVE BEFORE PRODUCTION */}
+      {/* Sentry Test Panel - Only visible in development */}
       <SentryTest isExpanded={sentryTestExpanded} />
     </div>
   )

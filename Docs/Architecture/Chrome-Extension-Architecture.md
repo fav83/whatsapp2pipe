@@ -571,30 +571,56 @@ async function init() {
 
 **Build Targets:**
 - **Content Script:** Bundle React app for injection into WhatsApp Web
+- **Inspector Main:** MAIN world script for WhatsApp Web integration
 - **Service Worker:** Separate bundle (no DOM APIs, service worker context)
 - **Popup (optional):** Small standalone React app
 
 **Vite Setup:**
+
+The build system uses three separate Vite configurations to ensure proper source maps for Sentry:
+
+1. **vite.content.config.ts** - Content script with `inlineDynamicImports: true`
+2. **vite.inspector.config.ts** - Inspector script with `inlineDynamicImports: true`
+3. **vite.config.ts** - Service worker, popup, and source map separation
+
+**Build Command:**
+```bash
+# Three-pass build for accurate source maps
+npm run build
+# Executes:
+# 1. vite build --config vite.content.config.ts --mode production
+# 2. vite build --config vite.inspector.config.ts --mode production
+# 3. vite build --mode production
+```
+
+**Main Vite Configuration:**
 ```typescript
 // vite.config.ts structure
 export default defineConfig({
   base: './', // CRITICAL: Enable relative asset loading for Chrome extensions
   build: {
+    outDir: 'dist',
+    emptyOutDir: false, // Don't wipe dist; earlier builds have emitted files
     rollupOptions: {
       input: {
-        'content-script': 'src/content-script/index.tsx',
-        'service-worker': 'src/service-worker/index.ts',
-        'popup': 'src/popup/index.tsx'
+        // content-script and inspector are built in separate configs
+        'service-worker': resolve(__dirname, 'src/service-worker/index.ts'),
+        popup: resolve(__dirname, 'src/popup/index.html'),
       },
       output: {
-        entryFileNames: '[name].js',
-        chunkFileNames: 'chunks/[name].[hash].js'
+        entryFileNames: (chunkInfo) => {
+          if (chunkInfo.name === 'service-worker') {
+            return '[name].js'
+          }
+          return 'assets/[name].[hash].js'
+        },
+        // ... other output options
       }
     }
   },
   plugins: [
     react(),
-    // Chrome extension specific plugins
+    // separate-sourcemaps plugin (moves .map files to sourcemaps/)
   ]
 })
 ```
@@ -606,154 +632,80 @@ export default defineConfig({
 **Key Features:**
 - TypeScript compilation
 - Hot Module Replacement (HMR) for development
-- Source maps for debugging
+- Source maps for debugging (moved to separate `sourcemaps/` directory)
 - Tree shaking and minification for production
 - Tailwind CSS processing
+- Sentry Debug ID injection (during source map upload)
 
-**Critical: Content Script Module Bundling**
+**Critical: Content Script Single-File Bundling**
 
-Chrome Manifest V3 content scripts do not support ES modules (no `type: "module"`). When Vite builds multiple entry points (content-script, popup, service-worker) that share dependencies (React), it automatically code-splits shared libraries into separate chunk files with ES6 import/export statements. This breaks content scripts.
+Chrome Manifest V3 content scripts do not support ES modules (no `type: "module"`). To avoid import/export issues, content scripts must be bundled as single files.
 
 **Problem:**
 ```javascript
-// Generated content-script.js (BROKEN)
+// Generated content-script.js (BROKEN - with code splitting)
 import{j as e,r as i,c as a,R as c}from"./chunks/client.Ds7D3P6J.js"
 // Chrome Error: Uncaught SyntaxError: Cannot use import statement outside a module
 ```
 
-**Solution - Custom Vite Plugin (`inline-chunks`):**
+**Solution - Separate Build Configuration:**
 
-The plugin inlines all chunk dependencies into content-script.js at build time:
+Content script and inspector are built using separate Vite configs with `inlineDynamicImports: true`:
 
 ```typescript
-// Extension/vite.config.ts
-{
-  name: 'inline-chunks',
-  closeBundle() {
-    const contentScriptPath = resolve(__dirname, 'dist/content-script.js')
-    const chunksDir = resolve(__dirname, 'dist/chunks')
-
-    if (existsSync(contentScriptPath) && existsSync(chunksDir)) {
-      let contentScript = readFileSync(contentScriptPath, 'utf-8')
-      const importRegex = /import\{([^}]+)\}from"\.\/chunks\/([^"]+)"/g
-      const matches = [...contentScript.matchAll(importRegex)]
-
-      if (matches.length > 0) {
-        const chunksToInline = new Map()
-
-        // Collect chunk contents and variable mappings
-        for (const match of matches) {
-          const importedVars = match[1]
-          const chunkFileName = match[2]
-          const chunkFile = resolve(__dirname, 'dist/chunks', chunkFileName)
-
-          if (existsSync(chunkFile) && !chunksToInline.has(chunkFileName)) {
-            let chunkContent = readFileSync(chunkFile, 'utf-8')
-
-            // Remove export statement from chunk
-            const exportRegex = /export\{([^}]+)\};?\s*$/m
-            const exportMatch = chunkContent.match(exportRegex)
-
-            if (exportMatch) {
-              const exportedVars = exportMatch[1]
-              chunkContent = chunkContent.replace(exportRegex, '')
-              chunksToInline.set(chunkFileName, {
-                content: chunkContent,
-                exports: exportedVars,
-                imports: importedVars
-              })
-            }
-          }
-        }
-
-        // Inline chunks with proper variable scoping
-        for (const [chunkFileName, { content, exports, imports }] of chunksToInline) {
-          // Build export name to actual variable mapping
-          // exports format: "Td as R,Io as c,Ld as j,$u as r"
-          const exportMap = new Map()
-          for (const pair of exports.split(',').map(s => s.trim())) {
-            const parts = pair.split(' as ')
-            if (parts.length === 2) {
-              const [actualVar, exportedAs] = parts
-              exportMap.set(exportedAs, actualVar)
-            }
-          }
-
-          // Wrap chunk in IIFE to prevent variable name collisions
-          const preservedVars = Array.from(exportMap.values())
-          const returnStatement = `return {${preservedVars.join(',')}};`
-          const iife = `const __chunk__=(function(){${content}${returnStatement}})();`
-
-          // Map imported names to chunk variables
-          // imports format: "j as e,r as i,c as a,R as c"
-          const adjustedMappings = []
-          for (const pair of imports.split(',').map(s => s.trim())) {
-            const parts = pair.split(' as ')
-            if (parts.length === 2) {
-              const [importedName, localName] = parts
-              const actualVar = exportMap.get(importedName)
-              if (actualVar) {
-                adjustedMappings.push(`const ${localName}=__chunk__.${actualVar};`)
-              }
-            }
-          }
-
-          const inlinedCode = iife + '\n' + adjustedMappings.join('')
-
-          // Replace import statement with inlined code
-          const firstImportRegex = new RegExp(
-            `import\\{[^}]+\\}from"\\.\/chunks\/${chunkFileName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`
-          )
-          contentScript = contentScript.replace(firstImportRegex, inlinedCode)
-        }
-
-        // Remove any remaining import statements (duplicates in string literals)
-        contentScript = contentScript.replace(
-          /import\{[^}]+\}from"\.\/chunks\/[^"]+"/g,
-          '/* chunk already inlined */'
-        )
-
-        writeFileSync(contentScriptPath, contentScript)
-        console.log('✓ Inlined chunks into content-script.js')
+// Extension/vite.content.config.ts
+export default defineConfig({
+  base: './',
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true, // First build, wipe dist
+    sourcemap: true,
+    rollupOptions: {
+      input: {
+        'content-script': resolve(__dirname, 'src/content-script/index.tsx'),
+      },
+      output: {
+        entryFileNames: '[name].js',
+        assetFileNames: 'assets/[name].[ext]', // CSS goes to assets/content-script.css
+        inlineDynamicImports: true, // Bundle as single file
       }
     }
-  }
-}
+  },
+  plugins: [react()]
+})
 ```
 
 **How It Works:**
 
-1. **Detects chunk imports** in content-script.js after Vite build completes
-2. **Reads chunk files** (e.g., `chunks/client.Ds7D3P6J.js` containing React)
-3. **Removes export statements** from chunk content
-4. **Wraps chunk in IIFE** to create isolated scope and prevent variable name collisions with content script code
-5. **Creates variable mappings** from import names to actual chunk variables via `__chunk__` object
-6. **Replaces import statements** with the IIFE + variable declarations
-7. **Result**: Single self-contained content-script.js file (~142KB) with no import/export statements
+1. **First Build Pass** (vite.content.config.ts):
+   - Builds content-script.js as single file with `inlineDynamicImports: true`
+   - All React dependencies bundled inline (~142KB)
+   - CSS output: `assets/content-script.css` (stable path)
+   - Source map: `content-script.js.map` (later moved to `sourcemaps/`)
 
-**Why IIFE is Critical:**
+2. **Second Build Pass** (vite.inspector.config.ts):
+   - Builds inspector-main.js as single file with `inlineDynamicImports: true`
+   - `emptyOutDir: false` preserves content-script.js from first pass
+   - Source map: `inspector-main.js.map` (later moved to `sourcemaps/`)
 
-The inlined React chunk contains minified variable names (like `var b=`) that can collide with content script variables. Wrapping in an IIFE creates a closure scope:
-
-```javascript
-// WITHOUT IIFE (BROKEN - variable collision)
-var b={exports:{}}; // From React chunk
-async function b(){...} // Content script function - COLLISION!
-
-// WITH IIFE (WORKS - isolated scope)
-const __chunk__=(function(){
-  var b={exports:{}}; // Scoped to IIFE
-  return {Td,Io,Ld,$u}; // Only exports needed
-})();
-const e=__chunk__.Ld; // Map to content script variables
-async function b(){...} // Content script function - NO COLLISION
-```
+3. **Third Build Pass** (vite.config.ts):
+   - Builds service-worker.js and popup.html
+   - `emptyOutDir: false` preserves content-script.js and inspector-main.js
+   - Runs `separate-sourcemaps` plugin to move all `.map` files to `sourcemaps/`
 
 **Build Output:**
-- content-script.js: ~142KB (React + app code bundled)
-- No import/export statements
-- Works in Chrome content script context
-- Popup and service-worker still use normal code-splitting
+- content-script.js: ~142KB (React + app code bundled as single file)
+- inspector-main.js: Single file (no imports)
+- service-worker.js: Separate bundle
+- assets/content-script.css: Stable CSS path referenced by manifest.json
+- No import/export statements in content scripts
+- All source maps moved to `sourcemaps/` directory
+
+**Why This Approach:**
+- Ensures accurate source maps for each entry point
+- Avoids code-splitting issues in content scripts
+- Single-file bundles work in Chrome extension context
+- Source maps separated for security (never shipped to users)
 
 ### 8.2 CSS in Content Scripts
 
@@ -1061,6 +1013,49 @@ Sentry.init({
 - Person names
 - OAuth tokens and API keys
 - WhatsApp message content (never accessed anyway)
+
+**Source Maps and Debug IDs:**
+
+The extension uses Sentry Debug IDs for reliable stack trace de-minification. Debug IDs are unique identifiers that link production JavaScript files to their source maps.
+
+**Critical Workflow:**
+
+1. **Build:** Run `npm run build` to create production bundles
+2. **Upload:** Run `npm run upload-sourcemaps` to inject Debug IDs and upload to Sentry
+3. **Reload:** **MUST reload the extension in Chrome** after upload
+4. **Test:** Hard-refresh WhatsApp Web and reproduce errors
+
+**Why Reload is Critical:**
+
+- Debug IDs are injected into JavaScript files during `npm run upload-sourcemaps` (not during build)
+- Chrome must run the JavaScript files that contain the injected Debug IDs
+- Without reloading, the old code (without Debug IDs) is still running, causing source map mismatches
+- Sentry will show "Missing source file with a matching Debug ID" errors if you skip this step
+
+**Source Map Upload Script:**
+
+```bash
+# Extension/scripts/upload-sourcemaps.cjs
+# 1. Injects Debug IDs into dist/*.js files
+# 2. Uploads dist/*.js and sourcemaps/*.map to Sentry
+# 3. Associates via Debug IDs (no release name required)
+```
+
+**Configuration:**
+
+```bash
+# Extension/.env.production
+SENTRY_ORG=your-org-slug
+SENTRY_PROJECT=your-project-slug
+```
+
+**Troubleshooting:**
+
+- **"Missing source file with a matching Debug ID"** → Rebuild, re-upload, and reload extension
+- **Stack traces still minified** → Verify Debug ID in Sentry Issue matches uploaded artifact
+- **Source maps not found** → Check Sentry → Settings → Source Maps for uploaded files
+
+See Extension/DEPLOYMENT.md for complete deployment workflow.
 
 ### 10.3 Logging Strategy
 

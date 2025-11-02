@@ -1,6 +1,7 @@
 /**
- * TEMPORARY TEST COMPONENT - Remove before production
+ * Sentry Test Component
  * Tests Sentry error tracking integration
+ * Only visible in development mode (MODE=development AND VITE_ENV=development)
  */
 
 import { sentryClient, sentryScope } from '../sentry'
@@ -12,12 +13,10 @@ interface SentryTestProps {
 }
 
 export function SentryTest({ isExpanded }: SentryTestProps) {
-  // TEMPORARY OVERRIDE: Show in production for Sentry testing
-  // TODO: REVERT THIS AFTER TESTING!
-  // const isDevelopment =
-  //   import.meta.env.MODE === 'development' && import.meta.env.VITE_ENV === 'development'
+  const isDevelopment =
+    import.meta.env.MODE === 'development' && import.meta.env.VITE_ENV === 'development'
 
-  if (!isExpanded) {
+  if (!isDevelopment || !isExpanded) {
     return null
   }
 
