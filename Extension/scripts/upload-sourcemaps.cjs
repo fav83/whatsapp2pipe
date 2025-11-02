@@ -9,13 +9,13 @@ const manifestPath = path.join(__dirname, '../public/manifest.json');
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 const version = manifest.version;
 
-console.log(`📦 Uploading source maps for version ${version}...`);
+console.log(`Uploading source maps for version ${version}...`);
 
 // Check if sentry-cli is installed
 try {
   execSync('sentry-cli --version', { stdio: 'ignore' });
 } catch (error) {
-  console.error('❌ sentry-cli is not installed');
+  console.error('sentry-cli is not installed');
   console.error('Install it with: npm install -g @sentry/cli');
   console.error('Then authenticate with: sentry-cli login');
   process.exit(1);
@@ -26,7 +26,6 @@ const envPath = path.join(__dirname, '../.env.production');
 if (fs.existsSync(envPath)) {
   const envContent = fs.readFileSync(envPath, 'utf8');
   envContent.split('\n').forEach((line) => {
-    // Trim line to handle CRLF (\r\n) line endings
     const trimmedLine = line.trim();
     const match = trimmedLine.match(/^(SENTRY_ORG|SENTRY_PROJECT)=(.*)$/);
     if (match && !process.env[match[1]]) {
@@ -40,7 +39,7 @@ const sentryOrg = process.env.SENTRY_ORG;
 const sentryProject = process.env.SENTRY_PROJECT;
 
 if (!sentryOrg || !sentryProject) {
-  console.error('❌ Sentry configuration missing');
+  console.error('Sentry configuration missing');
   console.error('');
   console.error('Option 1: Add to .env.production file:');
   console.error('  SENTRY_ORG=your-org-slug');
@@ -59,8 +58,7 @@ if (!sentryOrg || !sentryProject) {
   process.exit(1);
 }
 
-// Prepare temporary directory with both JS and map files
-// (Sentry needs both in the same location)
+// Prepare temporary directory with both JS and map files (Sentry needs both together)
 const uploadDir = path.join(__dirname, '../upload-temp');
 console.log('Preparing files for upload...');
 
@@ -70,7 +68,7 @@ if (fs.existsSync(uploadDir)) {
 }
 fs.mkdirSync(uploadDir, { recursive: true });
 
-// Copy JS files from dist/
+// Copy JS files from dist/ and .map files from sourcemaps/
 const distDir = path.join(__dirname, '../dist');
 const sourcemapsDir = path.join(__dirname, '../sourcemaps');
 
@@ -94,43 +92,59 @@ function copyRecursive(src, dest, extensions) {
   }
 }
 
-// Copy .js files from dist/
 copyRecursive(distDir, uploadDir, ['.js']);
-// Copy .map files from sourcemaps/
 copyRecursive(sourcemapsDir, uploadDir, ['.map']);
 
-console.log('✓ Prepared upload directory with JS and map files');
+console.log('Prepared upload directory with JS and map files');
 
 try {
-  // Inject debug IDs into source maps and JS files (required for Chrome extensions)
+  // Ensure Debug IDs are present in both JS and source maps. Even though
+  // the Vite plugin injects them in JS, this also stamps the .map files.
   console.log('Injecting debug IDs into upload-temp/...');
-  execSync(`sentry-cli sourcemaps inject ./upload-temp`, {
-    stdio: 'inherit',
-  });
+  execSync(`sentry-cli sourcemaps inject ./upload-temp`, { stdio: 'inherit' });
 
-  // Copy debug-ID-injected JS files back to dist/ so browser loads them with IDs
-  console.log('Copying debug-ID-injected JS files back to dist/...');
+  // Copy injected JS back to dist so the browser executes code with matching IDs
+  console.log('Syncing injected JS back to dist/...');
   copyRecursive(uploadDir, distDir, ['.js']);
-  console.log('✓ Copied JS files with debug IDs to dist/');
 
-  // Upload source maps with debug IDs (no URL prefix or release needed)
+  // Diagnostics: show the Debug ID we will upload for key bundles
+  function showDebugId(jsPath) {
+    if (!fs.existsSync(jsPath)) return;
+    const src = fs.readFileSync(jsPath, 'utf8');
+    const m1 = src.match(/sentry-dbid-([0-9a-f-]+)/i);
+    const m2 = src.match(/#\s*debugId=([0-9a-f-]+)/i);
+    const id = m1 ? m1[1] : (m2 ? m2[1] : null);
+    if (id) {
+      const mapPath = jsPath + '.map';
+      const hasMap = fs.existsSync(mapPath);
+      const mapHasId = hasMap && fs.readFileSync(mapPath, 'utf8').includes(id);
+      console.log(`Debug ID ${id} in ${path.basename(jsPath)} (map: ${hasMap ? (mapHasId ? 'has id' : 'missing id') : 'missing'})`);
+    } else {
+      console.warn(`No Debug ID found in ${path.basename(jsPath)}`);
+    }
+  }
+  showDebugId(path.join(uploadDir, 'content-script.js'));
+  showDebugId(path.join(uploadDir, 'inspector-main.js'));
+  showDebugId(path.join(uploadDir, 'service-worker.js'));
+
   console.log('Uploading source maps...');
   execSync(
     `sentry-cli sourcemaps upload --org "${sentryOrg}" --project "${sentryProject}" ./upload-temp`,
-    {
-      stdio: 'inherit',
-    }
+    { stdio: 'inherit' }
   );
-
-  console.log(`✅ Source maps uploaded successfully for version ${version}`);
+  console.log(`Source maps uploaded successfully for version ${version}`);
 } catch (error) {
-  console.error('❌ Failed to upload source maps');
+  console.error('Failed to upload source maps');
   console.error('Check your Sentry authentication and configuration');
   process.exit(1);
 } finally {
-  // Clean up temporary directory
-  if (fs.existsSync(uploadDir)) {
-    fs.rmSync(uploadDir, { recursive: true, force: true });
-    console.log('✓ Cleaned up temporary files');
+  // Clean up temporary directory (set KEEP_UPLOAD_TEMP=1 to skip)
+  if (process.env.KEEP_UPLOAD_TEMP !== '1') {
+    if (fs.existsSync(uploadDir)) {
+      fs.rmSync(uploadDir, { recursive: true, force: true });
+      console.log('Cleaned up temporary files');
+    }
+  } else {
+    console.log(`Keeping temporary files for inspection at: ${uploadDir}`);
   }
 }

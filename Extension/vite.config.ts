@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-// import { sentryVitePlugin } from '@sentry/vite-plugin'
 import { resolve, dirname } from 'path'
 import {
   copyFileSync,
@@ -16,19 +15,8 @@ import {
 export default defineConfig({
   base: './', // Enable relative asset loading for Chrome extension compatibility
   plugins: [
-    // Sentry plugin - injects debug IDs for sourcemap matching (disabled, we use manual upload)
-    // sentryVitePlugin({
-    //   org: process.env.SENTRY_ORG,
-    //   project: process.env.SENTRY_PROJECT,
-    //   authToken: process.env.SENTRY_AUTH_TOKEN,
-    //   sourcemaps: {
-    //     assets: './sourcemaps/**',
-    //     filesToDeleteAfterUpload: './sourcemaps/**/*.map',
-    //   },
-    //   release: {
-    //     inject: false, // We set release manually in sentry.ts
-    //   },
-    // }),
+    // Important: We rely on sentry-cli to inject Debug IDs post-build during upload.
+    // Keeping the Vite plugin disabled avoids double-injection and mismatched IDs.
     react(),
     // Copy manifest to dist after build
     {

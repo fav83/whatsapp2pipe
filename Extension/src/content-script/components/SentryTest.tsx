@@ -89,6 +89,21 @@ export function SentryTest({ isExpanded }: SentryTestProps) {
     alert('Direct exception sent! Check console for network requests to sentry.io')
   }
 
+  const showCurrentDebugId = () => {
+    interface WindowWithSentryDebugIds extends Window {
+      _sentryDebugIds?: Record<string, string>
+    }
+    const win = window as WindowWithSentryDebugIds
+    const ids = win._sentryDebugIds || {}
+    const stack = new Error().stack as string
+    const fromStack = ids[stack]
+    const first = Object.values(ids)[0] as string | undefined
+    const guess = fromStack || first || 'unknown'
+    console.log('[Sentry Test] _sentryDebugIds map:', ids)
+    console.log('[Sentry Test] Stack used for lookup:', stack)
+    alert(`content-script Debug ID: ${guess}`)
+  }
+
   return (
     <div className="border-t border-yellow-200 bg-yellow-50 p-4">
       <div className="text-xs font-bold text-yellow-800 mb-3">🧪 SENTRY TEST PANEL</div>
@@ -98,6 +113,12 @@ export function SentryTest({ isExpanded }: SentryTestProps) {
           className="px-3 py-1 bg-gray-500 text-white text-xs rounded hover:bg-gray-600"
         >
           Show Config
+        </button>
+        <button
+          onClick={showCurrentDebugId}
+          className="px-3 py-1 bg-indigo-500 text-white text-xs rounded hover:bg-indigo-600"
+        >
+          Show Debug ID
         </button>
         <button
           onClick={testDirectSentry}
