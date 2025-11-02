@@ -176,11 +176,12 @@ if (!win.__whatsappInspectorInitialized) {
   // Poll for webpack chunks and initialize immediately when found
   let webpackCheckCount = 0
   let moduleRaidInitialized = false
-  const maxChecks = 100 // 100 * 50ms = 5 seconds
+  let timeoutReported = false
+  const maxChecks = 1200 // 1200 * 50ms = 60 seconds
 
   const checkForWebpack = setInterval(() => {
-    // Safety check: stop if already initialized
-    if (moduleRaidInitialized) {
+    // Safety check: stop if already initialized or timeout already reported
+    if (moduleRaidInitialized || timeoutReported) {
       clearInterval(checkForWebpack)
       return
     }
@@ -224,10 +225,11 @@ if (!win.__whatsappInspectorInitialized) {
       // Mark complete and remove overlay after short dwell
       initializationCompleted = true
       setTimeout(() => removeLoadingOverlay(), 300)
-    } else if (webpackCheckCount >= maxChecks) {
+    } else if (webpackCheckCount >= maxChecks && !timeoutReported) {
       clearInterval(checkForWebpack)
-      console.log('[Main World] ⚠️  Webpack chunks not found after 5 seconds')
-      reportModuleRaidError({ phase: 'webpack-detection', reason: 'timeout', timeoutMs: 5000 })
+      timeoutReported = true
+      console.log('[Main World] ⚠️  Webpack chunks not found after 60 seconds')
+      reportModuleRaidError({ phase: 'webpack-detection', reason: 'timeout', timeoutMs: 60000 })
       // Timeout case: still let the rest of the app work, but remove overlay after 1s
       initializationCompleted = true
       setTimeout(() => removeLoadingOverlay(), 1000)
