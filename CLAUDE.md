@@ -45,6 +45,7 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 - [Spec-116-User-Entity-Tracking.md](Docs/Specs/Spec-116-User-Entity-Tracking.md) - User entity tracking with EF Core and Azure SQL (✅ Complete)
 - [Spec-116-Implementation-Summary.md](Docs/Specs/Spec-116-Implementation-Summary.md) - Complete implementation summary and configuration details
 - [Spec-117-User-Avatar-Dropdown.md](Docs/Specs/Spec-117-User-Avatar-Dropdown.md) - User avatar with profile dropdown (✅ Complete)
+- [Spec-118-Module-Raid-Loading-Overlay.md](Docs/Specs/Spec-118-Module-Raid-Loading-Overlay.md) - Module raid loading overlay with Sentry error reporting (✅ Complete)
 
 ### External Documentation
 - [Pipedrive/](Docs/External/Pipedrive/) - Pipedrive API documentation and development resources

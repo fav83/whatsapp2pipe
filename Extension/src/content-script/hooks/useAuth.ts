@@ -10,7 +10,8 @@ import { authService } from '../services/authService'
 import type { AuthState } from '../../types/auth'
 
 export function useAuth() {
-  const [authState, setAuthState] = useState<AuthState>('unauthenticated')
+  // Start in 'authenticating' to avoid flashing unauthenticated UI before the first check completes
+  const [authState, setAuthState] = useState<AuthState>('authenticating')
   const [error, setError] = useState<string | null>(null)
   const [verificationCode, setVerificationCode] = useState<string | null>(null)
   const [userName, setUserName] = useState<string | null>(null)

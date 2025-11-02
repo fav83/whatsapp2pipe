@@ -108,15 +108,43 @@ Build a lightweight Chrome extension that adds a sidebar to **WhatsApp Web** to 
 - [ ] Success state shows Person card and “Open in Pipedrive.”
 
 ### 4.6 States & Errors
-- **Not signed in:** Show branded sign-in prompt.  
-- **No match:** Show Create + Attach choices.  
-- **API errors:** Show concise error toasts; allow retry.  
-- **Rate limits:** Detect and show a temporary “Try again soon.” message.  
+- **Not signed in:** Show branded sign-in prompt.
+- **No match:** Show Create + Attach choices.
+- **API errors:** Show concise error toasts; allow retry.
+- **Rate limits:** Detect and show a temporary "Try again soon." message.
 - **Connectivity:** Show offline state if Pipedrive is unreachable.
 
 **Acceptance Criteria**
-- [ ] Each state above has a visible, understandable UI.  
+- [ ] Each state above has a visible, understandable UI.
 - [ ] Errors never block the user from returning to a safe state.
+
+### 4.7 Extension Initialization & Loading States (Feature 18) (✅ Complete - Spec-118)
+During extension initialization, the extension performs critical setup (webpack detection, module raid, chat monitoring). Users should see visual feedback during this process.
+
+**Loading Overlay (Implemented):**
+- Full-height overlay covering entire sidebar area (350px × 100vh) during module raid initialization
+- Overlay shows large spinner (48×48px) and "Initializing Chat2Deal..." text, vertically centered
+- Conditionally displayed when `#pipedrive-whatsapp-sidebar` container exists (sidebar-based trigger)
+- Positioned where sidebar will be (right: 0, top: 0), with WhatsApp light gray background (#f0f2f5)
+- 300ms dwell time on success, 1000ms on timeout for better visibility
+
+**Success Behavior:**
+- Overlay disappears after 300ms delay when module raid succeeds
+- Sidebar loads normally with full chat monitoring functionality
+
+**Failure Behavior:**
+- Overlay disappears after 1000ms delay on timeout/failure (no persistent error display)
+- Timeout logged to console AND reported to Sentry via custom events (`whatsapp-module-raid-error`)
+- Sidebar loads in degraded mode (shows welcome state, chat monitoring inactive)
+- Future enhancement: DOM-based contact detection as fallback (separate spec)
+
+**Acceptance Criteria**
+- [✅] Loading overlay appears during initialization with correct visual design
+- [✅] Overlay removes with delay when module raid completes (success or failure)
+- [✅] Module raid failures logged to console and reported to Sentry via custom events
+- [✅] Sidebar loads normally even if module raid fails (degraded mode)
+- [✅] No console errors during normal operation
+- [✅] Test hooks exposed for unit and integration testing
 
 ---
 

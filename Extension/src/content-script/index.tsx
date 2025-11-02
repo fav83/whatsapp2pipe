@@ -43,6 +43,35 @@ window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => 
   )
 })
 
+// Listen for module raid errors from MAIN world and report to Sentry
+document.addEventListener('whatsapp-module-raid-error', (e) => {
+  try {
+    const evt = e as CustomEvent<{
+      phase: string
+      reason: string
+      timeoutMs?: number
+      timestamp: number
+    }>
+    const detail = evt.detail || { phase: 'unknown', reason: 'unknown' }
+    const err = new Error(`Module raid error (${detail.phase}): ${detail.reason}`)
+    logError(
+      'Module raid error',
+      err,
+      {
+        phase: detail.phase,
+        reason: detail.reason,
+        timeoutMs: detail.timeoutMs,
+        timestamp: detail.timestamp,
+        url: window.location.href,
+      },
+      sentryScope
+    )
+  } catch (err) {
+    // Fallback logging in case of detail access issues
+    logError('Module raid error (unstructured)', err, { url: window.location.href }, sentryScope)
+  }
+})
+
 // Expose test function for console testing (production-safe, only triggers Sentry)
 interface WindowWithSentryTest extends Window {
   __testSentry?: (message?: string) => void
