@@ -16,6 +16,7 @@
 import { WhatsAppInspector } from './utils/WhatsAppInspector'
 import { initializeStoreAccess } from './whatsapp-integration/store-accessor'
 import { startChatMonitoring } from './whatsapp-integration/chat-monitor-main'
+import { colors } from '../styles/colors'
 
 // --- Spec-118: Loading overlay helpers (reliable, sidebar-based trigger) ---
 function waitForSidebarContainer(timeoutMs = 10000): Promise<boolean> {
@@ -60,7 +61,7 @@ function createLoadingOverlay(): HTMLElement {
     width: 48px;
     height: 48px;
     border: 4px solid rgba(0, 0, 0, 0.1);
-    border-top-color: #00a884;
+    border-top-color: ${colors.loading.spinner};
     border-radius: 50%;
     animation: chat2deal-spin 0.8s linear infinite;
   `

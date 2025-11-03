@@ -107,17 +107,17 @@ export default function App() {
   }, [])
 
   return (
-    <div className="h-full flex flex-col bg-white border-l border-[#d1d7db]">
+    <div className="h-full flex flex-col bg-white border-l border-border-primary">
       {/* Fixed Header */}
-      <header className="flex-shrink-0 h-14 px-5 border-b border-[#e9edef] flex items-center justify-between bg-white">
-        <h1 className="text-[17px] font-semibold text-[#111b21]">Chat2Deal</h1>
+      <header className="flex-shrink-0 h-14 px-5 border-b border-border-secondary flex items-center justify-between bg-white">
+        <h1 className="text-[17px] font-semibold text-text-primary">Chat2Deal</h1>
         {authState === 'authenticated' && userName && (
           <UserAvatar userName={userName} onSignOut={signOut} />
         )}
       </header>
 
       {/* Scrollable Body */}
-      <main className="flex-1 overflow-y-auto bg-[#e5e7eb]">
+      <main className="flex-1 overflow-y-auto bg-background-main">
         {/* Unauthenticated: Show sign-in UI */}
         {authState === 'unauthenticated' && <WelcomeState onSignIn={signIn} />}
 

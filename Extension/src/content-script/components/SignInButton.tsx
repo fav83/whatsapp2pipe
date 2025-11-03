@@ -17,7 +17,7 @@ export function SignInButton({ onClick, error, isLoading = false }: SignInButton
       <button
         onClick={onClick}
         disabled={isLoading}
-        className="w-full px-4 py-3 bg-[#00a884] text-white text-sm font-medium rounded-lg hover:bg-[#008f6f] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full px-4 py-3 bg-brand-primary text-white text-sm font-medium rounded-lg hover:bg-brand-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {isLoading ? 'Signing in...' : 'Sign in with Pipedrive'}
       </button>

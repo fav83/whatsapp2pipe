@@ -60,7 +60,7 @@ export function UserAvatar({ userName, onSignOut }: UserAvatarProps) {
       <div
         ref={avatarRef}
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="w-8 h-8 rounded-full bg-[#667781] hover:bg-[#556168] flex items-center justify-center cursor-pointer transition-colors"
+        className="w-8 h-8 rounded-full bg-text-secondary hover:bg-text-avatar-hover flex items-center justify-center cursor-pointer transition-colors"
         role="button"
         aria-label="User menu"
         aria-expanded={isMenuOpen}
@@ -72,19 +72,21 @@ export function UserAvatar({ userName, onSignOut }: UserAvatarProps) {
       {isMenuOpen && (
         <div
           ref={menuRef}
-          className="absolute right-0 top-full mt-2 w-[200px] bg-white rounded-lg shadow-lg border border-[#E9EDEF] py-2 z-[1000]"
+          className="absolute right-0 top-full mt-2 w-[200px] bg-white rounded-lg shadow-lg border border-border-secondary py-2 z-[1000]"
           role="menu"
         >
           {/* User Name Header */}
-          <div className="px-4 py-3 text-sm font-semibold text-[#111b21] truncate">{userName}</div>
+          <div className="px-4 py-3 text-sm font-semibold text-text-primary truncate">
+            {userName}
+          </div>
 
           {/* Divider */}
-          <div className="h-px bg-[#E9EDEF] my-1" />
+          <div className="h-px bg-border-secondary my-1" />
 
           {/* Sign Out Menu Item */}
           <button
             onClick={handleSignOut}
-            className="w-full text-left px-4 py-3 text-sm text-[#667781] hover:bg-[#F0F2F5] transition-colors"
+            className="w-full text-left px-4 py-3 text-sm text-text-secondary hover:bg-background-secondary transition-colors"
             role="menuitem"
           >
             Sign out

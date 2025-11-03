@@ -34,17 +34,17 @@ export function BetaAccessRequiredState({ onSignIn }: BetaAccessRequiredStatePro
       </div>
 
       {/* Title */}
-      <h2 className="text-xl font-semibold text-[#111b21] mb-2">Beta Access Required</h2>
+      <h2 className="text-xl font-semibold text-text-primary mb-2">Beta Access Required</h2>
 
       {/* Explanation */}
-      <p className="text-sm text-[#667781] mb-6">
+      <p className="text-sm text-text-secondary mb-6">
         Chat2Deal is currently in closed beta. Access is limited to invited users only.
       </p>
 
       {/* Instructions */}
-      <div className="bg-[#f5f6f7] border border-[#e9edef] rounded-md p-4 mb-6 text-left">
-        <h3 className="text-sm font-semibold text-[#111b21] mb-2">How to get access:</h3>
-        <ol className="text-sm text-[#667781] space-y-1 list-decimal list-inside">
+      <div className="bg-background-tertiary border border-border-secondary rounded-md p-4 mb-6 text-left">
+        <h3 className="text-sm font-semibold text-text-primary mb-2">How to get access:</h3>
+        <ol className="text-sm text-text-secondary space-y-1 list-decimal list-inside">
           <li>Join our waitlist to request beta access</li>
           <li>We'll email you with an invite code</li>
           <li>Sign up on our website with your invite</li>
@@ -57,7 +57,7 @@ export function BetaAccessRequiredState({ onSignIn }: BetaAccessRequiredStatePro
         href={`${WEBSITE_URL}/waitlist`}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center px-4 py-3 bg-[#00a884] text-white text-sm font-medium rounded-lg hover:bg-[#008f6f] transition-colors"
+        className="inline-flex items-center px-4 py-3 bg-brand-primary text-white text-sm font-medium rounded-lg hover:bg-brand-primary-hover transition-colors"
       >
         Join Waitlist
         <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,9 +71,12 @@ export function BetaAccessRequiredState({ onSignIn }: BetaAccessRequiredStatePro
       </a>
 
       {/* Additional help */}
-      <p className="text-xs text-[#667781] mt-6">
+      <p className="text-xs text-text-secondary mt-6">
         Already have an account?{' '}
-        <button onClick={onSignIn} className="text-[#00a884] hover:text-[#008f6f] font-medium">
+        <button
+          onClick={onSignIn}
+          className="text-brand-primary hover:text-brand-primary-hover font-medium"
+        >
           Try signing in again
         </button>
       </p>

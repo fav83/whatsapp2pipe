@@ -26,12 +26,12 @@ export function PersonLookupError({ errorMessage, onRetry }: PersonLookupErrorPr
       </div>
 
       {/* Error Message */}
-      <div className="text-sm text-[#667781] mb-4">{errorMessage}</div>
+      <div className="text-sm text-text-secondary mb-4">{errorMessage}</div>
 
       {/* Retry Button */}
       <button
         onClick={onRetry}
-        className="px-4 py-2 bg-[#00a884] text-white text-sm font-medium rounded-lg hover:bg-[#008f6f] transition-colors"
+        className="px-4 py-2 bg-brand-primary text-white text-sm font-medium rounded-lg hover:bg-brand-primary-hover transition-colors"
       >
         Try again
       </button>

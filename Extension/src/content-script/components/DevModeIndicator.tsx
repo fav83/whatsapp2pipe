@@ -27,77 +27,20 @@ export function DevModeIndicator({
     return null
   }
 
-  const bannerStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '8px 16px',
-    backgroundColor: '#fed7aa', // orange-200
-    borderTop: '2px solid #fb923c', // orange-400
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between', // Space between left and right content
-    gap: '8px',
-    flexShrink: 0,
-  }
-
-  const leftContentStyle: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-  }
-
-  const badgeStyle: React.CSSProperties = {
-    padding: '2px 8px',
-    fontSize: '11px',
-    fontWeight: '700',
-    color: '#7c2d12', // orange-900
-    backgroundColor: '#ffedd5', // orange-100
-    border: '1px solid #fb923c', // orange-400
-    borderRadius: '4px',
-  }
-
-  const urlStyle: React.CSSProperties = {
-    fontSize: '11px',
-    color: '#7c2d12', // orange-900
-    fontWeight: '600',
-  }
-
-  const sentryButtonStyle: React.CSSProperties = {
-    width: '24px',
-    height: '24px',
-    padding: '0',
-    fontSize: '11px',
-    fontWeight: '700',
-    color: '#fff', // white text
-    backgroundColor: '#ea580c', // orange-600 (less contrast with orange-200 background)
-    border: '1px solid #c2410c', // orange-700
-    borderRadius: '4px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'background-color 0.2s',
-  }
-
-  const sentryButtonHoverStyle: React.CSSProperties = {
-    backgroundColor: '#c2410c', // orange-700 (darker on hover)
-  }
-
   return (
-    <div style={bannerStyle}>
-      <div style={leftContentStyle}>
-        <span style={badgeStyle}>DEV</span>
-        <span style={urlStyle}>{AUTH_CONFIG.backendUrl}</span>
+    <div className="w-full py-2 px-4 bg-dev-background border-t-2 border-dev-border flex items-center justify-between gap-2 flex-shrink-0">
+      <div className="flex items-center gap-2">
+        <span className="px-2 py-0.5 text-[11px] font-bold text-dev-badge-text bg-dev-badge-background border border-dev-border rounded">
+          DEV
+        </span>
+        <span className="text-[11px] text-dev-badge-text font-semibold">
+          {AUTH_CONFIG.backendUrl}
+        </span>
       </div>
       {onToggleSentryTest && (
         <button
           onClick={onToggleSentryTest}
-          style={sentryButtonStyle}
-          onMouseEnter={(e) => {
-            Object.assign(e.currentTarget.style, sentryButtonHoverStyle)
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = sentryButtonStyle.backgroundColor!
-          }}
+          className="w-6 h-6 p-0 text-[11px] font-bold text-white bg-dev-button-background border border-dev-button-border rounded hover:bg-dev-button-border cursor-pointer flex items-center justify-center transition-colors"
           title="Toggle Sentry Test Panel"
         >
           S

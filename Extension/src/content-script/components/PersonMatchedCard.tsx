@@ -15,16 +15,16 @@ export function PersonMatchedCard({ name, phone, pipedriveUrl }: PersonMatchedCa
   return (
     <div className="p-5 space-y-5">
       {/* Section 2: Person Info Card - Name, Phone, Open in Pipedrive Button */}
-      <div className="p-4 bg-white rounded-lg border border-[#e9edef] shadow-sm">
-        <div className="text-base font-semibold text-[#111b21] mb-1">{name}</div>
-        <div className="text-sm text-[#667781] mb-4">{phone}</div>
+      <div className="p-4 bg-white rounded-lg border border-border-secondary shadow-sm">
+        <div className="text-base font-semibold text-text-primary mb-1">{name}</div>
+        <div className="text-sm text-text-secondary mb-4">{phone}</div>
 
         {/* Open in Pipedrive Link */}
         <a
           href={pipedriveUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-[#00a884] text-white text-sm font-medium rounded-lg hover:bg-[#008f6f] transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-brand-primary text-white text-sm font-medium rounded-lg hover:bg-brand-primary-hover transition-colors"
         >
           <span>Open in Pipedrive</span>
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -19,7 +19,7 @@ export function Spinner({ size = 'md', color = 'white' }: SpinnerProps) {
 
   const colorClasses = {
     white: 'border-white border-t-transparent',
-    primary: 'border-[#00a884] border-t-transparent',
+    primary: 'border-brand-primary border-t-transparent',
   }
 
   return (
