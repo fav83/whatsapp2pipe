@@ -60,26 +60,20 @@ Implement user and company entity tracking in Azure SQL Database using Entity Fr
 ### Feature 17: User Avatar with Profile Dropdown (✅ Complete - Spec-117)
 Replace text sign-out button with circular avatar showing first letter of user's name. Backend passes userName in OAuth callback URL. Extension stores userName in chrome.storage.local. Avatar displays 32px gray circle with white letter, clicking toggles dropdown menu with full name and sign-out option. Supports outside-click and Escape key to close. Header rebranded to "Chat2Deal". DEV indicator moved to bottom of sidebar.
 
----
+### Feature 18: Extension Initialization & Loading States (✅ Complete - Spec-118)
+Display visual feedback during extension initialization (webpack detection, module raid, chat monitoring setup). Full-height loading overlay with spinner and "Initializing Chat2Deal..." text, shown when sidebar container exists. 300ms dwell time on success, 1000ms on timeout. Module raid failures logged to console and reported to Sentry. Sidebar loads in degraded mode if initialization fails.
 
-## Implementation Order Recommendation
+### Feature 19: Website Pipedrive Authentication (Draft - Spec-119)
+Implement Pipedrive OAuth authentication for Chat2Deal user dashboard website using redirect-based flow. Backend OAuth endpoints extended to support both extension and website clients (detect via state parameter). Website receives verification_code after OAuth, stores in localStorage, and uses for API calls. Three pages: landing (/), callback (/auth/callback), dashboard (/dashboard). Dashboard displays user profile (name, email, company) fetched from database via GET /api/user/me endpoint. Database migration adds UserId foreign key to Sessions table. Technology: React 18 + TypeScript + Vite + React Router v6 + Tailwind CSS + shadcn/ui, hosted on Azure Static Web Apps.
 
-The features are numbered in a suggested implementation order that considers:
-- Dependencies between features
-- Ability to test incrementally
-- Delivering vertical slices of functionality
+### Feature 20: Closed Beta Invite System (Draft - Spec-120a + Spec-120b)
+Implement invite-based access control for closed beta. Website sign-in requires invite code input (required field, auto-fills from `?i=invite` URL param). Invite passed through OAuth state parameter, validated server-side during callback. New users must provide valid invite; existing users bypass check. Extension flow remains unchanged for existing users; new users rejected with "Beta Access Required" error state. Database changes: new Invites table (InviteId, Code, CreatedAt, UsageCount, Description), Users table adds nullable InviteId foreign key. Backend AuthCallback modified to validate invites for new users, increment usage count on signup. Invites created manually via database insertion (multi-use unlimited). Supports tracking which users signed up with which invite.
 
-**Phase 1: Foundation (Features 1-4)**
-Get the basic extension working with sidebar injection and WhatsApp chat detection.
+### Feature 21: Waitlist System (Draft - Spec-121)
+Implement waitlist system for users without beta access. Dedicated `/waitlist` page on website with email (required) and name (optional) form fields with client-side email validation. Multiple entry points: HomePage link ("Don't have an invite? Join the waitlist"), AuthCallbackPage error state ("Join Waitlist" button for closed_beta/invalid_invite errors), and Extension BetaAccessRequiredState ("Join Waitlist" button opens website). Backend POST /api/waitlist endpoint with server-side validation, deduplication by email (updates UpdatedAt on duplicate), returns 200 for both new and duplicate entries. Database: new Waitlist table (WaitlistId, Email, Name, CreatedAt, UpdatedAt) with unique constraint on Email. Admin management via manual SQL queries only. Extension BetaAccessRequiredState updated to replace "Request Beta Access" with "Join Waitlist" button that opens website /waitlist page in new tab.
 
-**Phase 2: Authentication & API (Features 5-6)**
-Implement Pipedrive connectivity with secure authentication and API layer. Feature 7 (TanStack Query) skipped as unnecessary for MVP.
-
-**Phase 3: Core User Flows (Features 8-11)**
-Build the main user-facing features for person lookup, creation, and attachment.
-
-**Phase 4: Polish & Quality (Features 12, 14-16)**
-Add error handling, testing, monitoring, and user tracking. Feature 13 (shadcn/ui) skipped as unnecessary for MVP.
+### Feature 22: Website Extension Detection & Installation Prompt (Draft - Spec-122)
+Implement extension installation detection on website dashboard using postMessage handshake. Dashboard page displays two-column layout (left: UserProfile, right: ExtensionStatus card). Website sends ping messages on page load (two retry attempts at 0ms, 500ms). Extension content script injected on dashboard domain listens and responds with version metadata. Detection timeout shows "not installed" state. Two display states: NOT installed (prominent "Install Extension" button linking to Chrome Web Store) and IS installed (green checkmark + "Extension installed" text with small Chrome Web Store link). Mobile/tablet detection shows modified message: "Extension available for desktop Chrome". ExtensionStatus component matches UserProfile card styling (shadcn/ui Card). Chrome Web Store URL configurable via VITE_EXTENSION_STORE_URL environment variable. No persistent storage or continuous polling. Extension manifest updated to inject content script on dashboard domains (localhost:3000, app.chat2deal.com).
 
 ---
 

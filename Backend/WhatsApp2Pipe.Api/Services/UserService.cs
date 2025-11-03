@@ -21,7 +21,7 @@ public class UserService : IUserService
     /// <summary>
     /// Create or update user and company based on Pipedrive user data.
     /// </summary>
-    public async Task<User> CreateOrUpdateUserAsync(PipedriveUserData userData)
+    public async Task<User> CreateOrUpdateUserAsync(PipedriveUserData userData, Guid? inviteId = null)
     {
         logger.LogInformation("Processing user {PipedriveUserId} from company {PipedriveCompanyId}",
             userData.Id, userData.CompanyId);
@@ -66,12 +66,13 @@ public class UserService : IUserService
                 Name = userData.Name,
                 Email = userData.Email,
                 CreatedAt = DateTime.UtcNow,
-                LastLoginAt = DateTime.UtcNow
+                LastLoginAt = DateTime.UtcNow,
+                InviteId = inviteId // Set invite ID for new users
             };
 
             dbContext.Users.Add(user);
 
-            logger.LogInformation("Created user {UserId}", user.UserId);
+            logger.LogInformation("Created user {UserId} with invite {InviteId}", user.UserId, inviteId);
         }
         else
         {
@@ -104,5 +105,52 @@ public class UserService : IUserService
         return await dbContext.Users
             .FirstOrDefaultAsync(u => u.PipedriveUserId == pipedriveUserId
                                    && u.CompanyId == company.CompanyId);
+    }
+
+    /// <summary>
+    /// Get user by user ID with Company navigation property.
+    /// </summary>
+    public async Task<User?> GetUserByIdAsync(Guid userId)
+    {
+        return await dbContext.Users
+            .Include(u => u.Company)
+            .FirstOrDefaultAsync(u => u.UserId == userId);
+    }
+
+    /// <summary>
+    /// Update user entity.
+    /// </summary>
+    public async Task UpdateUserAsync(User user)
+    {
+        dbContext.Users.Update(user);
+        await dbContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Validate and consume an invite code.
+    /// </summary>
+    public async Task<Invite?> ValidateAndConsumeInviteAsync(string inviteCode)
+    {
+        logger.LogInformation("Validating invite code");
+
+        // Find invite by code
+        var invite = await dbContext.Invites
+            .FirstOrDefaultAsync(i => i.Code == inviteCode);
+
+        if (invite == null)
+        {
+            logger.LogWarning("Invalid invite code: {InviteCode}", inviteCode);
+            return null;
+        }
+
+        logger.LogInformation("Valid invite code found: {InviteCode}", inviteCode);
+
+        // Increment usage count
+        invite.UsageCount++;
+        await dbContext.SaveChangesAsync();
+
+        logger.LogInformation("Invite usage count incremented for {InviteCode}", inviteCode);
+
+        return invite;
     }
 }

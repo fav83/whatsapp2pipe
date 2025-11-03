@@ -1,5 +1,4 @@
 ## Azure Functions
-local.settings.json
 bin/
 .bin/
 obj/
@@ -18,3 +17,4 @@ obj/
 __blobstorage__
 __queuestorage__
 __azurite_db*__.json
+local.settings.json

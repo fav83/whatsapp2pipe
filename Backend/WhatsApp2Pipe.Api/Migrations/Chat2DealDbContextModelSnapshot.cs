@@ -17,7 +17,7 @@ namespace WhatsApp2Pipe.Api.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.21")
+                .HasAnnotation("ProductVersion", "9.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -50,6 +50,36 @@ namespace WhatsApp2Pipe.Api.Migrations
                         .IsUnique();
 
                     b.ToTable("Companies", (string)null);
+                });
+
+            modelBuilder.Entity("WhatsApp2Pipe.Api.Models.Invite", b =>
+                {
+                    b.Property<Guid>("InviteId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("UsageCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("InviteId");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Invites_Code");
+
+                    b.ToTable("Invites", (string)null);
                 });
 
             modelBuilder.Entity("WhatsApp2Pipe.Api.Models.Session", b =>
@@ -161,6 +191,9 @@ namespace WhatsApp2Pipe.Api.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<Guid?>("InviteId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("LastLoginAt")
                         .HasColumnType("datetime2");
 
@@ -176,10 +209,48 @@ namespace WhatsApp2Pipe.Api.Migrations
 
                     b.HasIndex("CompanyId");
 
+                    b.HasIndex("InviteId");
+
                     b.HasIndex("PipedriveUserId", "CompanyId")
                         .IsUnique();
 
                     b.ToTable("Users", (string)null);
+                });
+
+            modelBuilder.Entity("WhatsApp2Pipe.Api.Models.WaitlistEntry", b =>
+                {
+                    b.Property<Guid>("WaitlistId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("WaitlistId");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_Waitlist_CreatedAt");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_Waitlist_Email");
+
+                    b.HasIndex("UpdatedAt")
+                        .HasDatabaseName("IX_Waitlist_UpdatedAt");
+
+                    b.ToTable("Waitlist", (string)null);
                 });
 
             modelBuilder.Entity("WhatsApp2Pipe.Api.Models.Session", b =>
@@ -209,10 +280,22 @@ namespace WhatsApp2Pipe.Api.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("WhatsApp2Pipe.Api.Models.Invite", "Invite")
+                        .WithMany("Users")
+                        .HasForeignKey("InviteId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Company");
+
+                    b.Navigation("Invite");
                 });
 
             modelBuilder.Entity("WhatsApp2Pipe.Api.Models.Company", b =>
+                {
+                    b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("WhatsApp2Pipe.Api.Models.Invite", b =>
                 {
                     b.Navigation("Users");
                 });

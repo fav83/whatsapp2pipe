@@ -38,10 +38,10 @@ public class AuthStartFunction
         {
             // Extract state parameter from query string
             var query = QueryHelpers.ParseQuery(req.Url.Query);
-            var extensionState = query.TryGetValue("state", out var stateValue) ? stateValue.ToString() : null;
+            var clientState = query.TryGetValue("state", out var stateValue) ? stateValue.ToString() : null;
 
             // Validate state parameter is present
-            if (string.IsNullOrEmpty(extensionState))
+            if (string.IsNullOrEmpty(clientState))
             {
                 logger.LogError("Missing required 'state' parameter");
                 return CreateErrorResponse(req, HttpStatusCode.BadRequest,
@@ -49,42 +49,54 @@ public class AuthStartFunction
             }
 
             // Validate state format and contents
-            if (!stateValidator.IsValidStateFormat(extensionState))
+            if (!stateValidator.IsValidStateFormat(clientState))
             {
                 logger.LogError("Invalid state format");
                 return CreateErrorResponse(req, HttpStatusCode.BadRequest,
                     "invalid_state", "State parameter has invalid format");
             }
 
-            // Decode state to log extension ID
-            var stateData = stateValidator.DecodeState(extensionState);
+            // Decode state to determine client type
+            var stateData = stateValidator.DecodeState(clientState);
             if (stateData != null)
             {
-                logger.LogInformation("Received state from extension: {ExtensionId}, nonce: {Nonce}",
-                    stateData.ExtensionId, stateData.Nonce);
+                logger.LogInformation("Received state from client type: {Type}, nonce: {Nonce}",
+                    stateData.Type, stateData.Nonce);
             }
 
-            // Store the extension-provided state for CSRF validation (5-minute expiration)
-            await sessionService.StoreStateAsync(extensionState);
-            logger.LogInformation("Stored extension state for CSRF protection");
+            // Store the client-provided state for CSRF validation (5-minute expiration)
+            await sessionService.StoreStateAsync(clientState);
+            logger.LogInformation("Stored client state for CSRF protection");
 
-            // Build Pipedrive authorization URL with extension's state
-            var authorizationUrl = oauthService.BuildAuthorizationUrl(extensionState);
+            // Build Pipedrive authorization URL with client's state
+            var authorizationUrl = oauthService.BuildAuthorizationUrl(clientState);
 
-            logger.LogInformation("Generated Pipedrive OAuth URL with extension state");
+            logger.LogInformation("Generated Pipedrive OAuth URL with client state");
 
-            // Return authorization URL to extension
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            response.Headers.Add("Content-Type", "application/json");
-
-            var responseBody = new AuthStartResponse
+            // Detect client type and respond accordingly
+            if (stateData != null && stateData.Type == "web")
             {
-                AuthorizationUrl = authorizationUrl
-            };
+                // Website flow - redirect directly to Pipedrive
+                logger.LogInformation("Website client - redirecting to Pipedrive OAuth");
+                var response = req.CreateResponse(HttpStatusCode.Redirect);
+                response.Headers.Add("Location", authorizationUrl);
+                return response;
+            }
+            else
+            {
+                // Extension flow - return JSON with authorization URL
+                logger.LogInformation("Extension client - returning JSON response");
+                var response = req.CreateResponse(HttpStatusCode.OK);
+                response.Headers.Add("Content-Type", "application/json");
 
-            await response.WriteStringAsync(JsonSerializer.Serialize(responseBody));
+                var responseBody = new AuthStartResponse
+                {
+                    AuthorizationUrl = authorizationUrl
+                };
 
-            return response;
+                await response.WriteStringAsync(JsonSerializer.Serialize(responseBody));
+                return response;
+            }
         }
         catch (Exception ex)
         {

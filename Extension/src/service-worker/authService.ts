@@ -11,6 +11,8 @@
  * - Service worker validates state on callback for CSRF protection
  */
 
+import { OAuthErrorCode } from '../types/errors'
+
 class ServiceWorkerAuthService {
   /**
    * Launches OAuth popup with provided URL and validates state on callback
@@ -75,6 +77,11 @@ class ServiceWorkerAuthService {
       if (error instanceof Error) {
         console.error('[SW AuthService] Authentication error:', error)
 
+        // Beta access required - rethrow as-is
+        if (error.message === OAuthErrorCode.BETA_ACCESS_REQUIRED) {
+          throw error
+        }
+
         // User cancelled the OAuth flow
         if (error.message.includes('user_denied') || error.message.includes('cancelled')) {
           throw new Error('You cancelled the sign-in process')
@@ -102,6 +109,18 @@ class ServiceWorkerAuthService {
     try {
       const url = new URL(redirectUrl)
 
+      // Check for error parameter first (e.g., beta_access_required)
+      const error = url.searchParams.get('error')
+      if (error) {
+        console.log('[SW AuthService] Backend returned error:', error)
+        // Throw specific error for beta access
+        if (error === OAuthErrorCode.BETA_ACCESS_REQUIRED) {
+          throw new Error(OAuthErrorCode.BETA_ACCESS_REQUIRED)
+        }
+        // For other errors, let normal validation fail
+        return false
+      }
+
       // Note: The backend redirects to chromiumapp.org URL with verification_code
       // The state validation happens on the backend side when it decodes the state
       // Here we just verify the URL structure is correct
@@ -119,6 +138,10 @@ class ServiceWorkerAuthService {
       return false
     } catch (error) {
       console.error('[SW AuthService] State validation error:', error)
+      // Re-throw beta_access_required errors to be caught by signIn
+      if (error instanceof Error && error.message === OAuthErrorCode.BETA_ACCESS_REQUIRED) {
+        throw error
+      }
       return false
     }
   }

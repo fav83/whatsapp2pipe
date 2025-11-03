@@ -15,6 +15,7 @@ import { useAuth } from './hooks/useAuth'
 import { usePipedrive } from './hooks/usePipedrive'
 import { WelcomeState } from './components/WelcomeState'
 import { AuthenticatingState } from './components/AuthenticatingState'
+import { BetaAccessRequiredState } from './components/BetaAccessRequiredState'
 import { ContactWarningCard } from './components/ContactWarningCard'
 import { GroupChatState } from './components/GroupChatState'
 import { DevModeIndicator } from './components/DevModeIndicator'
@@ -122,6 +123,9 @@ export default function App() {
 
         {/* Authenticating: Show loading state */}
         {authState === 'authenticating' && <AuthenticatingState />}
+
+        {/* Beta Required: Show beta access required state */}
+        {authState === 'beta_required' && <BetaAccessRequiredState onSignIn={signIn} />}
 
         {/* Error: Show sign-in UI with error message */}
         {authState === 'error' && <WelcomeState onSignIn={signIn} error={error} />}

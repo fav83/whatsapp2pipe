@@ -202,8 +202,236 @@ To enable analytics and multi-tenancy support, the backend maintains user and co
 - Data used for: business analytics, user activity tracking, future billing
 - Users implicitly consent by signing in with Pipedrive OAuth
 
-### 6.3 Telemetry
+### 6.3 Website User Dashboard (Feature 19) (Draft - Spec-119)
+To provide users with account management capabilities outside the Chrome extension, a web-based dashboard enables sign-in and profile viewing:
+
+**Purpose:**
+- Provide web-based Pipedrive authentication for non-extension use cases
+- Display user profile and account information
+- Foundation for future features (settings, billing, analytics)
+
+**User Authentication:**
+- Users sign in with Pipedrive OAuth using redirect-based flow (standard web OAuth)
+- Backend OAuth endpoints shared with extension (detect client type via state parameter)
+- Session-based authentication using verification_code (same security model as extension)
+- OAuth tokens stored in backend only, never exposed to browser
+
+**Dashboard Pages:**
+- Landing page (/) - "Sign in with Pipedrive" for unauthenticated users
+- OAuth callback (/auth/callback) - Handles Pipedrive redirect, stores verification_code
+- Dashboard (/dashboard) - Shows user profile (name, email, company domain, sign-out button)
+
+**Technical Implementation:**
+- React 18 + TypeScript + Vite + React Router v6 + Tailwind CSS + shadcn/ui
+- Hosted on Azure Static Web Apps with custom domain
+- Backend extends existing OAuth endpoints to support both extension and website clients
+- Database: Sessions table extended with UserId foreign key to link sessions to users
+- New endpoint: GET /api/user/me (returns user info from database, not Pipedrive)
+
+**Data Flow:**
+1. User visits website → clicks "Sign in with Pipedrive"
+2. Website redirects to backend /api/auth/start with state type="web"
+3. Backend redirects to Pipedrive OAuth authorization
+4. User authorizes → Pipedrive redirects to backend /api/auth/callback
+5. Backend exchanges code for tokens, calls Pipedrive /users/me
+6. Backend creates/updates User and Company in database
+7. Backend generates verification_code, links session to user
+8. Backend redirects to website /auth/callback?verification_code=xxx
+9. Website stores verification_code in localStorage, redirects to dashboard
+10. Dashboard calls GET /api/user/me with verification_code
+11. Backend returns user info from database
+
+**Implementation Status:**
+- 📝 Spec complete: Spec-119-Website-Pipedrive-Auth.md
+- ⏳ Backend extensions: Pending implementation
+- ⏳ Frontend implementation: Pending implementation
+- ⏳ Deployment: Pending
+
+**Privacy & Security:**
+- OAuth tokens (access_token, refresh_token) stored in backend database only
+- Website stores only verification_code in browser localStorage (session identifier)
+- Same CSRF protection as extension (state parameter with nonce)
+- HTTPS enforced on all endpoints
+- Session expires after 60 days of inactivity
+
+**Future Enhancements (Post-MVP):**
+- Account settings and preferences
+- Subscription and billing management
+- Usage analytics and metrics
+- Chrome extension connection status
+- Team/organization management
+
+### 6.4 Closed Beta Invite System (Feature 20) (Draft - Spec-120a + Spec-120b)
+To control access during closed beta, the system requires invite codes for new user signups:
+
+**Invite Management:**
+- Invites created manually via database insertion (admin/DBA operation)
+- Each invite is a string up to 100 characters (e.g., "early-access-2024", "twitter-campaign")
+- Multi-use invites with unlimited usage (tracks usage count, not consumption)
+- Optional description field for admin reference
+
+**Website Sign-In Flow:**
+- New sign-in page requires invite code input (required field)
+- URL parameter support: `?i=my-invite` auto-fills invite field
+- Basic client-side validation: non-empty string only
+- Invite passed through OAuth state parameter
+- Server-side validation during OAuth callback:
+  - New users must provide valid invite code
+  - Invalid/missing invite → Error: "Chat2Deal is in closed beta"
+  - Existing users → Invite ignored, sign-in proceeds normally
+
+**Extension Authentication:**
+- Extension uses existing OAuth flow (no invite input in extension)
+- New users without existing database record → Rejected during OAuth callback
+- Extension shows "Beta Access Required" error state in sidebar
+- Existing users → Sign-in works normally
+
+**User-Invite Tracking:**
+- Users table includes `InviteId` foreign key (nullable for existing users)
+- Invites table tracks `UsageCount` (incremented on each successful signup)
+- Supports querying: "Which users signed up with invite X?" and "Which invite did user Y use?"
+
+**Database Schema:**
+- New table: Invites (InviteId, Code, CreatedAt, UsageCount, Description)
+- Modified table: Users (add InviteId foreign key column, nullable)
+- Relationship: One Invite → Many Users
+
+**Implementation Status:**
+- 📝 Specs complete: Spec-120a (Website), Spec-120b (Extension)
+- ⏳ Database migration: Pending
+- ⏳ Backend implementation: Pending
+- ⏳ Website UI implementation: Pending
+- ⏳ Extension UI implementation: Pending
+
+**Privacy & Security:**
+- Invite codes stored in encrypted Azure SQL Database
+- Invite validation server-side only (prevents bypass)
+- OAuth state parameter protects invite during flow (CSRF protection)
+- No sensitive data in invite codes (public strings)
+
+### 6.5 Waitlist System (Feature 21) (Draft - Spec-121)
+To provide a path forward for users without beta access, a waitlist system allows interested users to register and be notified when invites become available:
+
+**Purpose:**
+- Capture interest from users who discover the product but don't have beta access
+- Build a pipeline of potential users for future invite distribution
+- Provide clear path forward for rejected users (extension and website)
+
+**User Entry Points:**
+- Website homepage: "Don't have an invite? Join the waitlist" link below sign-in form
+- Website error page: After failed sign-in (closed_beta or invalid_invite errors), "Join Waitlist" button
+- Extension beta rejection: "Beta Access Required" state shows "Join Waitlist" button that opens website
+
+**Waitlist Signup Flow:**
+- Dedicated `/waitlist` page on website with simple form
+- Required field: Email address (with client-side validation)
+- Optional field: Name (for personalization)
+- Inline success message after submission: "You're on the waitlist! We'll email you when access is available."
+
+**Deduplication:**
+- Same email submitting multiple times updates existing record's timestamp (no duplicates created)
+- User sees same success message regardless of new/duplicate status
+
+**Database Schema:**
+- New table: Waitlist (WaitlistId, Email, Name, CreatedAt, UpdatedAt)
+- Unique constraint on Email enforces deduplication at database level
+- Indexes on timestamps for admin queries
+
+**Backend API:**
+- POST /api/waitlist endpoint accepts email (required) and name (optional)
+- Server-side email validation
+- Returns 200 success for both new and duplicate entries
+- Returns 400 for invalid/missing email
+
+**Admin Management:**
+- Manual SQL operations only (no admin UI in MVP)
+- Query waitlist entries, view recent signups, monitor interest
+- Manual workflow: Query waitlist → Create invite → Email users → Optionally remove from waitlist
+
+**Implementation Status:**
+- 📝 Spec complete: Spec-121-Waitlist-System.md
+- ⏳ Database migration: Pending
+- ⏳ Backend implementation: Pending
+- ⏳ Website implementation: Pending
+- ⏳ Extension updates: Pending
+
+**Privacy & Security:**
+- Waitlist data (emails, names) stored in encrypted Azure SQL Database
+- No automated email sending (manual admin process)
+- Users provide consent by submitting form
+- HTTPS enforced on all endpoints
+
+**Future Enhancements (Post-MVP):**
+- Automated email notifications when users join waitlist
+- Admin dashboard for waitlist management
+- Automated invite generation and distribution
+- Email verification/double opt-in
+- Priority queue system
+- Referral tracking
+
+### 6.6 Telemetry
 - **Telemetry (optional later):** anonymous event counts only (DAU, lookups, creates, attaches).
+
+### 6.7 Website Extension Detection & Installation Prompt (Feature 22) (Draft - Spec-122)
+To guide users through the extension setup process, the website dashboard detects whether the Chrome extension is installed and provides appropriate installation guidance:
+
+**Purpose:**
+- Inform authenticated users whether the extension is installed
+- Provide clear path to Chrome Web Store for extension installation
+- Ensure users complete the full product setup (website + extension)
+
+**Detection Mechanism:**
+- postMessage handshake between website dashboard and extension content script
+- Website sends ping message via window.postMessage on dashboard page load
+- Extension content script (injected on dashboard domain) listens and responds with pong + metadata
+- Two retry attempts (0ms, 500ms) to account for extension loading delays
+- Detection occurs only on page load (no continuous polling or real-time updates)
+
+**Security:**
+- Extension responds with version number and metadata (no sensitive data in messages)
+- Both sides validate message origins to prevent unauthorized communication
+- Content script injected only on dashboard domains (localhost:3000, app.chat2deal.com)
+
+**User Interface:**
+- Two-column responsive grid layout on dashboard page (left: User Profile, right: Extension Status)
+- Extension Status card matches UserProfile card styling (shadcn/ui Card component)
+- Card maintains consistent dimensions regardless of detection status (prevents layout shift)
+
+**Display States:**
+
+*Extension NOT Installed:*
+- Card title: "Chrome Extension"
+- Brief text: "Get started with the Chat2Deal extension"
+- Large prominent button: "Install Extension" (links to Chrome Web Store)
+- Chrome Web Store URL configurable via environment variable (VITE_EXTENSION_STORE_URL)
+
+*Extension IS Installed:*
+- Card title: "Chrome Extension"
+- Success indicator: Green checkmark icon + "Extension installed" text
+- Small link below: "View in Chrome Web Store" (muted styling)
+
+**Mobile/Tablet Behavior:**
+- Detect mobile/tablet devices via user agent or viewport width
+- Show modified message: "Extension available for desktop Chrome" with link
+- No prominent CTA button on mobile (sets proper expectations)
+
+**Implementation Status:**
+- 📝 Spec pending: Spec-122-Website-Extension-Detection.md
+- ⏳ Extension content script: Pending (new content script for dashboard domain)
+- ⏳ Website component: Pending (ExtensionStatus component)
+- ⏳ Configuration: Pending (VITE_EXTENSION_STORE_URL in .env files)
+
+**Privacy & Security:**
+- No persistent data storage (detection state not cached)
+- No tracking of extension installation events
+- postMessage communication scoped to dashboard domain only
+- Extension metadata (version) non-sensitive information
+
+**Future Enhancements (Post-MVP):**
+- Real-time detection: Check extension status on window focus or periodic intervals
+- Extension health check: Detect if extension is installed but not functioning
+- Version compatibility warnings: Alert if extension version is outdated
+- Quick actions: "Open WhatsApp Web" button when extension is installed
 
 ---
 
@@ -284,3 +512,8 @@ To enable analytics and multi-tenancy support, the backend maintains user and co
 - [Website Architecture](../Architecture/Website-Architecture.md) - User dashboard web application architecture
 - [UI Design Specification](../Architecture/UI-Design-Specification.md) - Complete UI design specification with visual system
 - [Plan-001: MVP Feature Breakdown](../Plans/Plan-001-MVP-Feature-Breakdown.md) - MVP broken down into implementable features
+- [Spec-119: Website Pipedrive Authentication](../Specs/Spec-119-Website-Pipedrive-Auth.md) - Website OAuth implementation and user dashboard
+- [Spec-120a: Website Invite System](../Specs/Spec-120a-Website-Invite-System.md) - Closed beta invite system (website)
+- [Spec-120b: Extension Beta Access](../Specs/Spec-120b-Extension-Beta-Access.md) - Closed beta access control (extension)
+- [Spec-121: Waitlist System](../Specs/Spec-121-Waitlist-System.md) - Waitlist for users without beta access
+- [Spec-122: Website Extension Detection](../Specs/Spec-122-Website-Extension-Detection.md) - Extension installation detection and installation prompt

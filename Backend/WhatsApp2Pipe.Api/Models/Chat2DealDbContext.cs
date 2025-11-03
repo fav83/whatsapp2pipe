@@ -32,6 +32,16 @@ public class Chat2DealDbContext : DbContext
     /// </summary>
     public DbSet<State> States { get; set; } = null!;
 
+    /// <summary>
+    /// Invites table - Closed beta invite codes.
+    /// </summary>
+    public DbSet<Invite> Invites { get; set; } = null!;
+
+    /// <summary>
+    /// Waitlist table - Beta access waitlist entries.
+    /// </summary>
+    public DbSet<WaitlistEntry> WaitlistEntries { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -91,6 +101,12 @@ public class Chat2DealDbContext : DbContext
 
             entity.Property(u => u.LastLoginAt)
                   .IsRequired();
+
+            // Foreign key relationship to Invite
+            entity.HasOne(u => u.Invite)
+                  .WithMany(i => i.Users)
+                  .HasForeignKey(u => u.InviteId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
         // Configure Session entity
@@ -181,6 +197,73 @@ public class Chat2DealDbContext : DbContext
                   .IsRequired();
 
             entity.Property(s => s.ExpiresAt)
+                  .IsRequired();
+        });
+
+        // Configure Invite entity
+        modelBuilder.Entity<Invite>(entity =>
+        {
+            entity.ToTable("Invites");
+
+            entity.HasKey(i => i.InviteId);
+
+            // Unique constraint on Code
+            entity.HasIndex(i => i.Code)
+                  .IsUnique()
+                  .HasDatabaseName("IX_Invites_Code");
+
+            // Required fields
+            entity.Property(i => i.Code)
+                  .IsRequired()
+                  .HasMaxLength(100);
+
+            entity.Property(i => i.CreatedAt)
+                  .IsRequired();
+
+            entity.Property(i => i.UsageCount)
+                  .IsRequired();
+
+            entity.Property(i => i.Description)
+                  .HasMaxLength(500);
+
+            // One-to-Many relationship
+            entity.HasMany(i => i.Users)
+                  .WithOne(u => u.Invite)
+                  .HasForeignKey(u => u.InviteId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Configure WaitlistEntry entity
+        modelBuilder.Entity<WaitlistEntry>(entity =>
+        {
+            entity.ToTable("Waitlist");
+
+            entity.HasKey(w => w.WaitlistId);
+
+            // Unique constraint on Email
+            entity.HasIndex(w => w.Email)
+                  .IsUnique()
+                  .HasDatabaseName("UQ_Waitlist_Email");
+
+            // Indexes for admin queries
+            entity.HasIndex(w => w.CreatedAt)
+                  .HasDatabaseName("IX_Waitlist_CreatedAt");
+
+            entity.HasIndex(w => w.UpdatedAt)
+                  .HasDatabaseName("IX_Waitlist_UpdatedAt");
+
+            // Required fields
+            entity.Property(w => w.Email)
+                  .IsRequired()
+                  .HasMaxLength(255);
+
+            entity.Property(w => w.Name)
+                  .HasMaxLength(255);
+
+            entity.Property(w => w.CreatedAt)
+                  .IsRequired();
+
+            entity.Property(w => w.UpdatedAt)
                   .IsRequired();
         });
     }
