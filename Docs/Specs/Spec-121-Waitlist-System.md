@@ -353,7 +353,7 @@ public class WaitlistSignupRequest
 Ensure Azure Functions CORS allows website origin:
 ```
 https://chat2deal.com
-https://dashboard.chat2deal.com
+https://app.chat2deal.com
 http://localhost:5173 (dev only)
 ```
 

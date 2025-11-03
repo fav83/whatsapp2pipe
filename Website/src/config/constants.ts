@@ -4,7 +4,7 @@ export const CONFIG = {
     'https://func-whatsapp2pipe-prod.azurewebsites.net',
   websiteUrl:
     import.meta.env.VITE_WEBSITE_URL ||
-    'https://dashboard.chat2deal.com',
+    'https://app.chat2deal.com',
   storage: {
     verificationCodeKey: 'verification_code',
   },

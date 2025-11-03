@@ -72,35 +72,8 @@ Implement invite-based access control for closed beta. Website sign-in requires 
 ### Feature 21: Waitlist System (Draft - Spec-121)
 Implement waitlist system for users without beta access. Dedicated `/waitlist` page on website with email (required) and name (optional) form fields with client-side email validation. Multiple entry points: HomePage link ("Don't have an invite? Join the waitlist"), AuthCallbackPage error state ("Join Waitlist" button for closed_beta/invalid_invite errors), and Extension BetaAccessRequiredState ("Join Waitlist" button opens website). Backend POST /api/waitlist endpoint with server-side validation, deduplication by email (updates UpdatedAt on duplicate), returns 200 for both new and duplicate entries. Database: new Waitlist table (WaitlistId, Email, Name, CreatedAt, UpdatedAt) with unique constraint on Email. Admin management via manual SQL queries only. Extension BetaAccessRequiredState updated to replace "Request Beta Access" with "Join Waitlist" button that opens website /waitlist page in new tab.
 
----
-
-## Implementation Order Recommendation
-
-The features are numbered in a suggested implementation order that considers:
-- Dependencies between features
-- Ability to test incrementally
-- Delivering vertical slices of functionality
-
-**Phase 1: Foundation (Features 1-4)**
-Get the basic extension working with sidebar injection and WhatsApp chat detection.
-
-**Phase 2: Authentication & API (Features 5-6)**
-Implement Pipedrive connectivity with secure authentication and API layer. Feature 7 (TanStack Query) skipped as unnecessary for MVP.
-
-**Phase 3: Core User Flows (Features 8-11)**
-Build the main user-facing features for person lookup, creation, and attachment.
-
-**Phase 4: Polish & Quality (Features 12, 14-18)**
-Add error handling, testing, monitoring, user tracking, user avatar, and initialization states. Feature 13 (shadcn/ui) skipped as unnecessary for MVP.
-
-**Phase 5: Website Dashboard (Feature 19)**
-Build user dashboard website with Pipedrive authentication, extending backend OAuth to support both extension and website clients.
-
-**Phase 6: Closed Beta Access Control (Feature 20)**
-Implement invite system for controlling access during closed beta. Modify website sign-in flow to require invite codes, update backend OAuth callback to validate invites for new users, and add extension error state for rejected users.
-
-**Phase 7: Waitlist System (Feature 21)**
-Build waitlist system for users without beta access. Create dedicated /waitlist page on website, implement backend API endpoint for waitlist signups with deduplication, and update extension BetaAccessRequiredState to link to waitlist page.
+### Feature 22: Website Extension Detection & Installation Prompt (Draft - Spec-122)
+Implement extension installation detection on website dashboard using postMessage handshake. Dashboard page displays two-column layout (left: UserProfile, right: ExtensionStatus card). Website sends ping messages on page load (two retry attempts at 0ms, 500ms). Extension content script injected on dashboard domain listens and responds with version metadata. Detection timeout shows "not installed" state. Two display states: NOT installed (prominent "Install Extension" button linking to Chrome Web Store) and IS installed (green checkmark + "Extension installed" text with small Chrome Web Store link). Mobile/tablet detection shows modified message: "Extension available for desktop Chrome". ExtensionStatus component matches UserProfile card styling (shadcn/ui Card). Chrome Web Store URL configurable via VITE_EXTENSION_STORE_URL environment variable. No persistent storage or continuous polling. Extension manifest updated to inject content script on dashboard domains (localhost:3000, app.chat2deal.com).
 
 ---
 

@@ -496,7 +496,7 @@ export const CONFIG = {
     'https://func-whatsapp2pipe-prod.azurewebsites.net',
   websiteUrl:
     import.meta.env.VITE_WEBSITE_URL ||
-    'https://dashboard.chat2deal.com',
+    'https://app.chat2deal.com',
   storage: {
     verificationCodeKey: 'verification_code',
   },
@@ -519,7 +519,7 @@ VITE_WEBSITE_URL=http://localhost:5173
 **.env.production:**
 ```env
 VITE_BACKEND_URL=https://func-whatsapp2pipe-prod.azurewebsites.net
-VITE_WEBSITE_URL=https://dashboard.chat2deal.com
+VITE_WEBSITE_URL=https://app.chat2deal.com
 ```
 
 **Backend Configuration (local.settings.json):**
@@ -533,7 +533,7 @@ VITE_WEBSITE_URL=https://dashboard.chat2deal.com
 
 **Backend Configuration (Azure App Settings - Production):**
 ```
-WEBSITE_CALLBACK_URL=https://dashboard.chat2deal.com/auth/callback
+WEBSITE_CALLBACK_URL=https://app.chat2deal.com/auth/callback
 ```
 
 ---
@@ -1328,7 +1328,7 @@ export function Footer() {
 
 **Azure Function App Settings (New):**
 ```
-WEBSITE_CALLBACK_URL=https://dashboard.chat2deal.com/auth/callback
+WEBSITE_CALLBACK_URL=https://app.chat2deal.com/auth/callback
 ```
 
 **Database Migration:**
@@ -1354,7 +1354,7 @@ npm run build
 
 **Deploy to Azure Static Web Apps:**
 - Upload `Website/dist/` to Azure Static Web Apps
-- Configure custom domain (dashboard.chat2deal.com)
+- Configure custom domain (app.chat2deal.com)
 - Verify SSL certificate
 - Test OAuth flow end-to-end
 
@@ -1362,7 +1362,7 @@ npm run build
 
 Ensure Azure Functions CORS allows website origin:
 ```
-https://dashboard.chat2deal.com
+https://app.chat2deal.com
 https://yourwebsite.azurestaticapps.net
 http://localhost:5173 (dev only)
 ```

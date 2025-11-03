@@ -372,6 +372,67 @@ To provide a path forward for users without beta access, a waitlist system allow
 ### 6.6 Telemetry
 - **Telemetry (optional later):** anonymous event counts only (DAU, lookups, creates, attaches).
 
+### 6.7 Website Extension Detection & Installation Prompt (Feature 22) (Draft - Spec-122)
+To guide users through the extension setup process, the website dashboard detects whether the Chrome extension is installed and provides appropriate installation guidance:
+
+**Purpose:**
+- Inform authenticated users whether the extension is installed
+- Provide clear path to Chrome Web Store for extension installation
+- Ensure users complete the full product setup (website + extension)
+
+**Detection Mechanism:**
+- postMessage handshake between website dashboard and extension content script
+- Website sends ping message via window.postMessage on dashboard page load
+- Extension content script (injected on dashboard domain) listens and responds with pong + metadata
+- Two retry attempts (0ms, 500ms) to account for extension loading delays
+- Detection occurs only on page load (no continuous polling or real-time updates)
+
+**Security:**
+- Extension responds with version number and metadata (no sensitive data in messages)
+- Both sides validate message origins to prevent unauthorized communication
+- Content script injected only on dashboard domains (localhost:3000, app.chat2deal.com)
+
+**User Interface:**
+- Two-column responsive grid layout on dashboard page (left: User Profile, right: Extension Status)
+- Extension Status card matches UserProfile card styling (shadcn/ui Card component)
+- Card maintains consistent dimensions regardless of detection status (prevents layout shift)
+
+**Display States:**
+
+*Extension NOT Installed:*
+- Card title: "Chrome Extension"
+- Brief text: "Get started with the Chat2Deal extension"
+- Large prominent button: "Install Extension" (links to Chrome Web Store)
+- Chrome Web Store URL configurable via environment variable (VITE_EXTENSION_STORE_URL)
+
+*Extension IS Installed:*
+- Card title: "Chrome Extension"
+- Success indicator: Green checkmark icon + "Extension installed" text
+- Small link below: "View in Chrome Web Store" (muted styling)
+
+**Mobile/Tablet Behavior:**
+- Detect mobile/tablet devices via user agent or viewport width
+- Show modified message: "Extension available for desktop Chrome" with link
+- No prominent CTA button on mobile (sets proper expectations)
+
+**Implementation Status:**
+- 📝 Spec pending: Spec-122-Website-Extension-Detection.md
+- ⏳ Extension content script: Pending (new content script for dashboard domain)
+- ⏳ Website component: Pending (ExtensionStatus component)
+- ⏳ Configuration: Pending (VITE_EXTENSION_STORE_URL in .env files)
+
+**Privacy & Security:**
+- No persistent data storage (detection state not cached)
+- No tracking of extension installation events
+- postMessage communication scoped to dashboard domain only
+- Extension metadata (version) non-sensitive information
+
+**Future Enhancements (Post-MVP):**
+- Real-time detection: Check extension status on window focus or periodic intervals
+- Extension health check: Detect if extension is installed but not functioning
+- Version compatibility warnings: Alert if extension version is outdated
+- Quick actions: "Open WhatsApp Web" button when extension is installed
+
 ---
 
 ## 7) Metrics & Success Criteria
@@ -455,3 +516,4 @@ To provide a path forward for users without beta access, a waitlist system allow
 - [Spec-120a: Website Invite System](../Specs/Spec-120a-Website-Invite-System.md) - Closed beta invite system (website)
 - [Spec-120b: Extension Beta Access](../Specs/Spec-120b-Extension-Beta-Access.md) - Closed beta access control (extension)
 - [Spec-121: Waitlist System](../Specs/Spec-121-Waitlist-System.md) - Waitlist for users without beta access
+- [Spec-122: Website Extension Detection](../Specs/Spec-122-Website-Extension-Detection.md) - Extension installation detection and installation prompt

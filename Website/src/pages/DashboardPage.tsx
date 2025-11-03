@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { userService } from '../services/userService'
 import { Header } from '../components/layout/Header'
 import { UserProfile } from '../components/auth/UserProfile'
+import { ExtensionStatus } from '../components/dashboard/ExtensionStatus'
 import type { User } from '../types/user'
 
 export default function DashboardPage() {
@@ -80,12 +81,23 @@ export default function DashboardPage() {
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
 
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
+      <main className="flex-1 container mx-auto px-4 py-8 max-w-6xl">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">
           Dashboard
         </h1>
 
-        {user && <UserProfile user={user} onSignOut={signOut} />}
+        {/* Two-column responsive grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Left column: User Profile */}
+          <div>
+            {user && <UserProfile user={user} onSignOut={signOut} />}
+          </div>
+
+          {/* Right column: Extension Status */}
+          <div>
+            <ExtensionStatus />
+          </div>
+        </div>
       </main>
     </div>
   )
