@@ -7,7 +7,7 @@
 
 interface SpinnerProps {
   size?: 'sm' | 'md' | 'lg'
-  color?: 'white' | 'primary'
+  color?: 'white' | 'primary' | 'themed'
 }
 
 export function Spinner({ size = 'md', color = 'white' }: SpinnerProps) {
@@ -20,6 +20,7 @@ export function Spinner({ size = 'md', color = 'white' }: SpinnerProps) {
   const colorClasses = {
     white: 'border-white border-t-transparent',
     primary: 'border-brand-primary border-t-transparent',
+    themed: 'border-loading-spinner border-t-transparent',
   }
 
   return (
