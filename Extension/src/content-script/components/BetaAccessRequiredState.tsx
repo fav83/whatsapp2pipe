@@ -42,7 +42,7 @@ export function BetaAccessRequiredState({ onSignIn }: BetaAccessRequiredStatePro
       </p>
 
       {/* Instructions */}
-      <div className="bg-background-tertiary border border-border-secondary rounded-md p-2 mb-4 text-left">
+      <div className="bg-background-tertiary border border-border-secondary rounded-md p-4 mb-4 text-left">
         <h3 className="text-sm font-semibold text-text-primary mb-2">How to get access:</h3>
         <ol className="text-sm text-text-secondary space-y-1 list-decimal list-inside">
           <li>Join our waitlist to request beta access</li>
