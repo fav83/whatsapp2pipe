@@ -12,7 +12,7 @@ interface ErrorStateProps {
 
 export function ErrorState({ message, onRetry }: ErrorStateProps) {
   return (
-    <div className="px-5 pt-5">
+    <div className="px-4 pt-4">
       <div className="text-sm text-text-secondary mb-4">{message}</div>
       <button
         onClick={onRetry}

@@ -69,14 +69,14 @@ interface ErrorFallbackProps {
  */
 function ErrorFallback({ onReset }: ErrorFallbackProps) {
   return (
-    <div className="h-full flex flex-col items-center justify-center px-8 text-center">
+    <div className="h-full flex flex-col items-center justify-center px-4 text-center">
       <div className="text-5xl mb-4">⚠️</div>
-      <p className="text-text-secondary text-sm mb-6">
+      <p className="text-text-secondary text-sm mb-4">
         Something went wrong with the Pipedrive sidebar
       </p>
       <button
         onClick={onReset}
-        className="px-6 py-2 bg-brand-primary text-white text-sm font-medium rounded-lg hover:bg-brand-primary-hover transition-colors"
+        className="px-4 py-2 bg-brand-primary text-white text-sm font-medium rounded-lg hover:bg-brand-primary-hover transition-colors"
       >
         Reload Page
       </button>

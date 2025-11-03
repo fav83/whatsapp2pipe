@@ -219,15 +219,15 @@ export function PersonNoMatchState({
     manualAttachError ?? attachError?.message ?? manualSearchError ?? searchError?.message ?? null
 
   return (
-    <div className="p-5 space-y-5">
+    <div className="p-4 space-y-4">
       {/* Section 2: Contact Info Card */}
-      <div className="p-4 bg-white rounded-lg border border-border-secondary shadow-sm">
+      <div className="p-3 bg-white rounded-lg border border-border-secondary shadow-sm">
         <div className="text-base font-semibold text-text-primary mb-1">{contactName}</div>
         <div className="text-sm text-text-secondary">{phone}</div>
       </div>
 
       {/* Section 3: Create New Person */}
-      <div className="p-4 bg-white rounded-lg border border-border-secondary shadow-sm">
+      <div className="p-3 bg-white rounded-lg border border-border-secondary shadow-sm">
         <h3 className="text-sm font-semibold text-text-primary mb-3">
           Add this contact to Pipedrive
         </h3>
@@ -279,7 +279,7 @@ export function PersonNoMatchState({
       </div>
 
       {/* Section 4: Link to Existing Person */}
-      <div className="p-4 bg-white rounded-lg border border-border-secondary shadow-sm">
+      <div className="p-3 bg-white rounded-lg border border-border-secondary shadow-sm">
         <p className="text-sm text-text-secondary mb-3">
           Or add the number <span className="font-medium text-text-primary">{phone}</span> to an
           existing contact

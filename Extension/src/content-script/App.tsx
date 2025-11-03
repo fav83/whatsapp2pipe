@@ -27,6 +27,7 @@ import { UserAvatar } from './components/UserAvatar'
 import { SentryTest } from './components/SentryTest'
 import { exposePipedriveTestHelpers } from './testPipedriveApi'
 import type { Person } from '../types/person'
+import { themeManager } from '../styles/ThemeManager'
 
 interface ChatStatus {
   phone: string | null
@@ -65,6 +66,11 @@ export default function App() {
   const { authState, userName, signIn, signOut, error } = useAuth()
   const [state, setState] = useState<SidebarState>({ type: 'welcome' })
   const [sentryTestExpanded, setSentryTestExpanded] = useState(false)
+
+  // Initialize theme manager on mount
+  useEffect(() => {
+    themeManager.initialize()
+  }, [])
 
   // Listen for chat status events from MAIN world
   useEffect(() => {
@@ -109,7 +115,7 @@ export default function App() {
   return (
     <div className="h-full flex flex-col bg-white border-l border-border-primary">
       {/* Fixed Header */}
-      <header className="flex-shrink-0 h-14 px-5 border-b border-border-secondary flex items-center justify-between bg-white">
+      <header className="flex-shrink-0 h-14 px-4 border-b border-border-secondary flex items-center justify-between bg-white">
         <h1 className="text-[17px] font-semibold text-text-primary">Chat2Deal</h1>
         {authState === 'authenticated' && userName && (
           <UserAvatar userName={userName} onSignOut={signOut} />

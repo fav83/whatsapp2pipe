@@ -12,7 +12,7 @@ interface PersonLookupLoadingProps {
 
 export function PersonLookupLoading({ contactName, phone }: PersonLookupLoadingProps) {
   return (
-    <div className="mx-5 mt-5">
+    <div className="mx-4 mt-4">
       {/* Contact Info - Visible Immediately */}
       <div className="mb-4">
         <div className="text-base font-semibold text-text-primary mb-1">{contactName}</div>

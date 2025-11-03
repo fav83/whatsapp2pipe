@@ -13,9 +13,9 @@ interface PersonMatchedCardProps {
 
 export function PersonMatchedCard({ name, phone, pipedriveUrl }: PersonMatchedCardProps) {
   return (
-    <div className="p-5 space-y-5">
+    <div className="p-4 space-y-4">
       {/* Section 2: Person Info Card - Name, Phone, Open in Pipedrive Button */}
-      <div className="p-4 bg-white rounded-lg border border-border-secondary shadow-sm">
+      <div className="p-3 bg-white rounded-lg border border-border-secondary shadow-sm">
         <div className="text-base font-semibold text-text-primary mb-1">{name}</div>
         <div className="text-sm text-text-secondary mb-4">{phone}</div>
 

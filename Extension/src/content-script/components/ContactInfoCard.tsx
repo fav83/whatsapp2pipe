@@ -12,7 +12,7 @@ interface ContactInfoCardProps {
 
 export function ContactInfoCard({ name, phone }: ContactInfoCardProps) {
   return (
-    <div className="mx-5 mt-5 p-4 bg-background-secondary rounded-lg">
+    <div className="mx-4 mt-4 p-3 bg-background-secondary rounded-lg">
       <div className="text-base font-semibold text-text-primary mb-1">{name}</div>
       <div className="text-sm text-text-secondary">{phone}</div>
     </div>

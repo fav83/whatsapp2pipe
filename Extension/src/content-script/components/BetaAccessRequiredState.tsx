@@ -15,7 +15,7 @@ export function BetaAccessRequiredState({ onSignIn }: BetaAccessRequiredStatePro
   const WEBSITE_URL = import.meta.env.VITE_WEBSITE_URL || 'https://chat2deal.com'
 
   return (
-    <div className="flex flex-col items-center justify-center h-full px-6 py-8 text-center">
+    <div className="flex flex-col items-center justify-center h-full px-4 py-6 text-center">
       {/* Icon */}
       <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mb-4">
         <svg
@@ -42,7 +42,7 @@ export function BetaAccessRequiredState({ onSignIn }: BetaAccessRequiredStatePro
       </p>
 
       {/* Instructions */}
-      <div className="bg-background-tertiary border border-border-secondary rounded-md p-4 mb-6 text-left">
+      <div className="bg-background-tertiary border border-border-secondary rounded-md p-3 mb-6 text-left">
         <h3 className="text-sm font-semibold text-text-primary mb-2">How to get access:</h3>
         <ol className="text-sm text-text-secondary space-y-1 list-decimal list-inside">
           <li>Join our waitlist to request beta access</li>

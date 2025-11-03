@@ -373,10 +373,10 @@ const deepIndigo = {
 
   // Text Colors
   text: {
-    primary: '#1e1b4b', // indigo-950
-    secondary: '#6366f1', // indigo-500
-    tertiary: '#a5b4fc', // indigo-300
-    'avatar-hover': '#4338ca', // indigo-700
+    primary: '#0a0a0a', // neutral-950
+    secondary: '#525252', // neutral-600
+    tertiary: '#a3a3a3', // neutral-400
+    'avatar-hover': '#404040', // neutral-700
   },
 
   // Background Colors
@@ -442,10 +442,10 @@ const forestGreen = {
 
   // Text Colors
   text: {
-    primary: '#14532d', // green-950
-    secondary: '#166534', // green-800
-    tertiary: '#86efac', // green-300
-    'avatar-hover': '#15803d', // green-700
+    primary: '#0a0a0a', // neutral-950
+    secondary: '#525252', // neutral-600
+    tertiary: '#a3a3a3', // neutral-400
+    'avatar-hover': '#404040', // neutral-700
   },
 
   // Background Colors
@@ -511,10 +511,10 @@ const rosePink = {
 
   // Text Colors
   text: {
-    primary: '#4c0519', // rose-950
-    secondary: '#9f1239', // rose-800
-    tertiary: '#fda4af', // rose-300
-    'avatar-hover': '#be123c', // rose-700
+    primary: '#0a0a0a', // neutral-950
+    secondary: '#525252', // neutral-600
+    tertiary: '#a3a3a3', // neutral-400
+    'avatar-hover': '#404040', // neutral-700
   },
 
   // Background Colors
@@ -580,10 +580,10 @@ const crimsonRed = {
 
   // Text Colors
   text: {
-    primary: '#450a0a', // red-950
-    secondary: '#991b1b', // red-800
-    tertiary: '#fca5a5', // red-300
-    'avatar-hover': '#b91c1c', // red-700
+    primary: '#0a0a0a', // neutral-950
+    secondary: '#525252', // neutral-600
+    tertiary: '#a3a3a3', // neutral-400
+    'avatar-hover': '#404040', // neutral-700
   },
 
   // Background Colors
@@ -649,10 +649,10 @@ const goldenAmber = {
 
   // Text Colors
   text: {
-    primary: '#451a03', // amber-950
-    secondary: '#78350f', // amber-900
-    tertiary: '#fcd34d', // amber-300
-    'avatar-hover': '#b45309', // amber-700
+    primary: '#0a0a0a', // neutral-950
+    secondary: '#525252', // neutral-600
+    tertiary: '#a3a3a3', // neutral-400
+    'avatar-hover': '#404040', // neutral-700
   },
 
   // Background Colors
@@ -718,10 +718,10 @@ const brightYellow = {
 
   // Text Colors
   text: {
-    primary: '#422006', // yellow-950
-    secondary: '#713f12', // yellow-900
-    tertiary: '#fde047', // yellow-300
-    'avatar-hover': '#a16207', // yellow-700
+    primary: '#0a0a0a', // neutral-950
+    secondary: '#525252', // neutral-600
+    tertiary: '#a3a3a3', // neutral-400
+    'avatar-hover': '#404040', // neutral-700
   },
 
   // Background Colors
@@ -787,10 +787,10 @@ const freshLime = {
 
   // Text Colors
   text: {
-    primary: '#1a2e05', // lime-950
-    secondary: '#365314', // lime-900
-    tertiary: '#bef264', // lime-300
-    'avatar-hover': '#4d7c0f', // lime-700
+    primary: '#0a0a0a', // neutral-950
+    secondary: '#525252', // neutral-600
+    tertiary: '#a3a3a3', // neutral-400
+    'avatar-hover': '#404040', // neutral-700
   },
 
   // Background Colors
@@ -856,10 +856,10 @@ const vibrantEmerald = {
 
   // Text Colors
   text: {
-    primary: '#022c22', // emerald-950
-    secondary: '#064e3b', // emerald-900
-    tertiary: '#6ee7b7', // emerald-300
-    'avatar-hover': '#047857', // emerald-700
+    primary: '#0a0a0a', // neutral-950
+    secondary: '#525252', // neutral-600
+    tertiary: '#a3a3a3', // neutral-400
+    'avatar-hover': '#404040', // neutral-700
   },
 
   // Background Colors
@@ -925,10 +925,10 @@ const coolCyan = {
 
   // Text Colors
   text: {
-    primary: '#083344', // cyan-950
-    secondary: '#164e63', // cyan-900
-    tertiary: '#67e8f9', // cyan-300
-    'avatar-hover': '#0e7490', // cyan-700
+    primary: '#0a0a0a', // neutral-950
+    secondary: '#525252', // neutral-600
+    tertiary: '#a3a3a3', // neutral-400
+    'avatar-hover': '#404040', // neutral-700
   },
 
   // Background Colors
@@ -994,10 +994,10 @@ const clearSky = {
 
   // Text Colors
   text: {
-    primary: '#082f49', // sky-950
-    secondary: '#0c4a6e', // sky-900
-    tertiary: '#7dd3fc', // sky-300
-    'avatar-hover': '#0369a1', // sky-700
+    primary: '#0a0a0a', // neutral-950
+    secondary: '#525252', // neutral-600
+    tertiary: '#a3a3a3', // neutral-400
+    'avatar-hover': '#404040', // neutral-700
   },
 
   // Background Colors
@@ -1063,10 +1063,10 @@ const royalPurple = {
 
   // Text Colors
   text: {
-    primary: '#3b0764', // purple-950
-    secondary: '#581c87', // purple-900
-    tertiary: '#d8b4fe', // purple-300
-    'avatar-hover': '#7e22ce', // purple-700
+    primary: '#0a0a0a', // neutral-950
+    secondary: '#525252', // neutral-600
+    tertiary: '#a3a3a3', // neutral-400
+    'avatar-hover': '#404040', // neutral-700
   },
 
   // Background Colors
@@ -1132,10 +1132,10 @@ const vividFuchsia = {
 
   // Text Colors
   text: {
-    primary: '#4a044e', // fuchsia-950
-    secondary: '#701a75', // fuchsia-900
-    tertiary: '#f0abfc', // fuchsia-300
-    'avatar-hover': '#a21caf', // fuchsia-700
+    primary: '#0a0a0a', // neutral-950
+    secondary: '#525252', // neutral-600
+    tertiary: '#a3a3a3', // neutral-400
+    'avatar-hover': '#404040', // neutral-700
   },
 
   // Background Colors
@@ -1201,10 +1201,10 @@ const softPink = {
 
   // Text Colors
   text: {
-    primary: '#500724', // pink-950
-    secondary: '#831843', // pink-900
-    tertiary: '#f9a8d4', // pink-300
-    'avatar-hover': '#be185d', // pink-700
+    primary: '#0a0a0a', // neutral-950
+    secondary: '#525252', // neutral-600
+    tertiary: '#a3a3a3', // neutral-400
+    'avatar-hover': '#404040', // neutral-700
   },
 
   // Background Colors
@@ -1602,6 +1602,1198 @@ const warmStone = {
 }
 
 // ============================================================================
+// TAILWIND 500-SERIES THEMES
+// ============================================================================
+
+/**
+ * Slate 500 Theme
+ */
+const slate500 = {
+  brand: {
+    primary: '#64748b', // slate-500
+    'primary-hover': '#475569', // slate-600
+    'primary-light': '#e2e8f0', // slate-200
+    'primary-light-hover': '#94a3b8', // slate-400
+  },
+  text: {
+    primary: '#0a0a0a', // neutral-950
+    secondary: '#525252', // neutral-600
+    tertiary: '#a3a3a3', // neutral-400
+    'avatar-hover': '#404040', // neutral-700
+  },
+  background: {
+    primary: '#ffffff',
+    secondary: '#f8fafc', // slate-50
+    tertiary: '#f1f5f9', // slate-100
+    main: '#e2e8f0', // slate-200
+  },
+  border: {
+    primary: '#cbd5e1', // slate-300
+    secondary: '#e2e8f0', // slate-200
+  },
+  error: {
+    text: '#dc2626',
+    'text-hover': '#991b1b',
+    background: '#fef2f2',
+    border: '#fca5a5',
+  },
+  warning: {
+    background: '#fef3c7',
+    border: '#fbbf24',
+    icon: '#f59e0b',
+  },
+  success: {
+    background: '#d1fae5',
+    border: '#10b981',
+  },
+  loading: {
+    spinner: '#64748b', // slate-500
+  },
+  dev: {
+    background: '#fed7aa',
+    border: '#fb923c',
+    'badge-background': '#ffedd5',
+    'badge-text': '#7c2d12',
+    'button-background': '#ea580c',
+    'button-border': '#c2410c',
+  },
+}
+
+/**
+ * Gray 500 Theme
+ */
+const gray500 = {
+  brand: {
+    primary: '#6b7280', // gray-500
+    'primary-hover': '#4b5563', // gray-600
+    'primary-light': '#e5e7eb', // gray-200
+    'primary-light-hover': '#9ca3af', // gray-400
+  },
+  text: {
+    primary: '#0a0a0a',
+    secondary: '#525252',
+    tertiary: '#a3a3a3',
+    'avatar-hover': '#404040',
+  },
+  background: {
+    primary: '#ffffff',
+    secondary: '#f9fafb', // gray-50
+    tertiary: '#f3f4f6', // gray-100
+    main: '#e5e7eb', // gray-200
+  },
+  border: {
+    primary: '#d1d5db', // gray-300
+    secondary: '#e5e7eb', // gray-200
+  },
+  error: {
+    text: '#dc2626',
+    'text-hover': '#991b1b',
+    background: '#fef2f2',
+    border: '#fca5a5',
+  },
+  warning: {
+    background: '#fef3c7',
+    border: '#fbbf24',
+    icon: '#f59e0b',
+  },
+  success: {
+    background: '#d1fae5',
+    border: '#10b981',
+  },
+  loading: {
+    spinner: '#6b7280',
+  },
+  dev: {
+    background: '#fed7aa',
+    border: '#fb923c',
+    'badge-background': '#ffedd5',
+    'badge-text': '#7c2d12',
+    'button-background': '#ea580c',
+    'button-border': '#c2410c',
+  },
+}
+
+/**
+ * Zinc 500 Theme
+ */
+const zinc500 = {
+  brand: {
+    primary: '#71717a', // zinc-500
+    'primary-hover': '#52525b', // zinc-600
+    'primary-light': '#e4e4e7', // zinc-200
+    'primary-light-hover': '#a1a1aa', // zinc-400
+  },
+  text: {
+    primary: '#0a0a0a',
+    secondary: '#525252',
+    tertiary: '#a3a3a3',
+    'avatar-hover': '#404040',
+  },
+  background: {
+    primary: '#ffffff',
+    secondary: '#fafafa', // zinc-50
+    tertiary: '#f4f4f5', // zinc-100
+    main: '#e4e4e7', // zinc-200
+  },
+  border: {
+    primary: '#d4d4d8', // zinc-300
+    secondary: '#e4e4e7', // zinc-200
+  },
+  error: {
+    text: '#dc2626',
+    'text-hover': '#991b1b',
+    background: '#fef2f2',
+    border: '#fca5a5',
+  },
+  warning: {
+    background: '#fef3c7',
+    border: '#fbbf24',
+    icon: '#f59e0b',
+  },
+  success: {
+    background: '#d1fae5',
+    border: '#10b981',
+  },
+  loading: {
+    spinner: '#71717a',
+  },
+  dev: {
+    background: '#fed7aa',
+    border: '#fb923c',
+    'badge-background': '#ffedd5',
+    'badge-text': '#7c2d12',
+    'button-background': '#ea580c',
+    'button-border': '#c2410c',
+  },
+}
+
+/**
+ * Neutral 500 Theme
+ */
+const neutral500 = {
+  brand: {
+    primary: '#737373', // neutral-500
+    'primary-hover': '#525252', // neutral-600
+    'primary-light': '#e5e5e5', // neutral-200
+    'primary-light-hover': '#a3a3a3', // neutral-400
+  },
+  text: {
+    primary: '#0a0a0a',
+    secondary: '#525252',
+    tertiary: '#a3a3a3',
+    'avatar-hover': '#404040',
+  },
+  background: {
+    primary: '#ffffff',
+    secondary: '#fafafa', // neutral-50
+    tertiary: '#f5f5f5', // neutral-100
+    main: '#e5e5e5', // neutral-200
+  },
+  border: {
+    primary: '#d4d4d4', // neutral-300
+    secondary: '#e5e5e5', // neutral-200
+  },
+  error: {
+    text: '#dc2626',
+    'text-hover': '#991b1b',
+    background: '#fef2f2',
+    border: '#fca5a5',
+  },
+  warning: {
+    background: '#fef3c7',
+    border: '#fbbf24',
+    icon: '#f59e0b',
+  },
+  success: {
+    background: '#d1fae5',
+    border: '#10b981',
+  },
+  loading: {
+    spinner: '#737373',
+  },
+  dev: {
+    background: '#fed7aa',
+    border: '#fb923c',
+    'badge-background': '#ffedd5',
+    'badge-text': '#7c2d12',
+    'button-background': '#ea580c',
+    'button-border': '#c2410c',
+  },
+}
+
+/**
+ * Stone 500 Theme
+ */
+const stone500 = {
+  brand: {
+    primary: '#78716c', // stone-500
+    'primary-hover': '#57534e', // stone-600
+    'primary-light': '#e7e5e4', // stone-200
+    'primary-light-hover': '#a8a29e', // stone-400
+  },
+  text: {
+    primary: '#0a0a0a',
+    secondary: '#525252',
+    tertiary: '#a3a3a3',
+    'avatar-hover': '#404040',
+  },
+  background: {
+    primary: '#ffffff',
+    secondary: '#fafaf9', // stone-50
+    tertiary: '#f5f5f4', // stone-100
+    main: '#e7e5e4', // stone-200
+  },
+  border: {
+    primary: '#d6d3d1', // stone-300
+    secondary: '#e7e5e4', // stone-200
+  },
+  error: {
+    text: '#dc2626',
+    'text-hover': '#991b1b',
+    background: '#fef2f2',
+    border: '#fca5a5',
+  },
+  warning: {
+    background: '#fef3c7',
+    border: '#fbbf24',
+    icon: '#f59e0b',
+  },
+  success: {
+    background: '#d1fae5',
+    border: '#10b981',
+  },
+  loading: {
+    spinner: '#78716c',
+  },
+  dev: {
+    background: '#fed7aa',
+    border: '#fb923c',
+    'badge-background': '#ffedd5',
+    'badge-text': '#7c2d12',
+    'button-background': '#ea580c',
+    'button-border': '#c2410c',
+  },
+}
+
+/**
+ * Red 500 Theme
+ */
+const red500 = {
+  brand: {
+    primary: '#ef4444', // red-500
+    'primary-hover': '#dc2626', // red-600
+    'primary-light': '#fee2e2', // red-100
+    'primary-light-hover': '#fca5a5', // red-300
+  },
+  text: {
+    primary: '#0a0a0a',
+    secondary: '#525252',
+    tertiary: '#a3a3a3',
+    'avatar-hover': '#404040',
+  },
+  background: {
+    primary: '#ffffff',
+    secondary: '#fef2f2', // red-50
+    tertiary: '#fef5f5', // custom light red
+    main: '#f5f5f5', // gray-100
+  },
+  border: {
+    primary: '#d4d4d4',
+    secondary: '#e5e5e5',
+  },
+  error: {
+    text: '#dc2626',
+    'text-hover': '#991b1b',
+    background: '#fef2f2',
+    border: '#fca5a5',
+  },
+  warning: {
+    background: '#fef3c7',
+    border: '#fbbf24',
+    icon: '#f59e0b',
+  },
+  success: {
+    background: '#d1fae5',
+    border: '#10b981',
+  },
+  loading: {
+    spinner: '#ef4444',
+  },
+  dev: {
+    background: '#fed7aa',
+    border: '#fb923c',
+    'badge-background': '#ffedd5',
+    'badge-text': '#7c2d12',
+    'button-background': '#ea580c',
+    'button-border': '#c2410c',
+  },
+}
+
+/**
+ * Orange 500 Theme
+ */
+const orange500 = {
+  brand: {
+    primary: '#f97316', // orange-500
+    'primary-hover': '#ea580c', // orange-600
+    'primary-light': '#ffedd5', // orange-100
+    'primary-light-hover': '#fdba74', // orange-300
+  },
+  text: {
+    primary: '#0a0a0a',
+    secondary: '#525252',
+    tertiary: '#a3a3a3',
+    'avatar-hover': '#404040',
+  },
+  background: {
+    primary: '#ffffff',
+    secondary: '#fff7ed', // orange-50
+    tertiary: '#fafaf9', // stone-50
+    main: '#e7e5e4', // stone-200
+  },
+  border: {
+    primary: '#d6d3d1',
+    secondary: '#e7e5e4',
+  },
+  error: {
+    text: '#dc2626',
+    'text-hover': '#991b1b',
+    background: '#fef2f2',
+    border: '#fca5a5',
+  },
+  warning: {
+    background: '#fef3c7',
+    border: '#fbbf24',
+    icon: '#f59e0b',
+  },
+  success: {
+    background: '#d1fae5',
+    border: '#10b981',
+  },
+  loading: {
+    spinner: '#f97316',
+  },
+  dev: {
+    background: '#fed7aa',
+    border: '#fb923c',
+    'badge-background': '#ffedd5',
+    'badge-text': '#7c2d12',
+    'button-background': '#ea580c',
+    'button-border': '#c2410c',
+  },
+}
+
+/**
+ * Amber 500 Theme
+ */
+const amber500 = {
+  brand: {
+    primary: '#f59e0b', // amber-500
+    'primary-hover': '#d97706', // amber-600
+    'primary-light': '#fef3c7', // amber-100
+    'primary-light-hover': '#fcd34d', // amber-300
+  },
+  text: {
+    primary: '#0a0a0a',
+    secondary: '#525252',
+    tertiary: '#a3a3a3',
+    'avatar-hover': '#404040',
+  },
+  background: {
+    primary: '#ffffff',
+    secondary: '#fffbeb', // amber-50
+    tertiary: '#fefce8', // yellow-50
+    main: '#fafaf9', // stone-50
+  },
+  border: {
+    primary: '#d6d3d1',
+    secondary: '#e7e5e4',
+  },
+  error: {
+    text: '#dc2626',
+    'text-hover': '#991b1b',
+    background: '#fef2f2',
+    border: '#fca5a5',
+  },
+  warning: {
+    background: '#fef3c7',
+    border: '#fbbf24',
+    icon: '#f59e0b',
+  },
+  success: {
+    background: '#d1fae5',
+    border: '#10b981',
+  },
+  loading: {
+    spinner: '#f59e0b',
+  },
+  dev: {
+    background: '#fed7aa',
+    border: '#fb923c',
+    'badge-background': '#ffedd5',
+    'badge-text': '#7c2d12',
+    'button-background': '#ea580c',
+    'button-border': '#c2410c',
+  },
+}
+
+/**
+ * Yellow 500 Theme
+ */
+const yellow500 = {
+  brand: {
+    primary: '#eab308', // yellow-500
+    'primary-hover': '#ca8a04', // yellow-600
+    'primary-light': '#fef9c3', // yellow-100
+    'primary-light-hover': '#fde047', // yellow-300
+  },
+  text: {
+    primary: '#0a0a0a',
+    secondary: '#525252',
+    tertiary: '#a3a3a3',
+    'avatar-hover': '#404040',
+  },
+  background: {
+    primary: '#ffffff',
+    secondary: '#fefce8', // yellow-50
+    tertiary: '#fffbeb', // amber-50
+    main: '#fafaf9', // stone-50
+  },
+  border: {
+    primary: '#d6d3d1',
+    secondary: '#e7e5e4',
+  },
+  error: {
+    text: '#dc2626',
+    'text-hover': '#991b1b',
+    background: '#fef2f2',
+    border: '#fca5a5',
+  },
+  warning: {
+    background: '#fef3c7',
+    border: '#fbbf24',
+    icon: '#f59e0b',
+  },
+  success: {
+    background: '#d1fae5',
+    border: '#10b981',
+  },
+  loading: {
+    spinner: '#eab308',
+  },
+  dev: {
+    background: '#fed7aa',
+    border: '#fb923c',
+    'badge-background': '#ffedd5',
+    'badge-text': '#7c2d12',
+    'button-background': '#ea580c',
+    'button-border': '#c2410c',
+  },
+}
+
+/**
+ * Lime 500 Theme
+ */
+const lime500 = {
+  brand: {
+    primary: '#84cc16', // lime-500
+    'primary-hover': '#65a30d', // lime-600
+    'primary-light': '#ecfccb', // lime-100
+    'primary-light-hover': '#bef264', // lime-300
+  },
+  text: {
+    primary: '#0a0a0a',
+    secondary: '#525252',
+    tertiary: '#a3a3a3',
+    'avatar-hover': '#404040',
+  },
+  background: {
+    primary: '#ffffff',
+    secondary: '#f7fee7', // lime-50
+    tertiary: '#f0fdf4', // green-50
+    main: '#f5f5f5', // gray-100
+  },
+  border: {
+    primary: '#d4d4d4',
+    secondary: '#e5e5e5',
+  },
+  error: {
+    text: '#dc2626',
+    'text-hover': '#991b1b',
+    background: '#fef2f2',
+    border: '#fca5a5',
+  },
+  warning: {
+    background: '#fef3c7',
+    border: '#fbbf24',
+    icon: '#f59e0b',
+  },
+  success: {
+    background: '#ecfccb',
+    border: '#84cc16',
+  },
+  loading: {
+    spinner: '#84cc16',
+  },
+  dev: {
+    background: '#fed7aa',
+    border: '#fb923c',
+    'badge-background': '#ffedd5',
+    'badge-text': '#7c2d12',
+    'button-background': '#ea580c',
+    'button-border': '#c2410c',
+  },
+}
+
+/**
+ * Green 500 Theme
+ */
+const green500 = {
+  brand: {
+    primary: '#22c55e', // green-500
+    'primary-hover': '#16a34a', // green-600
+    'primary-light': '#dcfce7', // green-100
+    'primary-light-hover': '#86efac', // green-300
+  },
+  text: {
+    primary: '#0a0a0a',
+    secondary: '#525252',
+    tertiary: '#a3a3a3',
+    'avatar-hover': '#404040',
+  },
+  background: {
+    primary: '#ffffff',
+    secondary: '#f0fdf4', // green-50
+    tertiary: '#f7fee7', // lime-50
+    main: '#e5e7eb', // gray-200
+  },
+  border: {
+    primary: '#d1d5db',
+    secondary: '#e5e7eb',
+  },
+  error: {
+    text: '#dc2626',
+    'text-hover': '#991b1b',
+    background: '#fef2f2',
+    border: '#fca5a5',
+  },
+  warning: {
+    background: '#fef3c7',
+    border: '#fbbf24',
+    icon: '#f59e0b',
+  },
+  success: {
+    background: '#dcfce7',
+    border: '#22c55e',
+  },
+  loading: {
+    spinner: '#22c55e',
+  },
+  dev: {
+    background: '#fed7aa',
+    border: '#fb923c',
+    'badge-background': '#ffedd5',
+    'badge-text': '#7c2d12',
+    'button-background': '#ea580c',
+    'button-border': '#c2410c',
+  },
+}
+
+/**
+ * Emerald 500 Theme
+ */
+const emerald500 = {
+  brand: {
+    primary: '#10b981', // emerald-500
+    'primary-hover': '#059669', // emerald-600
+    'primary-light': '#d1fae5', // emerald-100
+    'primary-light-hover': '#6ee7b7', // emerald-300
+  },
+  text: {
+    primary: '#0a0a0a',
+    secondary: '#525252',
+    tertiary: '#a3a3a3',
+    'avatar-hover': '#404040',
+  },
+  background: {
+    primary: '#ffffff',
+    secondary: '#ecfdf5', // emerald-50
+    tertiary: '#f0fdfa', // teal-50
+    main: '#f5f5f5', // gray-100
+  },
+  border: {
+    primary: '#d4d4d4',
+    secondary: '#e5e5e5',
+  },
+  error: {
+    text: '#dc2626',
+    'text-hover': '#991b1b',
+    background: '#fef2f2',
+    border: '#fca5a5',
+  },
+  warning: {
+    background: '#fef3c7',
+    border: '#fbbf24',
+    icon: '#f59e0b',
+  },
+  success: {
+    background: '#d1fae5',
+    border: '#10b981',
+  },
+  loading: {
+    spinner: '#10b981',
+  },
+  dev: {
+    background: '#fed7aa',
+    border: '#fb923c',
+    'badge-background': '#ffedd5',
+    'badge-text': '#7c2d12',
+    'button-background': '#ea580c',
+    'button-border': '#c2410c',
+  },
+}
+
+/**
+ * Teal 500 Theme
+ */
+const teal500 = {
+  brand: {
+    primary: '#14b8a6', // teal-500
+    'primary-hover': '#0d9488', // teal-600
+    'primary-light': '#ccfbf1', // teal-100
+    'primary-light-hover': '#5eead4', // teal-300
+  },
+  text: {
+    primary: '#0a0a0a',
+    secondary: '#525252',
+    tertiary: '#a3a3a3',
+    'avatar-hover': '#404040',
+  },
+  background: {
+    primary: '#ffffff',
+    secondary: '#f0fdfa', // teal-50
+    tertiary: '#f1f5f9', // slate-100
+    main: '#e2e8f0', // slate-200
+  },
+  border: {
+    primary: '#cbd5e1',
+    secondary: '#e2e8f0',
+  },
+  error: {
+    text: '#dc2626',
+    'text-hover': '#991b1b',
+    background: '#fef2f2',
+    border: '#fca5a5',
+  },
+  warning: {
+    background: '#fef3c7',
+    border: '#fbbf24',
+    icon: '#f59e0b',
+  },
+  success: {
+    background: '#d1fae5',
+    border: '#10b981',
+  },
+  loading: {
+    spinner: '#14b8a6',
+  },
+  dev: {
+    background: '#fed7aa',
+    border: '#fb923c',
+    'badge-background': '#ffedd5',
+    'badge-text': '#7c2d12',
+    'button-background': '#ea580c',
+    'button-border': '#c2410c',
+  },
+}
+
+/**
+ * Cyan 500 Theme
+ */
+const cyan500 = {
+  brand: {
+    primary: '#06b6d4', // cyan-500
+    'primary-hover': '#0891b2', // cyan-600
+    'primary-light': '#cffafe', // cyan-100
+    'primary-light-hover': '#67e8f9', // cyan-300
+  },
+  text: {
+    primary: '#0a0a0a',
+    secondary: '#525252',
+    tertiary: '#a3a3a3',
+    'avatar-hover': '#404040',
+  },
+  background: {
+    primary: '#ffffff',
+    secondary: '#ecfeff', // cyan-50
+    tertiary: '#f0f9ff', // sky-50
+    main: '#f5f5f5', // gray-100
+  },
+  border: {
+    primary: '#d4d4d4',
+    secondary: '#e5e5e5',
+  },
+  error: {
+    text: '#dc2626',
+    'text-hover': '#991b1b',
+    background: '#fef2f2',
+    border: '#fca5a5',
+  },
+  warning: {
+    background: '#fef3c7',
+    border: '#fbbf24',
+    icon: '#f59e0b',
+  },
+  success: {
+    background: '#d1fae5',
+    border: '#10b981',
+  },
+  loading: {
+    spinner: '#06b6d4',
+  },
+  dev: {
+    background: '#fed7aa',
+    border: '#fb923c',
+    'badge-background': '#ffedd5',
+    'badge-text': '#7c2d12',
+    'button-background': '#ea580c',
+    'button-border': '#c2410c',
+  },
+}
+
+/**
+ * Sky 500 Theme
+ */
+const sky500 = {
+  brand: {
+    primary: '#0ea5e9', // sky-500
+    'primary-hover': '#0284c7', // sky-600
+    'primary-light': '#e0f2fe', // sky-100
+    'primary-light-hover': '#7dd3fc', // sky-300
+  },
+  text: {
+    primary: '#0a0a0a',
+    secondary: '#525252',
+    tertiary: '#a3a3a3',
+    'avatar-hover': '#404040',
+  },
+  background: {
+    primary: '#ffffff',
+    secondary: '#f0f9ff', // sky-50
+    tertiary: '#eff6ff', // blue-50
+    main: '#f5f5f5', // gray-100
+  },
+  border: {
+    primary: '#d4d4d4',
+    secondary: '#e5e5e5',
+  },
+  error: {
+    text: '#dc2626',
+    'text-hover': '#991b1b',
+    background: '#fef2f2',
+    border: '#fca5a5',
+  },
+  warning: {
+    background: '#fef3c7',
+    border: '#fbbf24',
+    icon: '#f59e0b',
+  },
+  success: {
+    background: '#d1fae5',
+    border: '#10b981',
+  },
+  loading: {
+    spinner: '#0ea5e9',
+  },
+  dev: {
+    background: '#fed7aa',
+    border: '#fb923c',
+    'badge-background': '#ffedd5',
+    'badge-text': '#7c2d12',
+    'button-background': '#ea580c',
+    'button-border': '#c2410c',
+  },
+}
+
+/**
+ * Blue 500 Theme
+ */
+const blue500 = {
+  brand: {
+    primary: '#3b82f6', // blue-500
+    'primary-hover': '#2563eb', // blue-600
+    'primary-light': '#dbeafe', // blue-100
+    'primary-light-hover': '#93c5fd', // blue-300
+  },
+  text: {
+    primary: '#0a0a0a',
+    secondary: '#525252',
+    tertiary: '#a3a3a3',
+    'avatar-hover': '#404040',
+  },
+  background: {
+    primary: '#ffffff',
+    secondary: '#eff6ff', // blue-50
+    tertiary: '#f8fafc', // slate-50
+    main: '#e2e8f0', // slate-200
+  },
+  border: {
+    primary: '#cbd5e1',
+    secondary: '#e2e8f0',
+  },
+  error: {
+    text: '#dc2626',
+    'text-hover': '#991b1b',
+    background: '#fef2f2',
+    border: '#fca5a5',
+  },
+  warning: {
+    background: '#fef3c7',
+    border: '#fbbf24',
+    icon: '#f59e0b',
+  },
+  success: {
+    background: '#d1fae5',
+    border: '#10b981',
+  },
+  loading: {
+    spinner: '#3b82f6',
+  },
+  dev: {
+    background: '#fed7aa',
+    border: '#fb923c',
+    'badge-background': '#ffedd5',
+    'badge-text': '#7c2d12',
+    'button-background': '#ea580c',
+    'button-border': '#c2410c',
+  },
+}
+
+/**
+ * Indigo 500 Theme
+ */
+const indigo500 = {
+  brand: {
+    primary: '#6366f1', // indigo-500
+    'primary-hover': '#4f46e5', // indigo-600
+    'primary-light': '#e0e7ff', // indigo-100
+    'primary-light-hover': '#a5b4fc', // indigo-300
+  },
+  text: {
+    primary: '#0a0a0a',
+    secondary: '#525252',
+    tertiary: '#a3a3a3',
+    'avatar-hover': '#404040',
+  },
+  background: {
+    primary: '#ffffff',
+    secondary: '#eef2ff', // indigo-50
+    tertiary: '#f8fafc', // slate-50
+    main: '#e2e8f0', // slate-200
+  },
+  border: {
+    primary: '#cbd5e1',
+    secondary: '#e2e8f0',
+  },
+  error: {
+    text: '#dc2626',
+    'text-hover': '#991b1b',
+    background: '#fef2f2',
+    border: '#fca5a5',
+  },
+  warning: {
+    background: '#fef3c7',
+    border: '#fbbf24',
+    icon: '#f59e0b',
+  },
+  success: {
+    background: '#d1fae5',
+    border: '#10b981',
+  },
+  loading: {
+    spinner: '#6366f1',
+  },
+  dev: {
+    background: '#fed7aa',
+    border: '#fb923c',
+    'badge-background': '#ffedd5',
+    'badge-text': '#7c2d12',
+    'button-background': '#ea580c',
+    'button-border': '#c2410c',
+  },
+}
+
+/**
+ * Violet 500 Theme
+ */
+const violet500 = {
+  brand: {
+    primary: '#8b5cf6', // violet-500
+    'primary-hover': '#7c3aed', // violet-600
+    'primary-light': '#ede9fe', // violet-100
+    'primary-light-hover': '#c4b5fd', // violet-300
+  },
+  text: {
+    primary: '#0a0a0a',
+    secondary: '#525252',
+    tertiary: '#a3a3a3',
+    'avatar-hover': '#404040',
+  },
+  background: {
+    primary: '#ffffff',
+    secondary: '#f5f3ff', // violet-50
+    tertiary: '#faf5ff', // purple-50
+    main: '#e7e5e4', // stone-200
+  },
+  border: {
+    primary: '#d4d4d8',
+    secondary: '#e4e4e7',
+  },
+  error: {
+    text: '#dc2626',
+    'text-hover': '#991b1b',
+    background: '#fef2f2',
+    border: '#fca5a5',
+  },
+  warning: {
+    background: '#fef3c7',
+    border: '#fbbf24',
+    icon: '#f59e0b',
+  },
+  success: {
+    background: '#dcfce7',
+    border: '#22c55e',
+  },
+  loading: {
+    spinner: '#8b5cf6',
+  },
+  dev: {
+    background: '#fed7aa',
+    border: '#fb923c',
+    'badge-background': '#ffedd5',
+    'badge-text': '#7c2d12',
+    'button-background': '#ea580c',
+    'button-border': '#c2410c',
+  },
+}
+
+/**
+ * Purple 500 Theme
+ */
+const purple500 = {
+  brand: {
+    primary: '#a855f7', // purple-500
+    'primary-hover': '#9333ea', // purple-600
+    'primary-light': '#f3e8ff', // purple-100
+    'primary-light-hover': '#d8b4fe', // purple-300
+  },
+  text: {
+    primary: '#0a0a0a',
+    secondary: '#525252',
+    tertiary: '#a3a3a3',
+    'avatar-hover': '#404040',
+  },
+  background: {
+    primary: '#ffffff',
+    secondary: '#faf5ff', // purple-50
+    tertiary: '#fdf4ff', // fuchsia-50
+    main: '#fafafa', // gray-50
+  },
+  border: {
+    primary: '#d4d4d4',
+    secondary: '#e5e5e5',
+  },
+  error: {
+    text: '#dc2626',
+    'text-hover': '#991b1b',
+    background: '#fef2f2',
+    border: '#fca5a5',
+  },
+  warning: {
+    background: '#fef3c7',
+    border: '#fbbf24',
+    icon: '#f59e0b',
+  },
+  success: {
+    background: '#d1fae5',
+    border: '#10b981',
+  },
+  loading: {
+    spinner: '#a855f7',
+  },
+  dev: {
+    background: '#fed7aa',
+    border: '#fb923c',
+    'badge-background': '#ffedd5',
+    'badge-text': '#7c2d12',
+    'button-background': '#ea580c',
+    'button-border': '#c2410c',
+  },
+}
+
+/**
+ * Fuchsia 500 Theme
+ */
+const fuchsia500 = {
+  brand: {
+    primary: '#d946ef', // fuchsia-500
+    'primary-hover': '#c026d3', // fuchsia-600
+    'primary-light': '#fae8ff', // fuchsia-100
+    'primary-light-hover': '#f0abfc', // fuchsia-300
+  },
+  text: {
+    primary: '#0a0a0a',
+    secondary: '#525252',
+    tertiary: '#a3a3a3',
+    'avatar-hover': '#404040',
+  },
+  background: {
+    primary: '#ffffff',
+    secondary: '#fdf4ff', // fuchsia-50
+    tertiary: '#faf5ff', // purple-50
+    main: '#fafafa', // gray-50
+  },
+  border: {
+    primary: '#d4d4d4',
+    secondary: '#e5e5e5',
+  },
+  error: {
+    text: '#dc2626',
+    'text-hover': '#991b1b',
+    background: '#fef2f2',
+    border: '#fca5a5',
+  },
+  warning: {
+    background: '#fef3c7',
+    border: '#fbbf24',
+    icon: '#f59e0b',
+  },
+  success: {
+    background: '#d1fae5',
+    border: '#10b981',
+  },
+  loading: {
+    spinner: '#d946ef',
+  },
+  dev: {
+    background: '#fed7aa',
+    border: '#fb923c',
+    'badge-background': '#ffedd5',
+    'badge-text': '#7c2d12',
+    'button-background': '#ea580c',
+    'button-border': '#c2410c',
+  },
+}
+
+/**
+ * Pink 500 Theme
+ */
+const pink500 = {
+  brand: {
+    primary: '#ec4899', // pink-500
+    'primary-hover': '#db2777', // pink-600
+    'primary-light': '#fce7f3', // pink-100
+    'primary-light-hover': '#f9a8d4', // pink-300
+  },
+  text: {
+    primary: '#0a0a0a',
+    secondary: '#525252',
+    tertiary: '#a3a3a3',
+    'avatar-hover': '#404040',
+  },
+  background: {
+    primary: '#ffffff',
+    secondary: '#fdf2f8', // pink-50
+    tertiary: '#fff1f2', // rose-50
+    main: '#fafafa', // gray-50
+  },
+  border: {
+    primary: '#d4d4d4',
+    secondary: '#e5e5e5',
+  },
+  error: {
+    text: '#dc2626',
+    'text-hover': '#991b1b',
+    background: '#fef2f2',
+    border: '#fca5a5',
+  },
+  warning: {
+    background: '#fef3c7',
+    border: '#fbbf24',
+    icon: '#f59e0b',
+  },
+  success: {
+    background: '#d1fae5',
+    border: '#10b981',
+  },
+  loading: {
+    spinner: '#ec4899',
+  },
+  dev: {
+    background: '#fed7aa',
+    border: '#fb923c',
+    'badge-background': '#ffedd5',
+    'badge-text': '#7c2d12',
+    'button-background': '#ea580c',
+    'button-border': '#c2410c',
+  },
+}
+
+/**
+ * Rose 500 Theme
+ */
+const rose500 = {
+  brand: {
+    primary: '#f43f5e', // rose-500
+    'primary-hover': '#e11d48', // rose-600
+    'primary-light': '#ffe4e6', // rose-100
+    'primary-light-hover': '#fda4af', // rose-300
+  },
+  text: {
+    primary: '#0a0a0a',
+    secondary: '#525252',
+    tertiary: '#a3a3a3',
+    'avatar-hover': '#404040',
+  },
+  background: {
+    primary: '#ffffff',
+    secondary: '#fff1f2', // rose-50
+    tertiary: '#fdf2f8', // pink-50
+    main: '#f5f5f4', // stone-100
+  },
+  border: {
+    primary: '#d6d3d1',
+    secondary: '#e7e5e4',
+  },
+  error: {
+    text: '#dc2626',
+    'text-hover': '#991b1b',
+    background: '#fef2f2',
+    border: '#fca5a5',
+  },
+  warning: {
+    background: '#fef3c7',
+    border: '#fbbf24',
+    icon: '#f59e0b',
+  },
+  success: {
+    background: '#d1fae5',
+    border: '#10b981',
+  },
+  loading: {
+    spinner: '#f43f5e',
+  },
+  dev: {
+    background: '#fed7aa',
+    border: '#fb923c',
+    'badge-background': '#ffedd5',
+    'badge-text': '#7c2d12',
+    'button-background': '#ea580c',
+    'button-border': '#c2410c',
+  },
+}
+
+// ============================================================================
 // ACTIVE PALETTE
 // ============================================================================
 
@@ -1670,6 +2862,30 @@ export const palettes = {
   modernZinc,
   pureNeutral,
   warmStone,
+
+  // Tailwind 500-series themes
+  slate500,
+  gray500,
+  zinc500,
+  neutral500,
+  stone500,
+  red500,
+  orange500,
+  amber500,
+  yellow500,
+  lime500,
+  green500,
+  emerald500,
+  teal500,
+  cyan500,
+  sky500,
+  blue500,
+  indigo500,
+  violet500,
+  purple500,
+  fuchsia500,
+  pink500,
+  rose500,
 }
 
 // ============================================================================
