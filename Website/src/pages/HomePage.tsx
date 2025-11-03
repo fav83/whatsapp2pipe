@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { authService } from '../services/authService'
 import { Button } from '../components/ui/button'
@@ -97,7 +97,14 @@ export default function HomePage() {
           </div>
 
           <p className="text-center text-sm text-gray-500 mt-6">
-            Don't have an invite? Contact us for beta access.
+            Don't have an invite?{' '}
+            <Link
+              to="/waitlist"
+              className="text-blue-600 hover:text-blue-700 font-medium underline"
+            >
+              Join the waitlist
+            </Link>
+            {' '}to get notified when we have space.
           </p>
         </div>
       </main>

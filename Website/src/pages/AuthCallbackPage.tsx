@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { authService } from '../services/authService'
 
 export default function AuthCallbackPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [error, setError] = useState<string | null>(null)
+  const [errorCode, setErrorCode] = useState<string | null>(null)
 
   useEffect(() => {
     // Extract verification_code from URL
@@ -14,6 +15,7 @@ export default function AuthCallbackPage() {
 
     if (errorParam) {
       // OAuth error (user denied, etc.)
+      setErrorCode(errorParam)
       setError(getErrorMessage(errorParam))
       return
     }
@@ -37,9 +39,20 @@ export default function AuthCallbackPage() {
             Authentication Failed
           </h2>
           <p className="text-gray-600 mb-6">{error}</p>
+
+          {/* Show Join Waitlist button for beta access errors */}
+          {(errorCode === 'closed_beta' || errorCode === 'invalid_invite') && (
+            <Link
+              to="/waitlist"
+              className="inline-block mb-4 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors w-full"
+            >
+              Join Waitlist
+            </Link>
+          )}
+
           <button
             onClick={() => navigate('/')}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors w-full"
+            className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg transition-colors w-full"
           >
             Return to Sign In
           </button>

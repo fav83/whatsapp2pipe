@@ -69,6 +69,9 @@ Implement Pipedrive OAuth authentication for Chat2Deal user dashboard website us
 ### Feature 20: Closed Beta Invite System (Draft - Spec-120a + Spec-120b)
 Implement invite-based access control for closed beta. Website sign-in requires invite code input (required field, auto-fills from `?i=invite` URL param). Invite passed through OAuth state parameter, validated server-side during callback. New users must provide valid invite; existing users bypass check. Extension flow remains unchanged for existing users; new users rejected with "Beta Access Required" error state. Database changes: new Invites table (InviteId, Code, CreatedAt, UsageCount, Description), Users table adds nullable InviteId foreign key. Backend AuthCallback modified to validate invites for new users, increment usage count on signup. Invites created manually via database insertion (multi-use unlimited). Supports tracking which users signed up with which invite.
 
+### Feature 21: Waitlist System (Draft - Spec-121)
+Implement waitlist system for users without beta access. Dedicated `/waitlist` page on website with email (required) and name (optional) form fields with client-side email validation. Multiple entry points: HomePage link ("Don't have an invite? Join the waitlist"), AuthCallbackPage error state ("Join Waitlist" button for closed_beta/invalid_invite errors), and Extension BetaAccessRequiredState ("Join Waitlist" button opens website). Backend POST /api/waitlist endpoint with server-side validation, deduplication by email (updates UpdatedAt on duplicate), returns 200 for both new and duplicate entries. Database: new Waitlist table (WaitlistId, Email, Name, CreatedAt, UpdatedAt) with unique constraint on Email. Admin management via manual SQL queries only. Extension BetaAccessRequiredState updated to replace "Request Beta Access" with "Join Waitlist" button that opens website /waitlist page in new tab.
+
 ---
 
 ## Implementation Order Recommendation
@@ -95,6 +98,9 @@ Build user dashboard website with Pipedrive authentication, extending backend OA
 
 **Phase 6: Closed Beta Access Control (Feature 20)**
 Implement invite system for controlling access during closed beta. Modify website sign-in flow to require invite codes, update backend OAuth callback to validate invites for new users, and add extension error state for rejected users.
+
+**Phase 7: Waitlist System (Feature 21)**
+Build waitlist system for users without beta access. Create dedicated /waitlist page on website, implement backend API endpoint for waitlist signups with deduplication, and update extension BetaAccessRequiredState to link to waitlist page.
 
 ---
 

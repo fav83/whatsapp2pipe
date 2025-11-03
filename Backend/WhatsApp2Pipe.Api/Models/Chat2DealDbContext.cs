@@ -37,6 +37,11 @@ public class Chat2DealDbContext : DbContext
     /// </summary>
     public DbSet<Invite> Invites { get; set; } = null!;
 
+    /// <summary>
+    /// Waitlist table - Beta access waitlist entries.
+    /// </summary>
+    public DbSet<WaitlistEntry> WaitlistEntries { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -226,6 +231,40 @@ public class Chat2DealDbContext : DbContext
                   .WithOne(u => u.Invite)
                   .HasForeignKey(u => u.InviteId)
                   .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Configure WaitlistEntry entity
+        modelBuilder.Entity<WaitlistEntry>(entity =>
+        {
+            entity.ToTable("Waitlist");
+
+            entity.HasKey(w => w.WaitlistId);
+
+            // Unique constraint on Email
+            entity.HasIndex(w => w.Email)
+                  .IsUnique()
+                  .HasDatabaseName("UQ_Waitlist_Email");
+
+            // Indexes for admin queries
+            entity.HasIndex(w => w.CreatedAt)
+                  .HasDatabaseName("IX_Waitlist_CreatedAt");
+
+            entity.HasIndex(w => w.UpdatedAt)
+                  .HasDatabaseName("IX_Waitlist_UpdatedAt");
+
+            // Required fields
+            entity.Property(w => w.Email)
+                  .IsRequired()
+                  .HasMaxLength(255);
+
+            entity.Property(w => w.Name)
+                  .HasMaxLength(255);
+
+            entity.Property(w => w.CreatedAt)
+                  .IsRequired();
+
+            entity.Property(w => w.UpdatedAt)
+                  .IsRequired();
         });
     }
 }

@@ -3,6 +3,7 @@ import { AuthProvider } from './contexts/AuthContext'
 import HomePage from './pages/HomePage'
 import AuthCallbackPage from './pages/AuthCallbackPage'
 import DashboardPage from './pages/DashboardPage'
+import WaitlistPage from './pages/WaitlistPage'
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/waitlist" element={<WaitlistPage />} />
         </Routes>
       </Router>
     </AuthProvider>

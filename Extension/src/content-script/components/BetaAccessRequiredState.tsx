@@ -45,20 +45,21 @@ export function BetaAccessRequiredState({ onSignIn }: BetaAccessRequiredStatePro
       <div className="bg-[#f5f6f7] border border-[#e9edef] rounded-md p-4 mb-6 text-left">
         <h3 className="text-sm font-semibold text-[#111b21] mb-2">How to get access:</h3>
         <ol className="text-sm text-[#667781] space-y-1 list-decimal list-inside">
-          <li>Visit our website to request a beta invite</li>
-          <li>Sign up with your invite code</li>
+          <li>Join our waitlist to request beta access</li>
+          <li>We'll email you with an invite code</li>
+          <li>Sign up on our website with your invite</li>
           <li>Return here and sign in</li>
         </ol>
       </div>
 
       {/* CTA Button */}
       <a
-        href={WEBSITE_URL}
+        href={`${WEBSITE_URL}/waitlist`}
         target="_blank"
         rel="noopener noreferrer"
         className="inline-flex items-center px-4 py-3 bg-[#00a884] text-white text-sm font-medium rounded-lg hover:bg-[#008f6f] transition-colors"
       >
-        Request Beta Access
+        Join Waitlist
         <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"

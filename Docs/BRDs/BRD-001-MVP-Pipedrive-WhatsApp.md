@@ -309,7 +309,67 @@ To control access during closed beta, the system requires invite codes for new u
 - OAuth state parameter protects invite during flow (CSRF protection)
 - No sensitive data in invite codes (public strings)
 
-### 6.5 Telemetry
+### 6.5 Waitlist System (Feature 21) (Draft - Spec-121)
+To provide a path forward for users without beta access, a waitlist system allows interested users to register and be notified when invites become available:
+
+**Purpose:**
+- Capture interest from users who discover the product but don't have beta access
+- Build a pipeline of potential users for future invite distribution
+- Provide clear path forward for rejected users (extension and website)
+
+**User Entry Points:**
+- Website homepage: "Don't have an invite? Join the waitlist" link below sign-in form
+- Website error page: After failed sign-in (closed_beta or invalid_invite errors), "Join Waitlist" button
+- Extension beta rejection: "Beta Access Required" state shows "Join Waitlist" button that opens website
+
+**Waitlist Signup Flow:**
+- Dedicated `/waitlist` page on website with simple form
+- Required field: Email address (with client-side validation)
+- Optional field: Name (for personalization)
+- Inline success message after submission: "You're on the waitlist! We'll email you when access is available."
+
+**Deduplication:**
+- Same email submitting multiple times updates existing record's timestamp (no duplicates created)
+- User sees same success message regardless of new/duplicate status
+
+**Database Schema:**
+- New table: Waitlist (WaitlistId, Email, Name, CreatedAt, UpdatedAt)
+- Unique constraint on Email enforces deduplication at database level
+- Indexes on timestamps for admin queries
+
+**Backend API:**
+- POST /api/waitlist endpoint accepts email (required) and name (optional)
+- Server-side email validation
+- Returns 200 success for both new and duplicate entries
+- Returns 400 for invalid/missing email
+
+**Admin Management:**
+- Manual SQL operations only (no admin UI in MVP)
+- Query waitlist entries, view recent signups, monitor interest
+- Manual workflow: Query waitlist → Create invite → Email users → Optionally remove from waitlist
+
+**Implementation Status:**
+- 📝 Spec complete: Spec-121-Waitlist-System.md
+- ⏳ Database migration: Pending
+- ⏳ Backend implementation: Pending
+- ⏳ Website implementation: Pending
+- ⏳ Extension updates: Pending
+
+**Privacy & Security:**
+- Waitlist data (emails, names) stored in encrypted Azure SQL Database
+- No automated email sending (manual admin process)
+- Users provide consent by submitting form
+- HTTPS enforced on all endpoints
+
+**Future Enhancements (Post-MVP):**
+- Automated email notifications when users join waitlist
+- Admin dashboard for waitlist management
+- Automated invite generation and distribution
+- Email verification/double opt-in
+- Priority queue system
+- Referral tracking
+
+### 6.6 Telemetry
 - **Telemetry (optional later):** anonymous event counts only (DAU, lookups, creates, attaches).
 
 ---
@@ -392,3 +452,6 @@ To control access during closed beta, the system requires invite codes for new u
 - [UI Design Specification](../Architecture/UI-Design-Specification.md) - Complete UI design specification with visual system
 - [Plan-001: MVP Feature Breakdown](../Plans/Plan-001-MVP-Feature-Breakdown.md) - MVP broken down into implementable features
 - [Spec-119: Website Pipedrive Authentication](../Specs/Spec-119-Website-Pipedrive-Auth.md) - Website OAuth implementation and user dashboard
+- [Spec-120a: Website Invite System](../Specs/Spec-120a-Website-Invite-System.md) - Closed beta invite system (website)
+- [Spec-120b: Extension Beta Access](../Specs/Spec-120b-Extension-Beta-Access.md) - Closed beta access control (extension)
+- [Spec-121: Waitlist System](../Specs/Spec-121-Waitlist-System.md) - Waitlist for users without beta access
