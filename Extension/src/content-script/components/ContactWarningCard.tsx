@@ -21,7 +21,7 @@ interface ContactWarningCardProps {
  */
 export function ContactWarningCard({ name, warning }: ContactWarningCardProps) {
   return (
-    <div className="mx-4 mt-4">
+    <div className="mx-3 mt-3">
       {/* Contact name card */}
       <div className="p-3 bg-background-secondary rounded-lg mb-3">
         <div className="text-base font-semibold text-text-primary">{name}</div>

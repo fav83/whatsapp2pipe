@@ -69,9 +69,9 @@ interface ErrorFallbackProps {
  */
 function ErrorFallback({ onReset }: ErrorFallbackProps) {
   return (
-    <div className="h-full flex flex-col items-center justify-center px-4 text-center">
-      <div className="text-5xl mb-4">⚠️</div>
-      <p className="text-text-secondary text-sm mb-4">
+    <div className="h-full flex flex-col items-center justify-center px-3 text-center">
+      <div className="text-5xl mb-3">⚠️</div>
+      <p className="text-text-secondary text-sm mb-3">
         Something went wrong with the Pipedrive sidebar
       </p>
       <button

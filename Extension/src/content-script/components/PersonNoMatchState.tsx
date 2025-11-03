@@ -219,7 +219,7 @@ export function PersonNoMatchState({
     manualAttachError ?? attachError?.message ?? manualSearchError ?? searchError?.message ?? null
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="p-3 space-y-3">
       {/* Section 2: Contact Info Card */}
       <div className="p-3 bg-white rounded-lg border border-border-secondary shadow-sm">
         <div className="text-base font-semibold text-text-primary mb-1">{contactName}</div>
@@ -372,7 +372,7 @@ export function PersonNoMatchState({
 
         {/* Loading State */}
         {isSearching && (
-          <div className="mt-4 space-y-2" aria-live="polite">
+          <div className="mt-3 space-y-2" aria-live="polite">
             {[0, 1, 2].map((key) => (
               <div
                 key={key}
@@ -435,7 +435,7 @@ export function PersonNoMatchState({
 
         {/* Empty State */}
         {!isSearching && noResults && (
-          <div className="mt-4 px-3 py-3 border border-dashed border-border-primary rounded-lg text-sm text-text-secondary">
+          <div className="mt-3 px-3 py-3 border border-dashed border-border-primary rounded-lg text-sm text-text-secondary">
             No contacts matched "{lastSearchTermRef.current}". Try initials or another keyword.
           </div>
         )}

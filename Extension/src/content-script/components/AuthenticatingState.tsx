@@ -7,7 +7,7 @@
 
 export function AuthenticatingState() {
   return (
-    <div className="flex flex-col items-center justify-center h-full p-4 text-center">
+    <div className="flex flex-col items-center justify-center h-full p-3 text-center">
       {/* Pipedrive-branded loading spinner */}
       <div className="w-12 h-12 border-4 border-loading-spinner border-t-transparent rounded-full animate-spin mb-4" />
 
