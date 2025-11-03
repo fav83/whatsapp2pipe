@@ -24,6 +24,29 @@ class AuthService {
   }
 
   /**
+   * Initiates OAuth flow with optional invite code
+   */
+  startAuth(inviteCode: string): void {
+    // Generate OAuth state for website with optional invite code
+    const state: OAuthState = {
+      type: 'web',
+      nonce: this.generateNonce(),
+      timestamp: Date.now(),
+      // Only include inviteCode if provided (non-empty)
+      ...(inviteCode && { inviteCode }),
+    }
+
+    // Encode state as base64 (backend expects base64-encoded JSON)
+    const stateJson = JSON.stringify(state)
+    const stateBase64 = btoa(stateJson)
+    const stateParam = encodeURIComponent(stateBase64)
+
+    // Redirect to backend auth start
+    // Backend will redirect to Pipedrive OAuth
+    window.location.href = `${CONFIG.backendUrl}${CONFIG.endpoints.authStart}?state=${stateParam}`
+  }
+
+  /**
    * Handles OAuth callback by extracting and storing verification_code
    */
   handleCallback(verificationCode: string): void {

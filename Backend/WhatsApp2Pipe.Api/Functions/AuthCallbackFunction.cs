@@ -52,34 +52,38 @@ public class AuthCallbackFunction
             var state = query.TryGetValue("state", out var stateValue) ? stateValue.ToString() : null;
             var error = query.TryGetValue("error", out var errorValue) ? errorValue.ToString() : null;
 
+            // Decode state first to determine client type (for proper error handling)
+            OAuthState? stateData = null;
+            if (!string.IsNullOrEmpty(state))
+            {
+                logger.LogInformation("Decoding state parameter");
+                stateData = stateValidator.DecodeState(state);
+            }
+
             // Check for OAuth errors
             if (!string.IsNullOrEmpty(error))
             {
                 logger.LogError("OAuth error received: {Error}", error);
-                return CreateHtmlErrorResponse(req, HttpStatusCode.BadRequest, error);
+                return CreateErrorResponse(req, error, stateData);
             }
 
             // Validate required parameters
             if (string.IsNullOrEmpty(code))
             {
                 logger.LogError("Missing authorization code");
-                return CreateHtmlErrorResponse(req, HttpStatusCode.BadRequest, "missing_code");
+                return CreateErrorResponse(req, "missing_code", stateData);
             }
 
             if (string.IsNullOrEmpty(state))
             {
                 logger.LogError("Missing state parameter");
-                return CreateHtmlErrorResponse(req, HttpStatusCode.BadRequest, "missing_state");
+                return CreateErrorResponse(req, "missing_state", stateData);
             }
-
-            // Decode state to extract client info
-            logger.LogInformation("Decoding state parameter");
-            var stateData = stateValidator.DecodeState(state);
 
             if (stateData == null)
             {
                 logger.LogError("Invalid state - failed to decode");
-                return CreateHtmlErrorResponse(req, HttpStatusCode.BadRequest, "invalid_state");
+                return CreateErrorResponse(req, "invalid_state", null);
             }
 
             logger.LogInformation("Extracted client type: {Type}", stateData.Type);
@@ -88,7 +92,7 @@ public class AuthCallbackFunction
             if (!stateValidator.IsValidStateFormat(state))
             {
                 logger.LogError("State validation failed");
-                return CreateHtmlErrorResponse(req, HttpStatusCode.BadRequest, "invalid_state");
+                return CreateErrorResponse(req, "invalid_state", stateData);
             }
 
             // Verify state was issued by server and consume it (one-time use, prevents replay attacks)
@@ -96,7 +100,7 @@ public class AuthCallbackFunction
             if (!await sessionService.ValidateAndConsumeStateAsync(state))
             {
                 logger.LogError("State validation failed - not issued by server, expired, or already consumed");
-                return CreateHtmlErrorResponse(req, HttpStatusCode.BadRequest, "invalid_state");
+                return CreateErrorResponse(req, "invalid_state", stateData);
             }
             logger.LogInformation("State successfully validated and consumed - CSRF protection verified");
 
@@ -110,7 +114,7 @@ public class AuthCallbackFunction
             catch (Exception ex)
             {
                 logger.LogError(ex, "Token exchange failed");
-                return CreateHtmlErrorResponse(req, HttpStatusCode.InternalServerError, "token_exchange_failed");
+                return CreateErrorResponse(req, "token_exchange_failed", stateData);
             }
 
             // Create temporary session for /users/me call
@@ -132,21 +136,66 @@ public class AuthCallbackFunction
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to fetch user profile from Pipedrive");
-                return CreateHtmlErrorResponse(req, HttpStatusCode.InternalServerError, "user_profile_fetch_failed");
+                return CreateErrorResponse(req, "user_profile_fetch_failed", stateData);
             }
 
-            // Create or update user in database
-            logger.LogInformation("Creating or updating user in database");
+            // Extract invite code from state
+            var inviteCode = stateData.InviteCode;
+
+            // Check if user exists in database
+            logger.LogInformation("Checking if user exists in database");
+            var existingUser = await userService.GetUserByPipedriveIdAsync(
+                userResponse.Data.Id,
+                userResponse.Data.CompanyId);
+
             User user;
-            try
+
+            if (existingUser != null)
             {
-                user = await userService.CreateOrUpdateUserAsync(userResponse.Data);
-                logger.LogInformation("User {UserId} processed successfully", user.UserId);
+                // EXISTING USER: Update LastLoginAt and proceed normally (invite ignored)
+                logger.LogInformation("Existing user {UserId} found, updating LastLoginAt", existingUser.UserId);
+                try
+                {
+                    user = await userService.CreateOrUpdateUserAsync(userResponse.Data);
+                    logger.LogInformation("User {UserId} processed successfully", user.UserId);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Failed to update user in database");
+                    return CreateErrorResponse(req, "user_creation_failed", stateData);
+                }
             }
-            catch (Exception ex)
+            else
             {
-                logger.LogError(ex, "Failed to create/update user in database");
-                return CreateHtmlErrorResponse(req, HttpStatusCode.InternalServerError, "user_creation_failed");
+                // NEW USER: Validate invite code
+                logger.LogInformation("New user detected, validating invite code");
+
+                if (string.IsNullOrWhiteSpace(inviteCode))
+                {
+                    logger.LogWarning("New user attempted signup without invite code");
+                    return CreateErrorResponse(req, "closed_beta", stateData);
+                }
+
+                // Validate and consume invite code through UserService
+                var invite = await userService.ValidateAndConsumeInviteAsync(inviteCode);
+
+                if (invite == null)
+                {
+                    logger.LogWarning("New user provided invalid invite code: {InviteCode}", inviteCode);
+                    return CreateErrorResponse(req, "invalid_invite", stateData);
+                }
+
+                // Create user and link to invite
+                try
+                {
+                    user = await userService.CreateOrUpdateUserAsync(userResponse.Data, invite.InviteId);
+                    logger.LogInformation("New user {UserId} created with invite {InviteId}", user.UserId, invite.InviteId);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Failed to create user in database");
+                    return CreateErrorResponse(req, "user_creation_failed", stateData);
+                }
             }
 
             // Generate verification code (session ID) linked to user and company
@@ -177,7 +226,7 @@ public class AuthCallbackFunction
                 if (string.IsNullOrEmpty(websiteCallbackUrl))
                 {
                     logger.LogError("WEBSITE_CALLBACK_URL configuration is missing");
-                    return CreateHtmlErrorResponse(req, HttpStatusCode.InternalServerError, "config_error");
+                    return CreateErrorResponse(req, "config_error", stateData);
                 }
 
                 var redirectUrl = $"{websiteCallbackUrl}?verification_code={Uri.EscapeDataString(session.VerificationCode)}";
@@ -194,7 +243,7 @@ public class AuthCallbackFunction
                 if (string.IsNullOrEmpty(stateData.ExtensionId))
                 {
                     logger.LogError("Invalid state - missing extension ID for extension client");
-                    return CreateHtmlErrorResponse(req, HttpStatusCode.BadRequest, "invalid_state");
+                    return CreateErrorResponse(req, "invalid_state", stateData);
                 }
 
                 var redirectUrl = $"https://{stateData.ExtensionId}.chromiumapp.org/" +
@@ -212,7 +261,54 @@ public class AuthCallbackFunction
         catch (Exception ex)
         {
             logger.LogError(ex, "Error in AuthCallback endpoint");
-            return CreateHtmlErrorResponse(req, HttpStatusCode.InternalServerError, "internal_error");
+            // Try to extract state from query for proper error handling
+            OAuthState? stateData = null;
+            try
+            {
+                var query = QueryHelpers.ParseQuery(req.Url.Query);
+                var state = query.TryGetValue("state", out var stateValue) ? stateValue.ToString() : null;
+                if (!string.IsNullOrEmpty(state))
+                {
+                    stateData = stateValidator.DecodeState(state);
+                }
+            }
+            catch
+            {
+                // Ignore any errors in state extraction for error response
+            }
+            return CreateErrorResponse(req, "internal_error", stateData);
+        }
+    }
+
+    private HttpResponseData CreateErrorResponse(
+        HttpRequestData req,
+        string error,
+        OAuthState? stateData)
+    {
+        // If state indicates web flow, redirect to website with error
+        if (stateData?.Type == "web")
+        {
+            var websiteCallbackUrl = configuration["WEBSITE_CALLBACK_URL"];
+
+            if (string.IsNullOrEmpty(websiteCallbackUrl))
+            {
+                // Fallback to HTML error if configuration is missing
+                return CreateHtmlErrorResponse(req, HttpStatusCode.InternalServerError, error);
+            }
+
+            // Redirect to website with error parameters
+            var redirectUrl = $"{websiteCallbackUrl}?error={Uri.EscapeDataString(error)}";
+
+            logger.LogInformation("Redirecting to website with error: {Error}", error);
+
+            var response = req.CreateResponse(HttpStatusCode.Redirect);
+            response.Headers.Add("Location", redirectUrl);
+            return response;
+        }
+        else
+        {
+            // Extension flow - show HTML error page
+            return CreateHtmlErrorResponse(req, HttpStatusCode.BadRequest, error);
         }
     }
 
@@ -222,7 +318,7 @@ public class AuthCallbackFunction
         string error)
     {
         var response = req.CreateResponse(statusCode);
-        response.Headers.Add("Content-Type", "text/html");
+        response.Headers.Add("Content-Type", "text/html; charset=utf-8");
 
         var html = GenerateErrorHtml(error);
         response.WriteString(html);
@@ -242,7 +338,9 @@ public class AuthCallbackFunction
             { "user_profile_fetch_failed", "Failed to fetch your user profile from Pipedrive." },
             { "user_creation_failed", "Failed to create user record in database." },
             { "config_error", "Server configuration error. Please contact support." },
-            { "internal_error", "An internal error occurred." }
+            { "internal_error", "An internal error occurred." },
+            { "closed_beta", "Chat2Deal is currently in closed beta. Access is limited to invited users only." },
+            { "invalid_invite", "Invalid invite code. Please check your invite and try again." }
         };
 
         var message = errorMessages.ContainsKey(error)
@@ -253,6 +351,7 @@ public class AuthCallbackFunction
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset=""utf-8"">
     <title>Authorization Failed</title>
     <style>
         body {{

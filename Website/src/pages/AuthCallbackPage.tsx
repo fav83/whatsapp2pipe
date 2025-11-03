@@ -15,13 +15,11 @@ export default function AuthCallbackPage() {
     if (errorParam) {
       // OAuth error (user denied, etc.)
       setError(getErrorMessage(errorParam))
-      setTimeout(() => navigate('/'), 3000)
       return
     }
 
     if (!verificationCode) {
       setError('No verification code received')
-      setTimeout(() => navigate('/'), 3000)
       return
     }
 
@@ -32,15 +30,19 @@ export default function AuthCallbackPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-semibold text-red-600 mb-2">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full mx-4 text-center">
+          <div className="text-5xl mb-4">❌</div>
+          <h2 className="text-2xl font-semibold text-red-600 mb-4">
             Authentication Failed
           </h2>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <p className="text-sm text-gray-500">
-            Redirecting to home page...
-          </p>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button
+            onClick={() => navigate('/')}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors w-full"
+          >
+            Return to Sign In
+          </button>
         </div>
       </div>
     )
@@ -60,12 +62,28 @@ export default function AuthCallbackPage() {
 
 function getErrorMessage(error: string): string {
   switch (error) {
-    case 'user_denied':
-      return 'You cancelled the sign-in process'
+    case 'access_denied':
+      return 'You denied access to the application.'
+    case 'missing_code':
+      return 'Authorization code is missing.'
+    case 'missing_state':
+      return 'State parameter is missing.'
     case 'invalid_state':
-      return 'Invalid authentication state'
-    case 'auth_failed':
-      return 'Authentication failed. Please try again.'
+      return 'Invalid or expired authorization state.'
+    case 'token_exchange_failed':
+      return 'Failed to exchange authorization code for tokens.'
+    case 'user_profile_fetch_failed':
+      return 'Failed to fetch your user profile from Pipedrive.'
+    case 'user_creation_failed':
+      return 'Failed to create user record in database.'
+    case 'config_error':
+      return 'Server configuration error. Please contact support.'
+    case 'internal_error':
+      return 'An internal error occurred.'
+    case 'closed_beta':
+      return 'Chat2Deal is currently in closed beta. Access is limited to invited users only.'
+    case 'invalid_invite':
+      return 'Invalid invite code. Please check your invite and try again.'
     default:
       return 'An error occurred during authentication'
   }

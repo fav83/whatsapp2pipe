@@ -66,6 +66,9 @@ Display visual feedback during extension initialization (webpack detection, modu
 ### Feature 19: Website Pipedrive Authentication (Draft - Spec-119)
 Implement Pipedrive OAuth authentication for Chat2Deal user dashboard website using redirect-based flow. Backend OAuth endpoints extended to support both extension and website clients (detect via state parameter). Website receives verification_code after OAuth, stores in localStorage, and uses for API calls. Three pages: landing (/), callback (/auth/callback), dashboard (/dashboard). Dashboard displays user profile (name, email, company) fetched from database via GET /api/user/me endpoint. Database migration adds UserId foreign key to Sessions table. Technology: React 18 + TypeScript + Vite + React Router v6 + Tailwind CSS + shadcn/ui, hosted on Azure Static Web Apps.
 
+### Feature 20: Closed Beta Invite System (Draft - Spec-120 + Spec-121)
+Implement invite-based access control for closed beta. Website sign-in requires invite code input (required field, auto-fills from `?i=invite` URL param). Invite passed through OAuth state parameter, validated server-side during callback. New users must provide valid invite; existing users bypass check. Extension flow remains unchanged for existing users; new users rejected with "Beta Access Required" error state. Database changes: new Invites table (InviteId, Code, CreatedAt, UsageCount, Description), Users table adds nullable InviteId foreign key. Backend AuthCallback modified to validate invites for new users, increment usage count on signup. Invites created manually via database insertion (multi-use unlimited). Supports tracking which users signed up with which invite.
+
 ---
 
 ## Implementation Order Recommendation
@@ -89,6 +92,9 @@ Add error handling, testing, monitoring, user tracking, user avatar, and initial
 
 **Phase 5: Website Dashboard (Feature 19)**
 Build user dashboard website with Pipedrive authentication, extending backend OAuth to support both extension and website clients.
+
+**Phase 6: Closed Beta Access Control (Feature 20)**
+Implement invite system for controlling access during closed beta. Modify website sign-in flow to require invite codes, update backend OAuth callback to validate invites for new users, and add extension error state for rejected users.
 
 ---
 

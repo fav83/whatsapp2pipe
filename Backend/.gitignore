@@ -1,5 +1,4 @@
 ## Azure Functions
-local.settings.json
 bin/
 .bin/
 obj/

@@ -261,7 +261,55 @@ To provide users with account management capabilities outside the Chrome extensi
 - Chrome extension connection status
 - Team/organization management
 
-### 6.4 Telemetry
+### 6.4 Closed Beta Invite System (Feature 20) (Draft - Spec-120 + Spec-121)
+To control access during closed beta, the system requires invite codes for new user signups:
+
+**Invite Management:**
+- Invites created manually via database insertion (admin/DBA operation)
+- Each invite is a string up to 100 characters (e.g., "early-access-2024", "twitter-campaign")
+- Multi-use invites with unlimited usage (tracks usage count, not consumption)
+- Optional description field for admin reference
+
+**Website Sign-In Flow:**
+- New sign-in page requires invite code input (required field)
+- URL parameter support: `?i=my-invite` auto-fills invite field
+- Basic client-side validation: non-empty string only
+- Invite passed through OAuth state parameter
+- Server-side validation during OAuth callback:
+  - New users must provide valid invite code
+  - Invalid/missing invite → Error: "Chat2Deal is in closed beta"
+  - Existing users → Invite ignored, sign-in proceeds normally
+
+**Extension Authentication:**
+- Extension uses existing OAuth flow (no invite input in extension)
+- New users without existing database record → Rejected during OAuth callback
+- Extension shows "Beta Access Required" error state in sidebar
+- Existing users → Sign-in works normally
+
+**User-Invite Tracking:**
+- Users table includes `InviteId` foreign key (nullable for existing users)
+- Invites table tracks `UsageCount` (incremented on each successful signup)
+- Supports querying: "Which users signed up with invite X?" and "Which invite did user Y use?"
+
+**Database Schema:**
+- New table: Invites (InviteId, Code, CreatedAt, UsageCount, Description)
+- Modified table: Users (add InviteId foreign key column, nullable)
+- Relationship: One Invite → Many Users
+
+**Implementation Status:**
+- 📝 Specs complete: Spec-120 (Website), Spec-121 (Extension)
+- ⏳ Database migration: Pending
+- ⏳ Backend implementation: Pending
+- ⏳ Website UI implementation: Pending
+- ⏳ Extension UI implementation: Pending
+
+**Privacy & Security:**
+- Invite codes stored in encrypted Azure SQL Database
+- Invite validation server-side only (prevents bypass)
+- OAuth state parameter protects invite during flow (CSRF protection)
+- No sensitive data in invite codes (public strings)
+
+### 6.5 Telemetry
 - **Telemetry (optional later):** anonymous event counts only (DAU, lookups, creates, attaches).
 
 ---

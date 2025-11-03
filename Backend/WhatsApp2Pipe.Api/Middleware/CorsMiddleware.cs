@@ -1,22 +1,22 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.Functions.Worker.Middleware;
+using Microsoft.Extensions.Configuration;
 
 namespace WhatsApp2Pipe.Api.Middleware;
 
 public class CorsMiddleware : IFunctionsWorkerMiddleware
 {
     private static readonly string[] FunctionsToSkip = { "AuthCallback", "AuthStart" };
-
-    private static readonly string[] AllowedOrigins = {
-        "https://web.whatsapp.com",          // Chrome extension
-        "http://localhost:3001",              // Website (development)
-        "http://localhost:5173",              // Website (development - Vite default)
-        "https://dashboard.chat2deal.com"     // Website (production)
-    };
-
     private const string AllowedMethods = "GET, POST, OPTIONS";
     private const string AllowedHeaders = "Content-Type, Authorization";
+
+    private readonly IConfiguration configuration;
+
+    public CorsMiddleware(IConfiguration configuration)
+    {
+        this.configuration = configuration;
+    }
 
     public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next)
     {
@@ -38,13 +38,19 @@ public class CorsMiddleware : IFunctionsWorkerMiddleware
 
         if (httpRequestData != null && httpResponseData != null)
         {
+            // Get allowed origins from configuration
+            var allowedOriginsConfig = configuration["CORS_ALLOWED_ORIGINS"] ?? string.Empty;
+            var allowedOrigins = allowedOriginsConfig
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToArray();
+
             // Get the origin header from the request
             var origin = httpRequestData.Headers.TryGetValues("Origin", out var originValues)
                 ? originValues.FirstOrDefault()
                 : null;
 
             // Add CORS headers to the response if origin is allowed
-            if (!string.IsNullOrEmpty(origin) && AllowedOrigins.Contains(origin))
+            if (!string.IsNullOrEmpty(origin) && allowedOrigins.Contains(origin))
             {
                 // Remove existing CORS headers if any
                 httpResponseData.Headers.Remove("Access-Control-Allow-Origin");

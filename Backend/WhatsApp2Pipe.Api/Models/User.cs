@@ -41,7 +41,18 @@ public class User
     public DateTime LastLoginAt { get; set; }
 
     /// <summary>
+    /// Nullable foreign key to Invites table.
+    /// Set when user signs up with an invite code.
+    /// </summary>
+    public Guid? InviteId { get; set; }
+
+    /// <summary>
     /// Navigation property - Company this user belongs to.
     /// </summary>
     public Company Company { get; set; } = null!;
+
+    /// <summary>
+    /// Navigation property - Invite code used during signup (if any).
+    /// </summary>
+    public Invite? Invite { get; set; }
 }

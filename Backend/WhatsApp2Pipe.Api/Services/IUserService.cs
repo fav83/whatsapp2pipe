@@ -11,8 +11,9 @@ public interface IUserService
     /// Create or update user and company based on Pipedrive user data.
     /// </summary>
     /// <param name="userData">User data from Pipedrive /users/me</param>
+    /// <param name="inviteId">Optional invite ID for new users (null for existing users)</param>
     /// <returns>User entity (created or updated)</returns>
-    Task<User> CreateOrUpdateUserAsync(PipedriveUserData userData);
+    Task<User> CreateOrUpdateUserAsync(PipedriveUserData userData, Guid? inviteId = null);
 
     /// <summary>
     /// Get user by Pipedrive user ID and company ID.
@@ -34,4 +35,11 @@ public interface IUserService
     /// </summary>
     /// <param name="user">User entity to update</param>
     Task UpdateUserAsync(User user);
+
+    /// <summary>
+    /// Validate and consume an invite code.
+    /// </summary>
+    /// <param name="inviteCode">Invite code to validate</param>
+    /// <returns>Invite entity if valid, null if invalid or not found</returns>
+    Task<Invite?> ValidateAndConsumeInviteAsync(string inviteCode);
 }
