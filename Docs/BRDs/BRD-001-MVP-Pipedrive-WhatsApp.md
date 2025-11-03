@@ -261,7 +261,7 @@ To provide users with account management capabilities outside the Chrome extensi
 - Chrome extension connection status
 - Team/organization management
 
-### 6.4 Closed Beta Invite System (Feature 20) (Draft - Spec-120 + Spec-121)
+### 6.4 Closed Beta Invite System (Feature 20) (Draft - Spec-120a + Spec-120b)
 To control access during closed beta, the system requires invite codes for new user signups:
 
 **Invite Management:**
@@ -297,7 +297,7 @@ To control access during closed beta, the system requires invite codes for new u
 - Relationship: One Invite → Many Users
 
 **Implementation Status:**
-- 📝 Specs complete: Spec-120 (Website), Spec-121 (Extension)
+- 📝 Specs complete: Spec-120a (Website), Spec-120b (Extension)
 - ⏳ Database migration: Pending
 - ⏳ Backend implementation: Pending
 - ⏳ Website UI implementation: Pending

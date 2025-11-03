@@ -115,9 +115,21 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
       })
       .catch((error) => {
         console.error('[Service Worker] Sign-in failed:', error)
+
+        // Log to Sentry (skip expected errors like user cancellation and beta access)
+        const errorMessage = error instanceof Error ? error.message : 'Authentication failed'
+        const skipSentry =
+          errorMessage.includes('cancelled') ||
+          errorMessage.includes('user_denied') ||
+          errorMessage === 'beta_access_required'
+
+        if (!skipSentry) {
+          logError('Service Worker AUTH_SIGN_IN failed', error, {}, sentryScope)
+        }
+
         const response: AuthSignInError = {
           type: 'AUTH_SIGN_IN_ERROR',
-          error: error instanceof Error ? error.message : 'Authentication failed',
+          error: errorMessage,
         }
         sendResponse(response)
       })

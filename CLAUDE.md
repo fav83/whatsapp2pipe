@@ -48,6 +48,9 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 - [Spec-116-Implementation-Summary.md](Docs/Specs/Spec-116-Implementation-Summary.md) - Complete implementation summary and configuration details
 - [Spec-117-User-Avatar-Dropdown.md](Docs/Specs/Spec-117-User-Avatar-Dropdown.md) - User avatar with profile dropdown (✅ Complete)
 - [Spec-118-Module-Raid-Loading-Overlay.md](Docs/Specs/Spec-118-Module-Raid-Loading-Overlay.md) - Module raid loading overlay with Sentry error reporting (✅ Complete)
+- [Spec-119-Website-Pipedrive-Auth.md](Docs/Specs/Spec-119-Website-Pipedrive-Auth.md) - Website OAuth implementation and user dashboard (✅ Complete Spec, ⏳ Implementation Pending)
+- [Spec-120a-Website-Invite-System.md](Docs/Specs/Spec-120a-Website-Invite-System.md) - Website closed beta invite system (✅ Complete Spec, ⏳ Implementation Pending)
+- [Spec-120b-Extension-Beta-Access.md](Docs/Specs/Spec-120b-Extension-Beta-Access.md) - Extension beta access control (✅ Complete Spec & Implementation)
 
 ### External Documentation
 - [Pipedrive/](Docs/External/Pipedrive/) - Pipedrive API documentation and development resources

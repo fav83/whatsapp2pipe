@@ -4,6 +4,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using WhatsApp2Pipe.Api.Constants;
 using WhatsApp2Pipe.Api.Models;
 using WhatsApp2Pipe.Api.Services;
 using System.Text.Json;
@@ -71,19 +72,19 @@ public class AuthCallbackFunction
             if (string.IsNullOrEmpty(code))
             {
                 logger.LogError("Missing authorization code");
-                return CreateErrorResponse(req, "missing_code", stateData);
+                return CreateErrorResponse(req, OAuthErrorCode.MissingCode, stateData);
             }
 
             if (string.IsNullOrEmpty(state))
             {
                 logger.LogError("Missing state parameter");
-                return CreateErrorResponse(req, "missing_state", stateData);
+                return CreateErrorResponse(req, OAuthErrorCode.MissingState, stateData);
             }
 
             if (stateData == null)
             {
                 logger.LogError("Invalid state - failed to decode");
-                return CreateErrorResponse(req, "invalid_state", null);
+                return CreateErrorResponse(req, OAuthErrorCode.InvalidState, null);
             }
 
             logger.LogInformation("Extracted client type: {Type}", stateData.Type);
@@ -92,7 +93,7 @@ public class AuthCallbackFunction
             if (!stateValidator.IsValidStateFormat(state))
             {
                 logger.LogError("State validation failed");
-                return CreateErrorResponse(req, "invalid_state", stateData);
+                return CreateErrorResponse(req, OAuthErrorCode.InvalidState, stateData);
             }
 
             // Verify state was issued by server and consume it (one-time use, prevents replay attacks)
@@ -100,7 +101,7 @@ public class AuthCallbackFunction
             if (!await sessionService.ValidateAndConsumeStateAsync(state))
             {
                 logger.LogError("State validation failed - not issued by server, expired, or already consumed");
-                return CreateErrorResponse(req, "invalid_state", stateData);
+                return CreateErrorResponse(req, OAuthErrorCode.InvalidState, stateData);
             }
             logger.LogInformation("State successfully validated and consumed - CSRF protection verified");
 
@@ -114,7 +115,7 @@ public class AuthCallbackFunction
             catch (Exception ex)
             {
                 logger.LogError(ex, "Token exchange failed");
-                return CreateErrorResponse(req, "token_exchange_failed", stateData);
+                return CreateErrorResponse(req, OAuthErrorCode.TokenExchangeFailed, stateData);
             }
 
             // Create temporary session for /users/me call
@@ -136,7 +137,7 @@ public class AuthCallbackFunction
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to fetch user profile from Pipedrive");
-                return CreateErrorResponse(req, "user_profile_fetch_failed", stateData);
+                return CreateErrorResponse(req, OAuthErrorCode.UserProfileFetchFailed, stateData);
             }
 
             // Extract invite code from state
@@ -162,18 +163,28 @@ public class AuthCallbackFunction
                 catch (Exception ex)
                 {
                     logger.LogError(ex, "Failed to update user in database");
-                    return CreateErrorResponse(req, "user_creation_failed", stateData);
+                    return CreateErrorResponse(req, OAuthErrorCode.UserCreationFailed, stateData);
                 }
             }
             else
             {
-                // NEW USER: Validate invite code
-                logger.LogInformation("New user detected, validating invite code");
+                // NEW USER
+                logger.LogInformation("New user detected for client type: {Type}", stateData.Type);
+
+                // EXTENSION: Reject new users (no invite mechanism in extension)
+                if (stateData.Type == "extension")
+                {
+                    logger.LogWarning("New user attempted signup via extension - rejected (beta access required)");
+                    return CreateErrorResponse(req, OAuthErrorCode.BetaAccessRequired, stateData);
+                }
+
+                // WEBSITE: Validate invite code
+                logger.LogInformation("New website user detected, validating invite code");
 
                 if (string.IsNullOrWhiteSpace(inviteCode))
                 {
                     logger.LogWarning("New user attempted signup without invite code");
-                    return CreateErrorResponse(req, "closed_beta", stateData);
+                    return CreateErrorResponse(req, OAuthErrorCode.ClosedBeta, stateData);
                 }
 
                 // Validate and consume invite code through UserService
@@ -182,7 +193,7 @@ public class AuthCallbackFunction
                 if (invite == null)
                 {
                     logger.LogWarning("New user provided invalid invite code: {InviteCode}", inviteCode);
-                    return CreateErrorResponse(req, "invalid_invite", stateData);
+                    return CreateErrorResponse(req, OAuthErrorCode.InvalidInvite, stateData);
                 }
 
                 // Create user and link to invite
@@ -194,7 +205,7 @@ public class AuthCallbackFunction
                 catch (Exception ex)
                 {
                     logger.LogError(ex, "Failed to create user in database");
-                    return CreateErrorResponse(req, "user_creation_failed", stateData);
+                    return CreateErrorResponse(req, OAuthErrorCode.UserCreationFailed, stateData);
                 }
             }
 
@@ -226,7 +237,7 @@ public class AuthCallbackFunction
                 if (string.IsNullOrEmpty(websiteCallbackUrl))
                 {
                     logger.LogError("WEBSITE_CALLBACK_URL configuration is missing");
-                    return CreateErrorResponse(req, "config_error", stateData);
+                    return CreateErrorResponse(req, OAuthErrorCode.ConfigError, stateData);
                 }
 
                 var redirectUrl = $"{websiteCallbackUrl}?verification_code={Uri.EscapeDataString(session.VerificationCode)}";
@@ -243,7 +254,7 @@ public class AuthCallbackFunction
                 if (string.IsNullOrEmpty(stateData.ExtensionId))
                 {
                     logger.LogError("Invalid state - missing extension ID for extension client");
-                    return CreateErrorResponse(req, "invalid_state", stateData);
+                    return CreateErrorResponse(req, OAuthErrorCode.InvalidState, stateData);
                 }
 
                 var redirectUrl = $"https://{stateData.ExtensionId}.chromiumapp.org/" +
@@ -276,7 +287,7 @@ public class AuthCallbackFunction
             {
                 // Ignore any errors in state extraction for error response
             }
-            return CreateErrorResponse(req, "internal_error", stateData);
+            return CreateErrorResponse(req, OAuthErrorCode.InternalError, stateData);
         }
     }
 
@@ -305,9 +316,27 @@ public class AuthCallbackFunction
             response.Headers.Add("Location", redirectUrl);
             return response;
         }
+        else if (stateData?.Type == "extension" && error == OAuthErrorCode.BetaAccessRequired)
+        {
+            // Extension flow with beta_access_required - redirect to chromiumapp.org with error
+            if (string.IsNullOrEmpty(stateData.ExtensionId))
+            {
+                logger.LogError("Invalid state - missing extension ID for extension client");
+                return CreateHtmlErrorResponse(req, HttpStatusCode.BadRequest, OAuthErrorCode.InvalidState);
+            }
+
+            var redirectUrl = $"https://{stateData.ExtensionId}.chromiumapp.org/" +
+                            $"?error={Uri.EscapeDataString(error)}";
+
+            logger.LogInformation("Redirecting to extension URL with error: {Error}", error);
+
+            var response = req.CreateResponse(HttpStatusCode.Redirect);
+            response.Headers.Add("Location", redirectUrl);
+            return response;
+        }
         else
         {
-            // Extension flow - show HTML error page
+            // Extension flow - show HTML error page for other errors
             return CreateHtmlErrorResponse(req, HttpStatusCode.BadRequest, error);
         }
     }
@@ -330,17 +359,18 @@ public class AuthCallbackFunction
     {
         var errorMessages = new Dictionary<string, string>
         {
-            { "access_denied", "You denied access to the application." },
-            { "missing_code", "Authorization code is missing." },
-            { "missing_state", "State parameter is missing." },
-            { "invalid_state", "Invalid or expired authorization state." },
-            { "token_exchange_failed", "Failed to exchange authorization code for tokens." },
-            { "user_profile_fetch_failed", "Failed to fetch your user profile from Pipedrive." },
-            { "user_creation_failed", "Failed to create user record in database." },
-            { "config_error", "Server configuration error. Please contact support." },
-            { "internal_error", "An internal error occurred." },
-            { "closed_beta", "Chat2Deal is currently in closed beta. Access is limited to invited users only." },
-            { "invalid_invite", "Invalid invite code. Please check your invite and try again." }
+            { OAuthErrorCode.AccessDenied, "You denied access to the application." },
+            { OAuthErrorCode.MissingCode, "Authorization code is missing." },
+            { OAuthErrorCode.MissingState, "State parameter is missing." },
+            { OAuthErrorCode.InvalidState, "Invalid or expired authorization state." },
+            { OAuthErrorCode.TokenExchangeFailed, "Failed to exchange authorization code for tokens." },
+            { OAuthErrorCode.UserProfileFetchFailed, "Failed to fetch your user profile from Pipedrive." },
+            { OAuthErrorCode.UserCreationFailed, "Failed to create user record in database." },
+            { OAuthErrorCode.ConfigError, "Server configuration error. Please contact support." },
+            { OAuthErrorCode.InternalError, "An internal error occurred." },
+            { OAuthErrorCode.ClosedBeta, "Chat2Deal is currently in closed beta. Access is limited to invited users only." },
+            { OAuthErrorCode.InvalidInvite, "Invalid invite code. Please check your invite and try again." },
+            { OAuthErrorCode.BetaAccessRequired, "Beta access required. Please sign up via the website with an invite code first." }
         };
 
         var message = errorMessages.ContainsKey(error)

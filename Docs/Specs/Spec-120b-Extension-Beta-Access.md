@@ -1,9 +1,10 @@
-# Spec-121: Extension Beta Access Control (Closed Beta)
+# Spec-120b: Extension Beta Access Control (Closed Beta)
 
 **Feature:** Feature 20 - Closed Beta Invite System (Extension)
 **Date:** 2025-11-03
-**Status:** Draft
-**Dependencies:** Spec-120 (Website Invite System), Spec-105b (Extension OAuth Integration)
+**Status:** ✅ Complete (Specification)
+**Implementation Status:** ✅ Complete (Backend + Extension UI)
+**Dependencies:** Spec-120a (Website Invite System), Spec-105b (Extension OAuth Integration)
 
 ---
 
@@ -11,19 +12,19 @@
 
 Feature 20 (Closed Beta Invite System) is split into two independent specifications:
 
-- **Spec-120:** Website Invite System - React UI + Backend OAuth Integration
-- **Spec-121 (This Document):** Extension Beta Access Control - Extension error states for rejected users
+- **Spec-120a:** Website Invite System - React UI + Backend OAuth Integration
+- **Spec-120b (This Document):** Extension Beta Access Control - Extension error states for rejected users
 
 **Implementation Order:**
-1. Spec-120 (Website + Backend) - Database migration, backend validation, website UI
-2. Spec-121 (Extension) - Extension UI changes for rejected user state
+1. Spec-120a (Website + Backend) - Database migration, backend validation, website UI
+2. Spec-120b (Extension) - Extension UI changes for rejected user state
 
 ---
 
 **Related Docs:**
 - [BRD-001-MVP-Pipedrive-WhatsApp.md](../BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md) - Section 6.4 (Closed Beta Invite System)
 - [Plan-001-MVP-Feature-Breakdown.md](../Plans/Plan-001-MVP-Feature-Breakdown.md) - Feature 20
-- [Spec-120-Website-Invite-System.md](Spec-120-Website-Invite-System.md) - Website invite system foundation
+- [Spec-120a-Website-Invite-System.md](Spec-120a-Website-Invite-System.md) - Website invite system foundation
 - [Spec-105b-Extension-OAuth-Integration.md](Spec-105b-Extension-OAuth-Integration.md) - Extension OAuth architecture
 - [Spec-112-UI-States-Error-Handling.md](Spec-112-UI-States-Error-Handling.md) - Extension UI states and error patterns
 
@@ -62,7 +63,7 @@ Implement beta access control for the Chrome extension. New users (not in databa
 
 **Implementation:**
 
-The backend already has the core logic from Spec-120. For extension clients, we need to ensure new users are rejected when no invite code is provided (which is always the case for extensions since they don't have invite input).
+The backend already has the core logic from Spec-120a. For extension clients, we need to ensure new users are rejected when no invite code is provided (which is always the case for extensions since they don't have invite input).
 
 **Extension OAuth callback logic:**
 
@@ -147,7 +148,7 @@ else
     }
     else
     {
-        // WEBSITE: Validate invite code (existing logic from Spec-120)
+        // WEBSITE: Validate invite code (existing logic from Spec-120a)
         if (string.IsNullOrWhiteSpace(inviteCode))
         {
             logger.LogWarning("New user attempted website signup without invite code");
@@ -181,7 +182,7 @@ else
 - Extension new users are always rejected (no invite mechanism)
 - Error code: `beta_access_required`
 - Redirect to `chromiumapp.org` with error parameter
-- Website flow unchanged (validates invite as per Spec-120)
+- Website flow unchanged (validates invite as per Spec-120a)
 
 ---
 
@@ -665,7 +666,7 @@ const WEBSITE_URL = import.meta.env.VITE_WEBSITE_URL || 'https://chat2deal.com'
 
 ## 11. Out of Scope
 
-The following are explicitly **not** part of Spec-121:
+The following are explicitly **not** part of Spec-120b:
 
 - ❌ Invite code input in extension UI
 - ❌ Extension-based signup flow
@@ -692,7 +693,7 @@ The following are explicitly **not** part of Spec-121:
 
 - [BRD-001: MVP Pipedrive WhatsApp](../BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md) - Section 6.4
 - [Plan-001: MVP Feature Breakdown](../Plans/Plan-001-MVP-Feature-Breakdown.md) - Feature 20
-- [Spec-120: Website Invite System](Spec-120-Website-Invite-System.md) - Website invite foundation
+- [Spec-120a: Website Invite System](Spec-120a-Website-Invite-System.md) - Website invite foundation
 - [Spec-105b: Extension OAuth Integration](Spec-105b-Extension-OAuth-Integration.md) - Extension OAuth architecture
 - [Spec-112: UI States & Error Handling](Spec-112-UI-States-Error-Handling.md) - Extension error patterns
 - [Chrome Extension Architecture](../Architecture/Chrome-Extension-Architecture.md) - Extension technical architecture

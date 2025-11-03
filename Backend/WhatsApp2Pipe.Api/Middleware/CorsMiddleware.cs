@@ -7,7 +7,7 @@ namespace WhatsApp2Pipe.Api.Middleware;
 
 public class CorsMiddleware : IFunctionsWorkerMiddleware
 {
-    private static readonly string[] FunctionsToSkip = { "AuthCallback", "AuthStart" };
+    private static readonly string[] FunctionsToSkip = { "AuthCallback" };
     private const string AllowedMethods = "GET, POST, OPTIONS";
     private const string AllowedHeaders = "Content-Type, Authorization";
 
@@ -26,7 +26,8 @@ public class CorsMiddleware : IFunctionsWorkerMiddleware
         // Get the function name
         var functionName = context.FunctionDefinition.Name;
 
-        // Skip CORS for specific functions (like AuthCallback/AuthStart which do redirects)
+        // Skip CORS for specific functions that only return redirects (AuthCallback)
+        // AuthStart is NOT skipped because it returns JSON for extension clients
         if (Array.Exists(FunctionsToSkip, fn => fn.Equals(functionName, StringComparison.OrdinalIgnoreCase)))
         {
             return;

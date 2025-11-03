@@ -1,8 +1,9 @@
-# Spec-120: Website Invite System (Closed Beta Access Control)
+# Spec-120a: Website Invite System (Closed Beta Access Control)
 
 **Feature:** Feature 20 - Closed Beta Invite System (Website)
 **Date:** 2025-11-03
-**Status:** Draft
+**Status:** ✅ Complete (Specification)
+**Implementation Status:** ⏳ Not Started
 **Dependencies:** Spec-119 (Website Pipedrive Authentication), Spec-105a (Backend OAuth Service)
 
 ---
@@ -11,12 +12,12 @@
 
 Feature 20 (Closed Beta Invite System) is split into two independent specifications:
 
-- **Spec-120 (This Document):** Website Invite System - React UI + Backend OAuth Integration
-- **Spec-121:** Extension Beta Access Control - Extension error states for rejected users
+- **Spec-120a (This Document):** Website Invite System - React UI + Backend OAuth Integration
+- **Spec-120b:** Extension Beta Access Control - Extension error states for rejected users
 
 **Implementation Order:**
-1. Spec-120 (Website + Backend) - Database migration, backend validation, website UI
-2. Spec-121 (Extension) - Extension UI changes for rejected user state
+1. Spec-120a (Website + Backend) - Database migration, backend validation, website UI
+2. Spec-120b (Extension) - Extension UI changes for rejected user state
 
 ---
 
@@ -756,7 +757,7 @@ WHERE Code = 'old-invite';
 
 ## 10. Out of Scope
 
-The following are explicitly **not** part of Spec-120:
+The following are explicitly **not** part of Spec-120a:
 
 - ❌ Admin API endpoints for invite creation/management
 - ❌ Admin UI for invite management
@@ -765,7 +766,7 @@ The following are explicitly **not** part of Spec-120:
 - ❌ Invite analytics dashboard
 - ❌ Automated invite generation
 - ❌ Email invite sending
-- ❌ Extension invite input UI (covered in Spec-121)
+- ❌ Extension invite input UI (covered in Spec-120b)
 
 ---
 
@@ -788,7 +789,7 @@ The following are explicitly **not** part of Spec-120:
 - [BRD-001: MVP Pipedrive WhatsApp](../BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md) - Section 6.4
 - [Plan-001: MVP Feature Breakdown](../Plans/Plan-001-MVP-Feature-Breakdown.md) - Feature 20
 - [Spec-119: Website Pipedrive Authentication](Spec-119-Website-Pipedrive-Auth.md) - Website OAuth foundation
-- [Spec-121: Extension Beta Access](Spec-121-Extension-Beta-Access.md) - Extension error states
+- [Spec-120b: Extension Beta Access](Spec-120b-Extension-Beta-Access.md) - Extension error states
 - [Spec-105a: Backend OAuth Service](Spec-105a-Backend-OAuth-Service.md) - OAuth architecture
 - [Website Architecture](../Architecture/Website-Architecture.md) - Website technical architecture
 

@@ -8,6 +8,7 @@
 import { useState, useEffect } from 'react'
 import { authService } from '../services/authService'
 import type { AuthState } from '../../types/auth'
+import { OAuthErrorCode } from '../../types/errors'
 
 export function useAuth() {
   // Start in 'authenticating' to avoid flashing unauthenticated UI before the first check completes
@@ -88,8 +89,15 @@ export function useAuth() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Authentication failed'
       console.error('[useAuth] Sign-in failed:', errorMessage)
-      setError(errorMessage)
-      setAuthState('error')
+
+      // Check if error is beta access required
+      if (errorMessage === OAuthErrorCode.BETA_ACCESS_REQUIRED) {
+        console.log('[useAuth] Beta access required - user not in database')
+        setAuthState('beta_required')
+      } else {
+        setError(errorMessage)
+        setAuthState('error')
+      }
     }
   }
 

@@ -2,7 +2,8 @@
 
 **Feature:** Website Pipedrive OAuth Authentication
 **Date:** 2025-11-02
-**Status:** Draft
+**Status:** ✅ Complete (Specification)
+**Implementation Status:** ⏳ Not Started
 **Dependencies:** Spec-105a (Backend OAuth Service), Spec-116 (User Entity Tracking)
 
 ---

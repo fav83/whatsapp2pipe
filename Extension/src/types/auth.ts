@@ -7,7 +7,12 @@
 /**
  * Authentication state discriminated union
  */
-export type AuthState = 'unauthenticated' | 'authenticating' | 'authenticated' | 'error'
+export type AuthState =
+  | 'unauthenticated'
+  | 'authenticating'
+  | 'authenticated'
+  | 'error'
+  | 'beta_required'
 
 /**
  * Response from backend /api/auth/start endpoint
