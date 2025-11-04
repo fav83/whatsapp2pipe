@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { themeManager, THEMES_BY_CATEGORY, type ThemeName } from '../../styles/ThemeManager'
+import { config } from '../../config'
 
 interface UserAvatarProps {
   userName: string
@@ -16,6 +17,12 @@ export function UserAvatar({ userName, onSignOut }: UserAvatarProps) {
 
   // Extract first letter, uppercase
   const avatarLetter = userName.charAt(0).toUpperCase()
+
+  // Check if theme selector should be shown (dev mode only)
+  const showThemeSelector =
+    import.meta.env.MODE === 'development' &&
+    import.meta.env.VITE_ENV === 'development' &&
+    config.env === 'development'
 
   // Handle clicks outside menu
   useEffect(() => {
@@ -102,87 +109,94 @@ export function UserAvatar({ userName, onSignOut }: UserAvatarProps) {
           {/* Divider */}
           <div className="h-px bg-border-secondary my-1" />
 
-          {/* Theme Menu Item */}
-          <div className="relative">
-            <button
-              onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)}
-              className="w-full text-left px-4 py-3 text-sm text-text-secondary hover:bg-background-secondary transition-colors flex items-center justify-between"
-              role="menuitem"
-              aria-expanded={isThemeMenuOpen}
-            >
-              <span>Theme</span>
-              <svg
-                className={`w-4 h-4 transition-transform ${isThemeMenuOpen ? 'rotate-180' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+          {/* Theme Menu Item (Dev Only) */}
+          {showThemeSelector && (
+            <div className="relative">
+              <button
+                onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)}
+                className="w-full text-left px-4 py-3 text-sm text-text-secondary hover:bg-background-secondary transition-colors flex items-center justify-between"
+                role="menuitem"
+                aria-expanded={isThemeMenuOpen}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
+                <div className="flex items-center gap-2">
+                  <span>Theme</span>
+                  <span className="px-1.5 py-0.5 text-[10px] font-bold text-dev-badge-text bg-dev-badge-background border border-dev-border rounded">
+                    DEV
+                  </span>
+                </div>
+                <svg
+                  className={`w-4 h-4 transition-transform ${isThemeMenuOpen ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
 
-            {/* Theme Submenu */}
-            {isThemeMenuOpen && (
-              <div
-                ref={themeMenuRef}
-                className="absolute right-full top-0 mr-1 w-[220px] max-h-[400px] overflow-y-auto bg-white rounded-lg shadow-lg border border-border-secondary py-2 z-[1001]"
-                role="menu"
-              >
-                {Object.entries(THEMES_BY_CATEGORY).map(([category, themes]) => (
-                  <div key={category}>
-                    <div className="px-3 py-2 text-xs font-semibold text-text-tertiary uppercase">
-                      {category}
-                    </div>
-                    {themes.map((theme) => (
-                      <button
-                        key={theme.name}
-                        onClick={() => handleThemeSelect(theme.name)}
-                        className={`w-full text-left px-3 py-2 text-sm hover:bg-background-secondary transition-colors flex items-center gap-2 ${
-                          currentTheme === theme.name ? 'bg-background-tertiary' : ''
-                        }`}
-                        role="menuitem"
-                      >
-                        <div
-                          className="w-4 h-4 rounded-full border border-border-primary flex-shrink-0"
-                          style={{ backgroundColor: theme.primaryColor }}
-                        />
-                        <span
-                          className={
-                            currentTheme === theme.name
-                              ? 'font-semibold text-text-primary'
-                              : 'text-text-secondary'
-                          }
+              {/* Theme Submenu */}
+              {isThemeMenuOpen && (
+                <div
+                  ref={themeMenuRef}
+                  className="absolute right-full top-0 mr-1 w-[220px] max-h-[400px] overflow-y-auto bg-white rounded-lg shadow-lg border border-border-secondary py-2 z-[1001]"
+                  role="menu"
+                >
+                  {Object.entries(THEMES_BY_CATEGORY).map(([category, themes]) => (
+                    <div key={category}>
+                      <div className="px-3 py-2 text-xs font-semibold text-text-tertiary uppercase">
+                        {category}
+                      </div>
+                      {themes.map((theme) => (
+                        <button
+                          key={theme.name}
+                          onClick={() => handleThemeSelect(theme.name)}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-background-secondary transition-colors flex items-center gap-2 ${
+                            currentTheme === theme.name ? 'bg-background-tertiary' : ''
+                          }`}
+                          role="menuitem"
                         >
-                          {theme.displayName}
-                        </span>
-                        {currentTheme === theme.name && (
-                          <svg
-                            className="w-4 h-4 ml-auto text-brand-primary flex-shrink-0"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
+                          <div
+                            className="w-4 h-4 rounded-full border border-border-primary flex-shrink-0"
+                            style={{ backgroundColor: theme.primaryColor }}
+                          />
+                          <span
+                            className={
+                              currentTheme === theme.name
+                                ? 'font-semibold text-text-primary'
+                                : 'text-text-secondary'
+                            }
                           >
-                            <path
-                              fillRule="evenodd"
-                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+                            {theme.displayName}
+                          </span>
+                          {currentTheme === theme.name && (
+                            <svg
+                              className="w-4 h-4 ml-auto text-brand-primary flex-shrink-0"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Divider */}
-          <div className="h-px bg-border-secondary my-1" />
+          {showThemeSelector && <div className="h-px bg-border-secondary my-1" />}
 
           {/* Sign Out Menu Item */}
           <button

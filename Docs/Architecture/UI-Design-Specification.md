@@ -2,8 +2,8 @@
 
 ## Document Status
 **Status**: Complete (reflects current implementation)
-**Last Updated**: 2025-11-01
-**Version**: 0.2
+**Last Updated**: 2025-11-04
+**Version**: 0.3
 
 ---
 
@@ -35,25 +35,63 @@ The design uses a **layered approach** with multiple separation techniques:
 - **Small text**: 12px for metadata (organization names, labels)
 - **Font weights**: Semibold (600) for names/headings, Regular (400) for body text, Medium (500) for buttons
 
-### Color Palette
-Following WhatsApp Web's aesthetic with refinements:
+### Color System & Theming
 
-| Purpose | Color | Usage |
-|---------|-------|-------|
-| Primary action | `#00A884` | Buttons, selected states |
-| Primary action hover | `#008F6F` | Button hover states |
-| Text primary | `#111B21` | Main text, headings |
-| Text secondary | `#667781` | Supporting text, labels |
-| Border light | `#E9EDEF` | Subtle dividers |
-| Border medium | `#D1D7DB` | Input borders, card borders |
-| Background main | `#E5E7EB` | Body background (darker for better card contrast) |
-| Background card | `#FFFFFF` | Cards, inputs |
-| Background hover | `#F3F4F6` | Hover state for interactive items |
-| Success background light | `#E7F8F3` | Light success states |
-| Success background medium | `#B3EAD4` | Selected items (better contrast) |
-| Error background | `#FEF2F2` | Error banners |
-| Error border | `#FCA5A5` | Error banner borders |
-| Error text | `#DC2626` | Error messages |
+**Architecture:** The extension uses a centralized, theme-aware color system that enables runtime theme switching without rebuild or component re-render.
+
+**Core Components:**
+- **[colors.ts](../../Extension/src/styles/colors.ts)** - Centralized palette definitions with 45+ pre-built themes
+- **[ThemeManager.ts](../../Extension/src/styles/ThemeManager.ts)** - Theme selection, persistence, and CSS variable application
+- **[tailwind.config.js](../../Extension/tailwind.config.js)** - CSS variable mapping to Tailwind utilities
+
+**Semantic Color Categories:**
+
+All colors are organized by semantic purpose rather than specific values:
+
+| Category | Tokens | Usage |
+|----------|--------|-------|
+| **Brand** | `primary`, `primary-hover`, `primary-light`, `primary-light-hover` | Action buttons, links, accent colors |
+| **Text** | `primary`, `secondary`, `tertiary`, `avatar-hover` | All text content by hierarchy |
+| **Background** | `primary`, `secondary`, `tertiary`, `main` | Surface backgrounds and layouts |
+| **Border** | `primary`, `secondary` | Dividers and component borders |
+| **State Colors** | `error.*`, `warning.*`, `success.*` | Error banners, warnings, success states |
+| **Loading** | `spinner` | Loading indicators |
+| **Dev Mode** | `background`, `border`, `badge-*`, `button-*` | Development indicator styling |
+
+**Implementation:**
+- Colors defined as CSS variables on `#pipedrive-whatsapp-sidebar` root
+- Tailwind utilities reference these variables (e.g., `bg-brand-primary`, `text-secondary`)
+- ThemeManager applies selected palette as CSS variables at runtime
+- Theme preference persisted in Chrome Storage
+- 45+ pre-built themes across Tailwind 500-series and 600-series color scales
+
+**Example Usage:**
+```tsx
+// Components use semantic token names via Tailwind
+<button className="bg-brand-primary hover:bg-brand-hover text-white">
+  Create
+</button>
+
+<div className="text-secondary">Supporting text</div>
+<div className="border-primary">Bordered card</div>
+```
+
+**Default Theme Values (Cyan 600):**
+- Primary action: `#0891b2` (cyan-600)
+- Primary hover: `#0e7490` (cyan-700)
+- Text primary: `#0a0a0a` (neutral-950)
+- Text secondary: `#525252` (neutral-600)
+- Background main: `#f5f5f5` (gray-100)
+- Background secondary: `#ecfeff` (cyan-50)
+- Border primary: `#d4d4d4` (neutral-300)
+
+**Theme Categories:**
+- **Tailwind 600-Series** - 22 vibrant themes (Blue, Violet, Teal, Orange, etc.)
+- **Tailwind 500-Series** - 23 softer themes (lighter versions of 600-series colors)
+- **Special Themes** - WhatsApp Green (original), custom-designed themes
+
+**Adding New Themes:**
+See [colors.ts](../../Extension/src/styles/colors.ts) for palette structure. Each theme defines all semantic categories to ensure consistent UI across theme switches.
 
 ### Spacing Scale
 - **XS**: 4px - Icon gaps, tight spacing
@@ -688,3 +726,4 @@ When showing loading state in buttons:
 |---------|------|---------|
 | 0.1 | 2025-11-01 | Initial document created with Sections 1-2 (Header, Visual System) |
 | 0.2 | 2025-11-01 | Added Sections 3-14 documenting complete UI implementation with all states, components, and refinements |
+| 0.3 | 2025-11-04 | Updated Section 1.4 to document centralized color system with ThemeManager, semantic tokens, and 45+ pre-built themes |

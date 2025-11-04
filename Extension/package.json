@@ -1,10 +1,14 @@
 {
   "name": "whatsapp2pipe-extension",
-  "version": "0.32.121",
+  "version": "0.32.124",
   "description": "Chrome extension that integrates Pipedrive CRM with WhatsApp Web",
   "type": "module",
   "scripts": {
-    "dev": "vite build --mode development --watch",
+    "dev": "npm run dev:content && npm run dev:inspector && npm run dev:dashboard && npm run dev:main",
+    "dev:content": "vite build --config vite.content.config.ts --mode development",
+    "dev:inspector": "vite build --config vite.inspector.config.ts --mode development",
+    "dev:dashboard": "vite build --config vite.dashboard-bridge.config.ts --mode development",
+    "dev:main": "vite build --mode development",
     "build": "node ./scripts/increment-version.cjs && npm run build:content && npm run build:inspector && npm run build:dashboard && npm run build:main",
     "build:content": "vite build --config vite.content.config.ts --mode production",
     "build:inspector": "vite build --config vite.inspector.config.ts --mode production",

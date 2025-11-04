@@ -143,12 +143,12 @@ const modernBlue = {
 
   // Dev Mode Colors
   dev: {
-    background: '#fed7aa', // orange-200
-    border: '#fb923c', // orange-400
-    'badge-background': '#ffedd5', // orange-100
-    'badge-text': '#7c2d12', // orange-900
-    'button-background': '#ea580c', // orange-600
-    'button-border': '#c2410c', // orange-700
+    background: '#fde68a', // amber-200
+    border: '#f59e0b', // amber-500
+    'badge-background': '#fef3c7', // amber-100
+    'badge-text': '#78350f', // amber-900
+    'button-background': '#f59e0b', // amber-500
+    'button-border': '#d97706', // amber-600
   },
 }
 
@@ -212,12 +212,12 @@ const professionalPurple = {
 
   // Dev Mode Colors
   dev: {
-    background: '#fed7aa', // orange-200
-    border: '#fb923c', // orange-400
-    'badge-background': '#ffedd5', // orange-100
-    'badge-text': '#7c2d12', // orange-900
-    'button-background': '#ea580c', // orange-600
-    'button-border': '#c2410c', // orange-700
+    background: '#fde68a', // amber-200
+    border: '#f59e0b', // amber-500
+    'badge-background': '#fef3c7', // amber-100
+    'badge-text': '#78350f', // amber-900
+    'button-background': '#f59e0b', // amber-500
+    'button-border': '#d97706', // amber-600
   },
 }
 
@@ -281,12 +281,12 @@ const oceanTeal = {
 
   // Dev Mode Colors
   dev: {
-    background: '#fed7aa', // orange-200
-    border: '#fb923c', // orange-400
-    'badge-background': '#ffedd5', // orange-100
-    'badge-text': '#7c2d12', // orange-900
-    'button-background': '#ea580c', // orange-600
-    'button-border': '#c2410c', // orange-700
+    background: '#fde68a', // amber-200
+    border: '#f59e0b', // amber-500
+    'badge-background': '#fef3c7', // amber-100
+    'badge-text': '#78350f', // amber-900
+    'button-background': '#f59e0b', // amber-500
+    'button-border': '#d97706', // amber-600
   },
 }
 
@@ -350,12 +350,12 @@ const sunsetOrange = {
 
   // Dev Mode Colors
   dev: {
-    background: '#fed7aa', // orange-200
-    border: '#fb923c', // orange-400
-    'badge-background': '#ffedd5', // orange-100
-    'badge-text': '#7c2d12', // orange-900
-    'button-background': '#ea580c', // orange-600
-    'button-border': '#c2410c', // orange-700
+    background: '#fde68a', // amber-200
+    border: '#f59e0b', // amber-500
+    'badge-background': '#fef3c7', // amber-100
+    'badge-text': '#78350f', // amber-900
+    'button-background': '#f59e0b', // amber-500
+    'button-border': '#d97706', // amber-600
   },
 }
 
@@ -419,12 +419,12 @@ const deepIndigo = {
 
   // Dev Mode Colors
   dev: {
-    background: '#fed7aa', // orange-200
-    border: '#fb923c', // orange-400
-    'badge-background': '#ffedd5', // orange-100
-    'badge-text': '#7c2d12', // orange-900
-    'button-background': '#ea580c', // orange-600
-    'button-border': '#c2410c', // orange-700
+    background: '#fde68a', // amber-200
+    border: '#f59e0b', // amber-500
+    'badge-background': '#fef3c7', // amber-100
+    'badge-text': '#78350f', // amber-900
+    'button-background': '#f59e0b', // amber-500
+    'button-border': '#d97706', // amber-600
   },
 }
 
@@ -488,12 +488,12 @@ const forestGreen = {
 
   // Dev Mode Colors
   dev: {
-    background: '#fed7aa', // orange-200
-    border: '#fb923c', // orange-400
-    'badge-background': '#ffedd5', // orange-100
-    'badge-text': '#7c2d12', // orange-900
-    'button-background': '#ea580c', // orange-600
-    'button-border': '#c2410c', // orange-700
+    background: '#fde68a', // amber-200
+    border: '#f59e0b', // amber-500
+    'badge-background': '#fef3c7', // amber-100
+    'badge-text': '#78350f', // amber-900
+    'button-background': '#f59e0b', // amber-500
+    'button-border': '#d97706', // amber-600
   },
 }
 
@@ -557,12 +557,12 @@ const rosePink = {
 
   // Dev Mode Colors
   dev: {
-    background: '#fed7aa', // orange-200
-    border: '#fb923c', // orange-400
-    'badge-background': '#ffedd5', // orange-100
-    'badge-text': '#7c2d12', // orange-900
-    'button-background': '#ea580c', // orange-600
-    'button-border': '#c2410c', // orange-700
+    background: '#fde68a', // amber-200
+    border: '#f59e0b', // amber-500
+    'badge-background': '#fef3c7', // amber-100
+    'badge-text': '#78350f', // amber-900
+    'button-background': '#f59e0b', // amber-500
+    'button-border': '#d97706', // amber-600
   },
 }
 
@@ -626,12 +626,12 @@ const crimsonRed = {
 
   // Dev Mode Colors
   dev: {
-    background: '#fed7aa', // orange-200
-    border: '#fb923c', // orange-400
-    'badge-background': '#ffedd5', // orange-100
-    'badge-text': '#7c2d12', // orange-900
-    'button-background': '#ea580c', // orange-600
-    'button-border': '#c2410c', // orange-700
+    background: '#fde68a', // amber-200
+    border: '#f59e0b', // amber-500
+    'badge-background': '#fef3c7', // amber-100
+    'badge-text': '#78350f', // amber-900
+    'button-background': '#f59e0b', // amber-500
+    'button-border': '#d97706', // amber-600
   },
 }
 
@@ -695,12 +695,12 @@ const goldenAmber = {
 
   // Dev Mode Colors
   dev: {
-    background: '#fed7aa', // orange-200
-    border: '#fb923c', // orange-400
-    'badge-background': '#ffedd5', // orange-100
-    'badge-text': '#7c2d12', // orange-900
-    'button-background': '#ea580c', // orange-600
-    'button-border': '#c2410c', // orange-700
+    background: '#fde68a', // amber-200
+    border: '#f59e0b', // amber-500
+    'badge-background': '#fef3c7', // amber-100
+    'badge-text': '#78350f', // amber-900
+    'button-background': '#f59e0b', // amber-500
+    'button-border': '#d97706', // amber-600
   },
 }
 
@@ -764,12 +764,12 @@ const brightYellow = {
 
   // Dev Mode Colors
   dev: {
-    background: '#fed7aa', // orange-200
-    border: '#fb923c', // orange-400
-    'badge-background': '#ffedd5', // orange-100
-    'badge-text': '#7c2d12', // orange-900
-    'button-background': '#ea580c', // orange-600
-    'button-border': '#c2410c', // orange-700
+    background: '#fde68a', // amber-200
+    border: '#f59e0b', // amber-500
+    'badge-background': '#fef3c7', // amber-100
+    'badge-text': '#78350f', // amber-900
+    'button-background': '#f59e0b', // amber-500
+    'button-border': '#d97706', // amber-600
   },
 }
 
@@ -833,12 +833,12 @@ const freshLime = {
 
   // Dev Mode Colors
   dev: {
-    background: '#fed7aa', // orange-200
-    border: '#fb923c', // orange-400
-    'badge-background': '#ffedd5', // orange-100
-    'badge-text': '#7c2d12', // orange-900
-    'button-background': '#ea580c', // orange-600
-    'button-border': '#c2410c', // orange-700
+    background: '#fde68a', // amber-200
+    border: '#f59e0b', // amber-500
+    'badge-background': '#fef3c7', // amber-100
+    'badge-text': '#78350f', // amber-900
+    'button-background': '#f59e0b', // amber-500
+    'button-border': '#d97706', // amber-600
   },
 }
 
@@ -902,12 +902,12 @@ const vibrantEmerald = {
 
   // Dev Mode Colors
   dev: {
-    background: '#fed7aa', // orange-200
-    border: '#fb923c', // orange-400
-    'badge-background': '#ffedd5', // orange-100
-    'badge-text': '#7c2d12', // orange-900
-    'button-background': '#ea580c', // orange-600
-    'button-border': '#c2410c', // orange-700
+    background: '#fde68a', // amber-200
+    border: '#f59e0b', // amber-500
+    'badge-background': '#fef3c7', // amber-100
+    'badge-text': '#78350f', // amber-900
+    'button-background': '#f59e0b', // amber-500
+    'button-border': '#d97706', // amber-600
   },
 }
 
@@ -971,12 +971,12 @@ const coolCyan = {
 
   // Dev Mode Colors
   dev: {
-    background: '#fed7aa', // orange-200
-    border: '#fb923c', // orange-400
-    'badge-background': '#ffedd5', // orange-100
-    'badge-text': '#7c2d12', // orange-900
-    'button-background': '#ea580c', // orange-600
-    'button-border': '#c2410c', // orange-700
+    background: '#fde68a', // amber-200
+    border: '#f59e0b', // amber-500
+    'badge-background': '#fef3c7', // amber-100
+    'badge-text': '#78350f', // amber-900
+    'button-background': '#f59e0b', // amber-500
+    'button-border': '#d97706', // amber-600
   },
 }
 
@@ -1040,12 +1040,12 @@ const clearSky = {
 
   // Dev Mode Colors
   dev: {
-    background: '#fed7aa', // orange-200
-    border: '#fb923c', // orange-400
-    'badge-background': '#ffedd5', // orange-100
-    'badge-text': '#7c2d12', // orange-900
-    'button-background': '#ea580c', // orange-600
-    'button-border': '#c2410c', // orange-700
+    background: '#fde68a', // amber-200
+    border: '#f59e0b', // amber-500
+    'badge-background': '#fef3c7', // amber-100
+    'badge-text': '#78350f', // amber-900
+    'button-background': '#f59e0b', // amber-500
+    'button-border': '#d97706', // amber-600
   },
 }
 
@@ -1109,12 +1109,12 @@ const royalPurple = {
 
   // Dev Mode Colors
   dev: {
-    background: '#fed7aa', // orange-200
-    border: '#fb923c', // orange-400
-    'badge-background': '#ffedd5', // orange-100
-    'badge-text': '#7c2d12', // orange-900
-    'button-background': '#ea580c', // orange-600
-    'button-border': '#c2410c', // orange-700
+    background: '#fde68a', // amber-200
+    border: '#f59e0b', // amber-500
+    'badge-background': '#fef3c7', // amber-100
+    'badge-text': '#78350f', // amber-900
+    'button-background': '#f59e0b', // amber-500
+    'button-border': '#d97706', // amber-600
   },
 }
 
@@ -1178,12 +1178,12 @@ const vividFuchsia = {
 
   // Dev Mode Colors
   dev: {
-    background: '#fed7aa', // orange-200
-    border: '#fb923c', // orange-400
-    'badge-background': '#ffedd5', // orange-100
-    'badge-text': '#7c2d12', // orange-900
-    'button-background': '#ea580c', // orange-600
-    'button-border': '#c2410c', // orange-700
+    background: '#fde68a', // amber-200
+    border: '#f59e0b', // amber-500
+    'badge-background': '#fef3c7', // amber-100
+    'badge-text': '#78350f', // amber-900
+    'button-background': '#f59e0b', // amber-500
+    'button-border': '#d97706', // amber-600
   },
 }
 
@@ -1247,12 +1247,12 @@ const softPink = {
 
   // Dev Mode Colors
   dev: {
-    background: '#fed7aa', // orange-200
-    border: '#fb923c', // orange-400
-    'badge-background': '#ffedd5', // orange-100
-    'badge-text': '#7c2d12', // orange-900
-    'button-background': '#ea580c', // orange-600
-    'button-border': '#c2410c', // orange-700
+    background: '#fde68a', // amber-200
+    border: '#f59e0b', // amber-500
+    'badge-background': '#fef3c7', // amber-100
+    'badge-text': '#78350f', // amber-900
+    'button-background': '#f59e0b', // amber-500
+    'button-border': '#d97706', // amber-600
   },
 }
 
@@ -1316,12 +1316,12 @@ const slateGray = {
 
   // Dev Mode Colors
   dev: {
-    background: '#fed7aa', // orange-200
-    border: '#fb923c', // orange-400
-    'badge-background': '#ffedd5', // orange-100
-    'badge-text': '#7c2d12', // orange-900
-    'button-background': '#ea580c', // orange-600
-    'button-border': '#c2410c', // orange-700
+    background: '#fde68a', // amber-200
+    border: '#f59e0b', // amber-500
+    'badge-background': '#fef3c7', // amber-100
+    'badge-text': '#78350f', // amber-900
+    'button-background': '#f59e0b', // amber-500
+    'button-border': '#d97706', // amber-600
   },
 }
 
@@ -1385,12 +1385,12 @@ const neutralGray = {
 
   // Dev Mode Colors
   dev: {
-    background: '#fed7aa', // orange-200
-    border: '#fb923c', // orange-400
-    'badge-background': '#ffedd5', // orange-100
-    'badge-text': '#7c2d12', // orange-900
-    'button-background': '#ea580c', // orange-600
-    'button-border': '#c2410c', // orange-700
+    background: '#fde68a', // amber-200
+    border: '#f59e0b', // amber-500
+    'badge-background': '#fef3c7', // amber-100
+    'badge-text': '#78350f', // amber-900
+    'button-background': '#f59e0b', // amber-500
+    'button-border': '#d97706', // amber-600
   },
 }
 
@@ -1454,12 +1454,12 @@ const modernZinc = {
 
   // Dev Mode Colors
   dev: {
-    background: '#fed7aa', // orange-200
-    border: '#fb923c', // orange-400
-    'badge-background': '#ffedd5', // orange-100
-    'badge-text': '#7c2d12', // orange-900
-    'button-background': '#ea580c', // orange-600
-    'button-border': '#c2410c', // orange-700
+    background: '#fde68a', // amber-200
+    border: '#f59e0b', // amber-500
+    'badge-background': '#fef3c7', // amber-100
+    'badge-text': '#78350f', // amber-900
+    'button-background': '#f59e0b', // amber-500
+    'button-border': '#d97706', // amber-600
   },
 }
 
@@ -1523,12 +1523,12 @@ const pureNeutral = {
 
   // Dev Mode Colors
   dev: {
-    background: '#fed7aa', // orange-200
-    border: '#fb923c', // orange-400
-    'badge-background': '#ffedd5', // orange-100
-    'badge-text': '#7c2d12', // orange-900
-    'button-background': '#ea580c', // orange-600
-    'button-border': '#c2410c', // orange-700
+    background: '#fde68a', // amber-200
+    border: '#f59e0b', // amber-500
+    'badge-background': '#fef3c7', // amber-100
+    'badge-text': '#78350f', // amber-900
+    'button-background': '#f59e0b', // amber-500
+    'button-border': '#d97706', // amber-600
   },
 }
 
@@ -1592,12 +1592,12 @@ const warmStone = {
 
   // Dev Mode Colors
   dev: {
-    background: '#fed7aa', // orange-200
-    border: '#fb923c', // orange-400
-    'badge-background': '#ffedd5', // orange-100
-    'badge-text': '#7c2d12', // orange-900
-    'button-background': '#ea580c', // orange-600
-    'button-border': '#c2410c', // orange-700
+    background: '#fde68a', // amber-200
+    border: '#f59e0b', // amber-500
+    'badge-background': '#fef3c7', // amber-100
+    'badge-text': '#78350f', // amber-900
+    'button-background': '#f59e0b', // amber-500
+    'button-border': '#d97706', // amber-600
   },
 }
 

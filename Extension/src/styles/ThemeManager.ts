@@ -12,7 +12,7 @@ export type ThemeName = keyof typeof palettes
 export interface ThemeMetadata {
   name: ThemeName
   displayName: string
-  category: 'Original' | 'Tailwind 600-Series' | 'Tailwind 500-Series'
+  category: 'Tailwind 600-Series' | 'Tailwind 500-Series'
   primaryColor: string
 }
 
@@ -20,14 +20,6 @@ export interface ThemeMetadata {
  * Theme metadata with display names and categories
  */
 export const THEME_METADATA: ThemeMetadata[] = [
-  // Original Theme
-  {
-    name: 'whatsappGreen',
-    displayName: 'WhatsApp Green',
-    category: 'Original',
-    primaryColor: '#00a884',
-  },
-
   // Tailwind 600-Series Color Themes
   {
     name: 'modernBlue',
@@ -315,7 +307,7 @@ export const THEMES_BY_CATEGORY = THEME_METADATA.reduce(
  * Theme Manager Class
  */
 class ThemeManager {
-  private currentTheme: ThemeName = 'coolCyan'
+  private currentTheme: ThemeName = 'indigo500'
   private listeners: Set<(theme: ThemeName) => void> = new Set()
   private initialized = false
 

@@ -45,6 +45,14 @@ export default {
         loading: {
           spinner: 'var(--loading-spinner)',
         },
+        dev: {
+          background: 'var(--dev-bg)',
+          border: 'var(--dev-border)',
+          'badge-background': 'var(--dev-badge-bg)',
+          'badge-text': 'var(--dev-badge-text)',
+          'button-background': 'var(--dev-button-bg)',
+          'button-border': 'var(--dev-button-border)',
+        },
       },
     },
   },
