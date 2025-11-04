@@ -8,6 +8,7 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { waitForWhatsAppLoad } from './whatsapp-loader'
 import { logError } from '../utils/errorLogger'
 import { sentryScope } from './sentry'
+import { themeManager } from '../styles/ThemeManager'
 import '../styles/content-script.css'
 
 console.log('[Content Script] Loading on WhatsApp Web')
@@ -116,6 +117,10 @@ async function init() {
     // Append to body
     document.body.appendChild(sidebarContainer)
     console.log('[Content Script] Sidebar container injected')
+
+    // Initialize theme before rendering React to prevent flicker
+    await themeManager.initialize()
+    console.log('[Content Script] Theme initialized')
 
     // Render React app into sidebar
     const root = ReactDOM.createRoot(sidebarContainer)

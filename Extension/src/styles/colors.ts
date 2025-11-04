@@ -2798,36 +2798,16 @@ const rose500 = {
 // ============================================================================
 
 /**
- * Active Color Palette
+ * @deprecated This static export is deprecated. Use ThemeManager for runtime theme switching instead.
  *
- * To change the theme, update this export to use a different palette:
+ * IMPORTANT: Do not use this export in new code. Themes are now managed dynamically by ThemeManager,
+ * which loads the active theme from Chrome storage and applies it via CSS variables.
  *
- * Original Themes:
- * - export const colors = whatsappGreen;
- * - export const colors = modernBlue;
- * - export const colors = professionalPurple;
- * - export const colors = oceanTeal;
- * - export const colors = sunsetOrange;
- * - export const colors = deepIndigo;
- * - export const colors = forestGreen;
- * - export const colors = rosePink;
+ * To change themes:
+ * - Use: themeManager.setTheme('themeName')
+ * - Themes persist across sessions and change instantly without rebuild
  *
- * Tailwind 600-Series Themes:
- * - export const colors = crimsonRed;      // red-600
- * - export const colors = goldenAmber;     // amber-600
- * - export const colors = brightYellow;    // yellow-600
- * - export const colors = freshLime;       // lime-600
- * - export const colors = vibrantEmerald;  // emerald-600
- * - export const colors = coolCyan;        // cyan-600
- * - export const colors = clearSky;        // sky-600
- * - export const colors = royalPurple;     // purple-600
- * - export const colors = vividFuchsia;    // fuchsia-600
- * - export const colors = softPink;        // pink-600
- * - export const colors = slateGray;       // slate-600
- * - export const colors = neutralGray;     // gray-600
- * - export const colors = modernZinc;      // zinc-600
- * - export const colors = pureNeutral;     // neutral-600
- * - export const colors = warmStone;       // stone-600
+ * This export is kept for backward compatibility only.
  */
 export const colors = coolCyan
 

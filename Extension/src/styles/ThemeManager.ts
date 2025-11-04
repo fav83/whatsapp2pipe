@@ -428,6 +428,21 @@ class ThemeManager {
     style.setProperty('--dev-badge-text', palette.dev['badge-text'])
     style.setProperty('--dev-button-bg', palette.dev['button-background'])
     style.setProperty('--dev-button-border', palette.dev['button-border'])
+
+    // Error colors
+    style.setProperty('--error-text', palette.error.text)
+    style.setProperty('--error-text-hover', palette.error['text-hover'])
+    style.setProperty('--error-background', palette.error.background)
+    style.setProperty('--error-border', palette.error.border)
+
+    // Warning colors
+    style.setProperty('--warning-background', palette.warning.background)
+    style.setProperty('--warning-border', palette.warning.border)
+    style.setProperty('--warning-icon', palette.warning.icon)
+
+    // Success colors
+    style.setProperty('--success-background', palette.success.background)
+    style.setProperty('--success-border', palette.success.border)
   }
 
   /**

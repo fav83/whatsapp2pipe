@@ -27,7 +27,6 @@ import { UserAvatar } from './components/UserAvatar'
 import { SentryTest } from './components/SentryTest'
 import { exposePipedriveTestHelpers } from './testPipedriveApi'
 import type { Person } from '../types/person'
-import { themeManager } from '../styles/ThemeManager'
 
 interface ChatStatus {
   phone: string | null
@@ -67,10 +66,7 @@ export default function App() {
   const [state, setState] = useState<SidebarState>({ type: 'welcome' })
   const [sentryTestExpanded, setSentryTestExpanded] = useState(false)
 
-  // Initialize theme manager on mount
-  useEffect(() => {
-    themeManager.initialize()
-  }, [])
+  // Theme manager is now initialized in index.tsx before React mount (prevents flicker)
 
   // Listen for chat status events from MAIN world
   useEffect(() => {

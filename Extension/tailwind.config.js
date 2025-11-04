@@ -53,6 +53,21 @@ export default {
           'button-background': 'var(--dev-button-bg)',
           'button-border': 'var(--dev-button-border)',
         },
+        error: {
+          text: 'var(--error-text)',
+          'text-hover': 'var(--error-text-hover)',
+          background: 'var(--error-background)',
+          border: 'var(--error-border)',
+        },
+        warning: {
+          background: 'var(--warning-background)',
+          border: 'var(--warning-border)',
+          icon: 'var(--warning-icon)',
+        },
+        success: {
+          background: 'var(--success-background)',
+          border: 'var(--success-border)',
+        },
       },
     },
   },
