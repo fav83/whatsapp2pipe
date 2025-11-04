@@ -43,7 +43,7 @@ export function HowItWorks() {
   ];
 
   return (
-    <section className="bg-indigo-50 py-20 md:py-24">
+    <section className="bg-white py-20 md:py-24">
       <div className="max-w-4xl mx-auto px-5 md:px-10">
         {/* Section header */}
         <div className="text-center mb-16">
