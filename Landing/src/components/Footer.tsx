@@ -1,12 +1,11 @@
 export function Footer() {
   return (
-    <footer className="bg-white border-t border-gray-light py-16 md:py-20">
+    <footer className="bg-white border-t border-gray-light py-6">
       <div className="max-w-7xl mx-auto px-5 md:px-10">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           {/* Left - Branding */}
           <div className="text-center md:text-left">
             <div className="text-base font-semibold text-black">Chat2Deal</div>
-            <div className="text-sm text-gray-secondary mt-1">WhatsApp meets Pipedrive</div>
           </div>
 
           {/* Center - Links */}

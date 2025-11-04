@@ -30,7 +30,7 @@ export function Benefits() {
   ];
 
   return (
-    <section className="bg-gray-light py-20 md:py-24">
+    <section className="bg-white py-20 md:py-24">
       <div className="max-w-6xl mx-auto px-5 md:px-10">
         {/* Section header */}
         <div className="text-center mb-16">
@@ -47,7 +47,7 @@ export function Benefits() {
           {benefits.map((benefit, index) => (
             <div
               key={index}
-              className="bg-white rounded-xl p-8 shadow-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg"
+              className="bg-gray-50 rounded-xl p-8 transition-all duration-300 ease-out hover:bg-gray-100"
             >
               <div className="mb-5">{benefit.icon}</div>
               <h3 className="text-xl font-semibold text-black mb-3 leading-snug">
