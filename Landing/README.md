@@ -112,19 +112,17 @@ npm run preview
 
 ## Page Sections
 
-### Header
-- Navigation bar at the top (scrolls with page content)
-- Chat2Deal logo with Momo Trust Display font
-- "Join the Waitlist" button (scrolls to hero form)
-- "Sign in" button
-- White background that blends seamlessly with hero section
-
-### 1. Hero Section
-- Full viewport height
-- Two-column layout (60/40 split on desktop)
-- Primary headline and subheadline
-- Waitlist form (email + optional name)
-- Floating geometric shapes animation
+### Hero Section (includes Header)
+- Full viewport height with white background and subtle indigo gradient
+- **Header navigation** at the top (scrolls with page content):
+  - chat2deal logo with Momo Trust Display font
+  - "Join the Waitlist" button (scrolls to form)
+  - "Sign in" button
+- **Hero content**:
+  - Two-column layout (60/40 split on desktop)
+  - Primary headline and subheadline
+  - Waitlist form (email + optional name)
+  - Floating geometric shapes animation
 
 ### 2. Benefits Section
 - Light gray background

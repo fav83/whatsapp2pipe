@@ -1,10 +1,16 @@
 import { WaitlistForm } from './WaitlistForm';
+import { Header } from './Header';
 
 export function Hero() {
   return (
     <header className="min-h-screen bg-white relative overflow-hidden">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-indigo/5 via-transparent to-transparent pointer-events-none" />
+
+      {/* Header inside hero to share background */}
+      <div className="relative">
+        <Header />
+      </div>
 
       <div className="relative max-w-7xl mx-auto px-5 md:px-10 py-20 md:py-20 min-h-screen flex items-center">
         <div className="grid md:grid-cols-[60%_40%] gap-12 items-center w-full">
