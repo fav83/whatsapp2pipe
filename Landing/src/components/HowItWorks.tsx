@@ -2,6 +2,16 @@ export function HowItWorks() {
   const steps = [
     {
       number: '1',
+      title: 'Install the Chrome extension',
+      description: 'Add Chat2Deal to Chrome in seconds. Connect your Pipedrive account and you\'re ready to go.',
+      icon: (
+        <svg className="w-6 h-6 text-gray-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+      ),
+    },
+    {
+      number: '2',
       title: 'Open any WhatsApp chat',
       description: 'Switch to a 1-on-1 conversation. Chat2Deal instantly reads the contact\'s phone number.',
       icon: (
@@ -11,7 +21,7 @@ export function HowItWorks() {
       ),
     },
     {
-      number: '2',
+      number: '3',
       title: 'See if they\'re already in Pipedrive',
       description: 'Automatic lookup finds existing contacts. Matched? Jump straight to their Pipedrive profile.',
       icon: (
@@ -21,22 +31,12 @@ export function HowItWorks() {
       ),
     },
     {
-      number: '3',
-      title: 'Create new contacts instantly',
-      description: 'No match? Click create. Name pre-filled from WhatsApp. Add optional email. Done in 3 seconds.',
+      number: '4',
+      title: 'Create or update contacts instantly',
+      description: 'No match? Click create and it\'s done in 3 seconds. Already exists? Update deals, add notes, track your pipeline.',
       icon: (
         <svg className="w-6 h-6 text-gray-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-        </svg>
-      ),
-    },
-    {
-      number: '4',
-      title: 'Open in Pipedrive anytime',
-      description: 'One-click deep link to the contact. Update deals, add notes, track your pipeline—all connected.',
-      icon: (
-        <svg className="w-6 h-6 text-gray-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
         </svg>
       ),
     },
