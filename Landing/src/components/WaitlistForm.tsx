@@ -80,37 +80,6 @@ export function WaitlistForm({ variant = 'hero' }: WaitlistFormProps) {
           )}
         </div>
 
-        {/* Name input */}
-        <div>
-          <label htmlFor="name" className="sr-only">
-            Your name (optional)
-          </label>
-          <input
-            id="name"
-            type="text"
-            placeholder={isCTA ? 'Name (optional)' : 'Your name (optional)'}
-            value={formData.name}
-            onChange={(e) => handleChange('name', e.target.value)}
-            onBlur={() => handleBlur('name')}
-            disabled={formState.isSubmitting}
-            aria-label="Your name (optional)"
-            aria-invalid={!!fieldErrors.name}
-            aria-describedby={fieldErrors.name ? 'name-error' : undefined}
-            className={`w-full px-4 py-3 text-base rounded-lg transition-all duration-200 ${
-              isCTA
-                ? 'bg-white text-black border-none shadow-sm focus:ring-2 focus:ring-white/30'
-                : 'bg-white text-black border border-gray-light focus:border-indigo focus:ring-2 focus:ring-indigo/20'
-            } ${
-              fieldErrors.name ? 'border-red-500 ring-2 ring-red-500/20' : ''
-            } disabled:opacity-60 disabled:cursor-not-allowed outline-none`}
-          />
-          {fieldErrors.name && (
-            <p id="name-error" className="mt-1 text-sm text-red-600">
-              {fieldErrors.name}
-            </p>
-          )}
-        </div>
-
         {/* Submit button */}
         <button
           type="submit"
@@ -119,7 +88,7 @@ export function WaitlistForm({ variant = 'hero' }: WaitlistFormProps) {
           className={`w-full px-6 py-3 text-base font-medium rounded-lg transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed ${
             isCTA
               ? 'bg-white text-indigo shadow-md hover:opacity-90 hover:shadow-lg active:opacity-85 active:shadow-md'
-              : 'bg-indigo text-white hover:bg-indigo-hover active:bg-indigo-active active:scale-[0.98]'
+              : 'bg-transparent text-white border-2 border-white hover:bg-white/10 active:bg-white/20 active:scale-[0.98]'
           }`}
         >
           {formState.isSubmitting ? (
@@ -150,7 +119,7 @@ export function WaitlistForm({ variant = 'hero' }: WaitlistFormProps) {
       {/* Trust text */}
       <p className="mt-3 text-sm text-center text-white/70">
         {isCTA
-          ? 'Free during beta • No credit card • Unsubscribe anytime'
+          ? 'Free during beta • No credit card'
           : 'Get early access. No credit card required.'}
       </p>
     </form>
