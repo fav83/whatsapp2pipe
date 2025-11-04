@@ -60,7 +60,7 @@ function createLoadingOverlay(): HTMLElement {
     width: 48px;
     height: 48px;
     border: 4px solid rgba(0, 0, 0, 0.1);
-    border-top-color: #00a884;
+    border-top-color: #54656f;
     border-radius: 50%;
     animation: chat2deal-spin 0.8s linear infinite;
   `

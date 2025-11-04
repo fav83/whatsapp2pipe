@@ -12,13 +12,11 @@ interface ErrorStateProps {
 
 export function ErrorState({ message, onRetry }: ErrorStateProps) {
   return (
-    <div className="px-5 pt-5">
-      <div className="text-sm text-[#667781] mb-4">
-        {message}
-      </div>
+    <div className="px-3 pt-3">
+      <div className="text-sm text-text-secondary mb-3">{message}</div>
       <button
         onClick={onRetry}
-        className="px-4 py-2 bg-[#00a884] text-white text-sm font-medium rounded-lg hover:bg-[#008f6f] transition-colors"
+        className="px-4 py-2 bg-brand-primary text-white text-sm font-medium rounded-lg hover:bg-brand-primary-hover transition-colors"
       >
         Retry
       </button>

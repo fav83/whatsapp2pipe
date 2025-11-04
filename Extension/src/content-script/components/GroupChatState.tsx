@@ -16,10 +16,10 @@
  */
 export function GroupChatState() {
   return (
-    <div className="px-5 pt-5">
-      <div className="p-4 bg-[#f0f2f5] rounded-lg">
-        <p className="text-sm text-[#667781] text-center">Group chats are not supported</p>
-        <p className="text-xs text-[#667781] text-center mt-2">
+    <div className="px-3 pt-3">
+      <div className="p-3 bg-background-secondary rounded-lg">
+        <p className="text-sm text-text-secondary text-center">Group chats are not supported</p>
+        <p className="text-xs text-text-secondary text-center mt-2">
           Please select a 1:1 chat to view contact information
         </p>
       </div>

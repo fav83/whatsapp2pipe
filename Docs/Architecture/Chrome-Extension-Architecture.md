@@ -1,8 +1,8 @@
 # Chrome Extension Architecture
 ## Pipedrive × WhatsApp Web Integration
 
-**Date:** 2025-10-25
-**Version:** 1.0
+**Date:** 2025-11-04
+**Version:** 1.1
 **Status:** Approved
 
 ---
@@ -511,9 +511,325 @@ async function init() {
 
 ---
 
-## 7. Testing Strategy
+## 7. Theme Management System
 
-### 7.1 Testing Layers
+### 7.1 Architecture Overview
+
+The extension implements a centralized, runtime-switchable theming system that enables instant theme changes without rebuild or component re-render. The system uses CSS custom properties (CSS variables) mapped to Tailwind utility classes, providing a clean separation between theme definitions and component styling.
+
+**Core Architecture:**
+```
+colors.ts (Palette Definitions)
+    ↓
+ThemeManager (CSS Variable Application)
+    ↓
+tailwind.config.js (Variable Mapping)
+    ↓
+Components (Semantic Utility Classes)
+```
+
+### 7.2 Color System Components
+
+**File Structure:**
+```
+Extension/src/styles/
+├── colors.ts           # Centralized palette definitions (45+ themes)
+├── ThemeManager.ts     # Theme selection, persistence, CSS variable application
+└── content-script.css  # Global styles and Tailwind directives
+
+Extension/
+└── tailwind.config.js  # CSS variable mapping to Tailwind utilities
+```
+
+**Key Files:**
+
+1. **[colors.ts](../../Extension/src/styles/colors.ts)** - Centralized palette definitions
+   - 45+ pre-built color palettes (Tailwind 500/600-series + custom)
+   - Each palette defines semantic categories: brand, text, background, border, state colors
+   - Type-safe palette structure with TypeScript interfaces
+   - Active palette exported for build-time defaults
+
+2. **[ThemeManager.ts](../../Extension/src/styles/ThemeManager.ts)** - Theme management singleton
+   - Loads saved theme from Chrome Storage on initialization
+   - Applies theme by setting CSS variables on sidebar root element
+   - Persists theme changes to Chrome Storage
+   - Notifies listeners of theme changes
+   - Provides API: `initialize()`, `setTheme()`, `getCurrentTheme()`, `addListener()`
+
+3. **[tailwind.config.js](../../Extension/tailwind.config.js)** - Tailwind integration
+   - Maps CSS variables to Tailwind utility classes
+   - Enables semantic token usage: `bg-brand-primary`, `text-secondary`, etc.
+   - Color utilities work with any active theme
+
+### 7.3 Semantic Color Categories
+
+All colors are organized by semantic purpose rather than specific values:
+
+| Category | CSS Variables | Tailwind Classes | Usage |
+|----------|--------------|------------------|-------|
+| **Brand** | `--brand-primary`<br>`--brand-hover`<br>`--brand-secondary` | `bg-brand-primary`<br>`text-brand-primary`<br>`border-brand-primary` | Action buttons, links, accent colors |
+| **Text** | `--text-primary`<br>`--text-secondary`<br>`--text-tertiary`<br>`--text-avatar-hover` | `text-primary`<br>`text-secondary`<br>`text-tertiary` | Text content by hierarchy |
+| **Background** | `--background-main`<br>`--background-secondary`<br>`--background-tertiary`<br>`--background-hover` | `bg-background-main`<br>`bg-background-secondary` | Surface backgrounds and layouts |
+| **Border** | `--border-primary`<br>`--border-secondary` | `border-primary`<br>`border-secondary` | Dividers and component borders |
+| **Button** | `--button-primary-bg`<br>`--button-primary-bg-hover`<br>`--button-secondary-bg` | `bg-button-primary-bg`<br>`hover:bg-button-primary-bg-hover` | Button states |
+| **Loading** | `--loading-spinner` | `border-loading-spinner` | Loading indicators |
+| **Dev Mode** | `--dev-bg`<br>`--dev-border`<br>`--dev-badge-bg` | `bg-dev-background`<br>`border-dev-border` | Development indicator |
+
+### 7.4 Theme Definition Structure
+
+Each theme palette follows a consistent structure:
+
+```typescript
+// Extension/src/styles/colors.ts
+const exampleTheme = {
+  brand: {
+    primary: '#0891b2',        // Main brand color
+    'primary-hover': '#0e7490', // Hover state
+    'primary-light': '#cffafe', // Light variant
+    'primary-light-hover': '#67e8f9', // Light variant hover
+  },
+  text: {
+    primary: '#0a0a0a',         // Main text
+    secondary: '#525252',       // Supporting text
+    tertiary: '#a3a3a3',        // De-emphasized text
+    'avatar-hover': '#404040',  // Avatar hover state
+  },
+  background: {
+    primary: '#ffffff',         // Card backgrounds
+    secondary: '#ecfeff',       // Subtle backgrounds
+    tertiary: '#f0f9ff',        // Alternative backgrounds
+    main: '#f5f5f5',           // Body background
+  },
+  border: {
+    primary: '#d4d4d4',         // Main borders
+    secondary: '#e5e5e5',       // Subtle borders
+  },
+  error: {
+    text: '#dc2626',
+    'text-hover': '#991b1b',
+    background: '#fef2f2',
+    border: '#fca5a5',
+  },
+  warning: {
+    background: '#fef3c7',
+    border: '#fbbf24',
+    icon: '#f59e0b',
+  },
+  success: {
+    background: '#d1fae5',
+    border: '#10b981',
+  },
+  loading: {
+    spinner: '#0891b2',         // Matches brand primary
+  },
+  dev: {
+    background: '#fde68a',
+    border: '#f59e0b',
+    'badge-background': '#fef3c7',
+    'badge-text': '#78350f',
+    'button-background': '#f59e0b',
+    'button-border': '#d97706',
+  },
+}
+```
+
+### 7.5 Theme Management Flow
+
+**Initialization:**
+```
+Content script renders sidebar
+    ↓
+ThemeManager.initialize() called
+    ↓
+Loads saved theme from chrome.storage.local
+    ↓
+Applies CSS variables to #pipedrive-whatsapp-sidebar
+    ↓
+Tailwind utilities reflect active theme
+```
+
+**Theme Change:**
+```
+User selects new theme (future: settings UI)
+    ↓
+ThemeManager.setTheme(themeName)
+    ↓
+Applies new palette as CSS variables
+    ↓
+Persists to chrome.storage.local
+    ↓
+Notifies listeners (optional: for UI updates)
+    ↓
+Components re-render with new theme automatically
+```
+
+**CSS Variable Application:**
+```typescript
+// Extension/src/styles/ThemeManager.ts
+private applyCSSVariables(palette: ColorPalette): void {
+  const sidebar = document.getElementById('pipedrive-whatsapp-sidebar')
+  if (!sidebar) return
+
+  // Apply all CSS variables to sidebar root
+  sidebar.style.setProperty('--brand-primary', palette.brand.primary)
+  sidebar.style.setProperty('--text-primary', palette.text.primary)
+  // ... all other variables
+}
+```
+
+### 7.6 Component Usage
+
+**Semantic Token Approach:**
+Components use semantic token names via Tailwind utility classes, making them theme-agnostic:
+
+```tsx
+// ✅ CORRECT - Uses semantic tokens
+<button className="bg-brand-primary hover:bg-brand-hover text-white rounded-lg">
+  Create Person
+</button>
+
+<div className="bg-background-secondary border border-primary rounded-lg p-4">
+  <h3 className="text-primary font-semibold">Contact Info</h3>
+  <p className="text-secondary">+48 123 456 789</p>
+</div>
+
+// ❌ INCORRECT - Hardcoded colors (not theme-aware)
+<button className="bg-[#00a884] hover:bg-[#008f6f]">
+  Create Person
+</button>
+```
+
+**Benefits:**
+- Components automatically adapt to theme changes
+- No component code changes required for new themes
+- Consistent semantic meaning across themes
+- Type-safe with Tailwind IntelliSense
+
+### 7.7 Available Themes
+
+**Tailwind 600-Series (22 themes):**
+- modernBlue, professionalPurple, oceanTeal, sunsetOrange
+- deepIndigo, forestGreen, rosePink, crimsonRed
+- goldenAmber, brightYellow, freshLime, vibrantEmerald
+- coolCyan, clearSky, royalPurple, vividFuchsia
+- softPink, slateGray, neutralGray, modernZinc
+- pureNeutral, warmStone
+
+**Tailwind 500-Series (23 themes):**
+- slate500, gray500, zinc500, neutral500, stone500
+- red500, orange500, amber500, yellow500, lime500
+- green500, emerald500, teal500, cyan500, sky500
+- blue500, indigo500, violet500, purple500, fuchsia500
+- pink500, rose500
+
+**Special Themes:**
+- whatsappGreen - Original WhatsApp-inspired green theme
+
+**Default Theme:** coolCyan (Cyan 600) - set in `colors.ts` active export
+
+### 7.8 Adding New Themes
+
+To add a new color palette:
+
+1. **Define palette in colors.ts:**
+```typescript
+// Extension/src/styles/colors.ts
+const customTheme = {
+  brand: { /* ... */ },
+  text: { /* ... */ },
+  background: { /* ... */ },
+  border: { /* ... */ },
+  error: { /* ... */ },
+  warning: { /* ... */ },
+  success: { /* ... */ },
+  loading: { /* ... */ },
+  dev: { /* ... */ },
+}
+
+// Add to palettes export
+export const palettes = {
+  // ... existing themes
+  customTheme,
+}
+```
+
+2. **Add metadata to ThemeManager.ts:**
+```typescript
+// Extension/src/styles/ThemeManager.ts
+export const THEME_METADATA: ThemeMetadata[] = [
+  // ... existing themes
+  {
+    name: 'customTheme',
+    displayName: 'Custom Theme',
+    category: 'Custom',
+    primaryColor: '#ff6b6b',
+  },
+]
+```
+
+3. **Set as active (optional):**
+```typescript
+// Extension/src/styles/colors.ts
+export const colors = customTheme  // Default for build
+```
+
+**Theme Structure Requirements:**
+- All semantic categories must be defined
+- State colors (error, warning, success) should remain consistent for accessibility
+- Dev mode colors can use same values across themes
+- Test theme with all UI states (loading, error, success, etc.)
+
+### 7.9 Persistence & Storage
+
+**Storage Strategy:**
+- Theme preference stored in `chrome.storage.local`
+- Key: `'theme'`
+- Value: Theme name string (e.g., `'coolCyan'`)
+- Default: `'indigo500'` (hardcoded in ThemeManager)
+
+**Initialization:**
+```typescript
+// Extension/src/styles/ThemeManager.ts
+async initialize(): Promise<void> {
+  const result = await chrome.storage.local.get('theme')
+  if (result.theme && palettes[result.theme]) {
+    this.currentTheme = result.theme
+  }
+  this.applyTheme(this.currentTheme)
+}
+```
+
+**Persistence:**
+```typescript
+async setTheme(themeName: ThemeName): Promise<void> {
+  this.currentTheme = themeName
+  this.applyTheme(themeName)
+  await chrome.storage.local.set({ theme: themeName })
+}
+```
+
+### 7.10 Future Enhancements
+
+**Potential Features:**
+- Theme selector UI in sidebar settings
+- Custom theme builder (user-defined colors)
+- Automatic theme based on time of day
+- Sync theme across devices via Chrome Sync
+- Light/dark mode toggle (requires dual palette definitions)
+- Theme preview before selection
+- Export/import custom themes
+
+**Accessibility Considerations:**
+- All themes should maintain WCAG AA contrast ratios
+- State colors (error, warning, success) should be distinguishable
+- Focus indicators should be visible in all themes
+- Test with screen readers and keyboard navigation
+
+---
+
+## 8. Testing Strategy
+
+### 8.1 Testing Layers
 
 **Unit Tests (Vitest):**
 - **Target:** Utility functions, services, hooks (non-UI logic)
@@ -545,7 +861,7 @@ async function init() {
   - Attach to existing person end-to-end
   - Error states (network failures, API errors)
 
-### 7.2 Test Environment Setup
+### 8.2 Test Environment Setup
 
 **Mocking Strategy:**
 - **Chrome APIs:** Mock `chrome.storage`, `chrome.runtime`, `chrome.identity`
@@ -565,9 +881,9 @@ async function init() {
 
 ---
 
-## 8. Build & Development Workflow
+## 9. Build & Development Workflow
 
-### 8.1 Vite Configuration
+### 9.1 Vite Configuration
 
 **Build Targets:**
 - **Content Script:** Bundle React app for injection into WhatsApp Web
@@ -707,7 +1023,7 @@ export default defineConfig({
 - Single-file bundles work in Chrome extension context
 - Source maps separated for security (never shipped to users)
 
-### 8.2 CSS in Content Scripts
+### 9.2 CSS in Content Scripts
 
 **Tailwind CSS Integration:**
 
@@ -798,7 +1114,7 @@ When this reset is applied, utility classes like `text-sm`, `bg-white`, `rounded
 - Avoid global style resets that affect utility classes
 - Test CSS changes in production build (some issues only appear after minification)
 
-### 8.3 Development Environment
+### 9.3 Development Environment
 
 **Local Development:**
 - Navigate to `Extension/` directory: `cd Extension`
@@ -842,7 +1158,7 @@ VITE_SHOW_DEV_INDICATOR=false
 VITE_BACKEND_URL=https://your-backend-url.azurewebsites.net
 ```
 
-### 8.4 Code Quality Workflow
+### 9.4 Code Quality Workflow
 
 **Pre-commit Hooks (Husky + lint-staged):**
 ```json
@@ -870,9 +1186,9 @@ npx lint-staged
 
 ---
 
-## 9. Deployment & Distribution
+## 10. Deployment & Distribution
 
-### 9.1 Build Process
+### 10.1 Build Process
 
 **Production Build:**
 ```bash
@@ -899,7 +1215,7 @@ Extension/dist/
 - Source maps excluded from production (security)
 - Sentry source map upload (separate step, for debugging)
 
-### 9.2 Chrome Web Store Submission
+### 10.2 Chrome Web Store Submission
 
 **Manual Deployment Process:**
 1. Navigate to Extension directory: `cd Extension`
@@ -923,7 +1239,7 @@ Extension/dist/
 - Privacy policy disclosure (OAuth, Sentry, data handling)
 - No obfuscated code (Vite bundles are readable)
 
-### 9.3 Versioning Strategy
+### 10.3 Versioning Strategy
 
 **Semantic Versioning:**
 - Format: `MAJOR.MINOR.PATCH`
@@ -937,7 +1253,7 @@ Extension/dist/
 - Manual process for MVP
 - Git tags for releases (`v1.0.0`)
 
-### 9.4 Release Phases (from BRD)
+### 10.4 Release Phases (from BRD)
 
 **Alpha (Internal):**
 - Unpacked extension
@@ -958,9 +1274,9 @@ Extension/dist/
 
 ---
 
-## 10. Error Handling & Monitoring
+## 11. Error Handling & Monitoring
 
-### 10.1 Error Categories & Handling
+### 11.1 Error Categories & Handling
 
 **API Errors:**
 - **401 Unauthorized:** Clear auth state, prompt re-login
@@ -984,7 +1300,7 @@ Extension/dist/
 - Fallback UI with "Something went wrong" + reload button
 - Errors logged to Sentry with component stack
 
-### 10.2 Sentry Integration
+### 11.2 Sentry Integration
 
 **Initialization:**
 ```typescript
@@ -1057,7 +1373,7 @@ SENTRY_PROJECT=your-project-slug
 
 See Extension/DEPLOYMENT.md for complete deployment workflow.
 
-### 10.3 Logging Strategy
+### 11.3 Logging Strategy
 
 **Console Logging (Development):**
 - `utils/logger.ts` wrapper around console
@@ -1072,9 +1388,9 @@ See Extension/DEPLOYMENT.md for complete deployment workflow.
 
 ---
 
-## 11. Performance & Optimization
+## 12. Performance & Optimization
 
-### 11.1 Bundle Size Optimization
+### 12.1 Bundle Size Optimization
 
 **Target Bundle Sizes:**
 - Content script (with React + UI): ~150-200KB gzipped
@@ -1095,7 +1411,7 @@ const PersonNoMatchState = lazy(() => import('./components/PersonNoMatchState'))
 const PersonLookupError = lazy(() => import('./components/PersonLookupError'))
 ```
 
-### 11.2 Runtime Performance
+### 12.2 Runtime Performance
 
 **DOM Observation:**
 - Debounce chat switch detection (prevent rapid-fire queries)
@@ -1114,7 +1430,7 @@ const PersonLookupError = lazy(() => import('./components/PersonLookupError'))
 - Skeleton loading states (perceived performance)
 - Avoid unnecessary re-renders (proper dependency arrays)
 
-### 11.3 Memory Management
+### 12.3 Memory Management
 
 **Memory Efficiency:**
 - No caching layer in MVP (minimal memory footprint)
@@ -1133,9 +1449,9 @@ const PersonLookupError = lazy(() => import('./components/PersonLookupError'))
 
 ---
 
-## 12. Constraints, Risks & Future Considerations
+## 13. Constraints, Risks & Future Considerations
 
-### 12.1 Technical Constraints
+### 13.1 Technical Constraints
 
 **Chrome Extension Limitations:**
 - Manifest V3 service workers are ephemeral (~30s idle timeout)
@@ -1156,7 +1472,7 @@ const PersonLookupError = lazy(() => import('./components/PersonLookupError'))
 - Custom phone field labels ("WhatsApp") must be supported
 - OAuth token expiry requires refresh flow
 
-### 12.2 Risk Mitigation
+### 13.2 Risk Mitigation
 
 **WhatsApp DOM Changes:**
 - **Risk:** WhatsApp updates break phone extraction
@@ -1189,7 +1505,7 @@ const PersonLookupError = lazy(() => import('./components/PersonLookupError'))
   - Detailed permission justifications
   - No obfuscated code
 
-### 12.3 Future Architecture Considerations
+### 13.3 Future Architecture Considerations
 
 **Post-MVP Features (from BRD Section 11):**
 - Group chat support (requires participant picker UI)
@@ -1209,7 +1525,7 @@ const PersonLookupError = lazy(() => import('./components/PersonLookupError'))
 - Webhook integration for bidirectional sync
 - Analytics dashboard (aggregated usage metrics)
 
-### 12.4 Documentation Requirements
+### 13.4 Documentation Requirements
 
 **Developer Documentation:**
 - Setup instructions (navigate to Extension/, npm install, load extension)
@@ -1228,9 +1544,9 @@ const PersonLookupError = lazy(() => import('./components/PersonLookupError'))
 
 ---
 
-## 13. Manifest V3 Configuration
+## 14. Manifest V3 Configuration
 
-### 13.1 Required Permissions
+### 14.1 Required Permissions
 
 ```json
 {
@@ -1266,7 +1582,7 @@ const PersonLookupError = lazy(() => import('./components/PersonLookupError'))
 }
 ```
 
-### 13.2 Permission Justifications
+### 14.2 Permission Justifications
 
 - **storage:** Store encrypted OAuth tokens securely
 - **tabs:** Detect WhatsApp Web tab state and navigation

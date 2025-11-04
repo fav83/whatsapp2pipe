@@ -21,18 +21,18 @@ interface ContactWarningCardProps {
  */
 export function ContactWarningCard({ name, warning }: ContactWarningCardProps) {
   return (
-    <div className="mx-5 mt-5">
+    <div className="mx-3 mt-3">
       {/* Contact name card */}
-      <div className="p-4 bg-[#f0f2f5] rounded-lg mb-3">
-        <div className="text-base font-semibold text-[#111b21]">{name}</div>
+      <div className="p-3 bg-background-secondary rounded-lg mb-3">
+        <div className="text-base font-semibold text-text-primary">{name}</div>
       </div>
 
       {/* Warning message */}
-      <div className="flex items-start gap-2 p-3 bg-[#fff4e5] border border-[#ffcc00] rounded-lg">
-        <span className="text-[#e9730c] text-lg">⚠️</span>
+      <div className="flex items-start gap-2 p-3 bg-warning-background border border-warning-border rounded-lg">
+        <span className="text-warning-icon text-lg">⚠️</span>
         <div className="flex-1">
-          <p className="text-sm text-[#111b21] font-medium mb-1">Phone number unavailable</p>
-          <p className="text-xs text-[#667781]">{warning}</p>
+          <p className="text-sm text-text-primary font-medium mb-1">Phone number unavailable</p>
+          <p className="text-xs text-text-secondary">{warning}</p>
         </div>
       </div>
     </div>

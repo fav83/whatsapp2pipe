@@ -95,7 +95,7 @@ export function ExtensionStatus() {
         <CardTitle>Chrome Extension</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="flex items-center gap-2 text-green-600">
+        <div className="flex items-center gap-2 text-violet-600">
           <CheckCircle2 className="h-5 w-5" />
           <span className="font-medium">Extension installed</span>
         </div>

@@ -7,13 +7,15 @@
 
 export function AuthenticatingState() {
   return (
-    <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+    <div className="flex flex-col items-center justify-center h-full p-3 text-center">
       {/* Pipedrive-branded loading spinner */}
-      <div className="w-12 h-12 border-4 border-[#1483EB] border-t-transparent rounded-full animate-spin mb-4" />
+      <div className="w-12 h-12 border-4 border-loading-spinner border-t-transparent rounded-full animate-spin mb-4" />
 
-      <h2 className="text-lg font-semibold text-[#111b21] mb-2">Signing in...</h2>
+      <h2 className="text-lg font-semibold text-text-primary mb-2">Signing in...</h2>
 
-      <p className="text-sm text-[#667781]">Please complete authorization in the popup window</p>
+      <p className="text-sm text-text-secondary">
+        Please complete authorization in the popup window
+      </p>
     </div>
   )
 }

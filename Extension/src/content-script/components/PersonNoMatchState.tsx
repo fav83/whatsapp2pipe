@@ -219,24 +219,26 @@ export function PersonNoMatchState({
     manualAttachError ?? attachError?.message ?? manualSearchError ?? searchError?.message ?? null
 
   return (
-    <div className="p-5 space-y-5">
+    <div className="p-3 space-y-3">
       {/* Section 2: Contact Info Card */}
-      <div className="p-4 bg-white rounded-lg border border-[#e9edef] shadow-sm">
-        <div className="text-base font-semibold text-[#111b21] mb-1">{contactName}</div>
-        <div className="text-sm text-[#667781]">{phone}</div>
+      <div className="p-3 bg-white rounded-lg border border-border-secondary shadow-sm">
+        <div className="text-base font-semibold text-text-primary mb-1">{contactName}</div>
+        <div className="text-sm text-text-secondary">{phone}</div>
       </div>
 
       {/* Section 3: Create New Person */}
-      <div className="p-4 bg-white rounded-lg border border-[#e9edef] shadow-sm">
-        <h3 className="text-sm font-semibold text-[#111b21] mb-3">Add this contact to Pipedrive</h3>
+      <div className="p-3 bg-white rounded-lg border border-border-secondary shadow-sm">
+        <h3 className="text-sm font-semibold text-text-primary mb-3">
+          Add this contact to Pipedrive
+        </h3>
 
         {/* Error Banner */}
         {error && (
-          <div className="mb-3 px-3 py-2 bg-[#fef2f2] border border-[#fca5a5] rounded-lg flex items-start justify-between">
-            <p className="text-sm text-[#dc2626] flex-1">{error}</p>
+          <div className="mb-3 px-3 py-2 bg-error-background border border-error-border rounded-lg flex items-start justify-between">
+            <p className="text-sm text-error-text flex-1">{error}</p>
             <button
               onClick={dismissError}
-              className="ml-2 text-[#dc2626] hover:text-[#991b1b]"
+              className="ml-2 text-error-text hover:text-error-text-hover"
               aria-label="Dismiss error"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -253,15 +255,15 @@ export function PersonNoMatchState({
 
         {/* Name Input */}
         <div className="mb-4">
-          <div className="flex items-center gap-2 px-3 py-2 border border-solid border-[#d1d7db] rounded-lg bg-white focus-within:border-[#00a884] focus-within:ring-1 focus-within:ring-[#00a884]">
-            <span className="text-[#667781] text-sm font-medium">T</span>
+          <div className="flex items-center gap-2 px-3 py-2 border border-solid border-border-primary rounded-lg bg-white focus-within:border-brand-primary focus-within:ring-1 focus-within:ring-brand-primary">
+            <span className="text-text-secondary text-sm font-medium">T</span>
             <input
               type="text"
               value={name}
               onChange={handleNameChange}
               placeholder="Name"
               disabled={isCreating}
-              className="flex-1 text-sm text-[#111b21] bg-transparent border-none outline-none disabled:opacity-60 placeholder:text-[#94a3b8]"
+              className="flex-1 text-sm text-text-primary bg-transparent border-none outline-none disabled:opacity-60 placeholder:text-text-tertiary"
             />
           </div>
         </div>
@@ -270,22 +272,22 @@ export function PersonNoMatchState({
         <button
           onClick={handleCreate}
           disabled={isCreateDisabled}
-          className="w-full h-[38px] px-4 py-2 bg-[#00a884] text-white text-sm font-medium rounded-lg disabled:opacity-60 disabled:cursor-not-allowed hover:bg-[#008f6f] transition-colors flex items-center justify-center gap-2"
+          className="w-full h-[38px] px-4 py-2 bg-brand-primary text-white text-sm font-medium rounded-lg disabled:opacity-60 disabled:cursor-not-allowed hover:bg-brand-primary-hover transition-colors flex items-center justify-center gap-2"
         >
           {isCreating ? <Spinner size="md" color="white" /> : 'Create'}
         </button>
       </div>
 
       {/* Section 4: Link to Existing Person */}
-      <div className="p-4 bg-white rounded-lg border border-[#e9edef] shadow-sm">
-        <p className="text-sm text-[#667781] mb-3">
-          Or add the number <span className="font-medium text-[#111b21]">{phone}</span> to an
+      <div className="p-3 bg-white rounded-lg border border-border-secondary shadow-sm">
+        <p className="text-sm text-text-secondary mb-3">
+          Or add the number <span className="font-medium text-text-primary">{phone}</span> to an
           existing contact
         </p>
 
         {bannerMessage && (
-          <div className="mb-3 px-3 py-2 bg-[#fef2f2] border border-[#fca5a5] rounded-lg flex items-start justify-between">
-            <p className="text-sm text-[#dc2626] flex-1">{bannerMessage}</p>
+          <div className="mb-3 px-3 py-2 bg-error-background border border-error-border rounded-lg flex items-start justify-between">
+            <p className="text-sm text-error-text flex-1">{bannerMessage}</p>
             <button
               onClick={() => {
                 setManualSearchError(null)
@@ -297,7 +299,7 @@ export function PersonNoMatchState({
                   clearAttachError()
                 }
               }}
-              className="ml-2 text-[#dc2626] hover:text-[#991b1b]"
+              className="ml-2 text-error-text hover:text-error-text-hover"
               aria-label="Dismiss error"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -313,9 +315,9 @@ export function PersonNoMatchState({
         )}
 
         <form onSubmit={handleSearch}>
-          <div className="w-full flex items-center gap-2 px-3 py-2 border border-solid border-[#d1d7db] rounded-lg bg-white focus-within:border-[#00a884] focus-within:ring-1 focus-within:ring-[#00a884]">
+          <div className="w-full flex items-center gap-2 px-3 py-2 border border-solid border-border-primary rounded-lg bg-white focus-within:border-brand-primary focus-within:ring-1 focus-within:ring-brand-primary">
             <svg
-              className="w-4 h-4 text-[#667781] shrink-0"
+              className="w-4 h-4 text-text-secondary shrink-0"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -333,13 +335,13 @@ export function PersonNoMatchState({
               value={searchTerm}
               onChange={handleSearchTermChange}
               readOnly={isSearching}
-              className="flex-1 min-w-0 text-sm text-[#111b21] bg-transparent border-none outline-none disabled:opacity-60 placeholder:text-[#94a3b8]"
+              className="flex-1 min-w-0 text-sm text-text-primary bg-transparent border-none outline-none disabled:opacity-60 placeholder:text-text-tertiary"
               aria-label="Search existing contacts"
             />
             <button
               type="submit"
               disabled={isSearchDisabled}
-              className="w-[34px] h-[34px] bg-[#00a884] text-white text-sm font-medium rounded-lg disabled:opacity-60 disabled:cursor-not-allowed hover:bg-[#008f6f] transition-colors flex items-center justify-center shrink-0"
+              className="w-[34px] h-[34px] bg-brand-primary text-white text-sm font-medium rounded-lg disabled:opacity-60 disabled:cursor-not-allowed hover:bg-brand-primary-hover transition-colors flex items-center justify-center shrink-0"
               aria-label="Search"
               title="Search"
             >
@@ -370,11 +372,11 @@ export function PersonNoMatchState({
 
         {/* Loading State */}
         {isSearching && (
-          <div className="mt-4 space-y-2" aria-live="polite">
+          <div className="mt-3 space-y-2" aria-live="polite">
             {[0, 1, 2].map((key) => (
               <div
                 key={key}
-                className="h-12 rounded-lg bg-[#f0f2f5] animate-pulse"
+                className="h-12 rounded-lg bg-background-secondary animate-pulse"
                 aria-hidden="true"
               />
             ))}
@@ -399,19 +401,21 @@ export function PersonNoMatchState({
                     onClick={() => setSelectedPersonId(person.id)}
                     className={`w-full text-left px-3 py-2 border-2 rounded-lg transition-colors cursor-pointer ${
                       isSelected
-                        ? 'border-[#00a884] hover:border-[#008f6f] bg-[#b3ead4] hover:bg-[#72d4b7]'
-                        : 'border-[#d1d7db] bg-white hover:border-[#94a3b8] hover:bg-[#e5e7eb]'
+                        ? 'border-brand-primary hover:border-brand-primary-hover bg-brand-primary-light hover:bg-brand-primary-light-hover'
+                        : 'border-border-primary bg-white hover:border-text-tertiary hover:bg-background-main'
                     }`}
                   >
-                    <div className="text-sm font-semibold text-[#111b21]">{person.name}</div>
+                    <div className="text-sm font-semibold text-text-primary">{person.name}</div>
                     {firstPhone && (
-                      <div className="text-xs text-[#667781]">
+                      <div className="text-xs text-text-secondary">
                         {firstPhone.value}
                         {firstPhone.label ? ` • ${firstPhone.label}` : ''}
                       </div>
                     )}
                     {person.organizationName && (
-                      <div className="text-xs text-[#667781] italic">{person.organizationName}</div>
+                      <div className="text-xs text-text-secondary italic">
+                        {person.organizationName}
+                      </div>
                     )}
                   </button>
                 )
@@ -422,7 +426,7 @@ export function PersonNoMatchState({
               type="button"
               onClick={handleAttach}
               disabled={disableAttach}
-              className="mt-3 w-full h-[38px] px-4 py-2 bg-[#00a884] text-white text-sm font-medium rounded-lg disabled:opacity-60 disabled:cursor-not-allowed hover:bg-[#008f6f] transition-colors flex items-center justify-center gap-2"
+              className="mt-3 w-full h-[38px] px-4 py-2 bg-brand-primary text-white text-sm font-medium rounded-lg disabled:opacity-60 disabled:cursor-not-allowed hover:bg-brand-primary-hover transition-colors flex items-center justify-center gap-2"
             >
               {isAttaching ? <Spinner size="md" color="white" /> : 'Attach number'}
             </button>
@@ -431,7 +435,7 @@ export function PersonNoMatchState({
 
         {/* Empty State */}
         {!isSearching && noResults && (
-          <div className="mt-4 px-3 py-3 border border-dashed border-[#d1d7db] rounded-lg text-sm text-[#667781]">
+          <div className="mt-3 px-3 py-3 border border-dashed border-border-primary rounded-lg text-sm text-text-secondary">
             No contacts matched "{lastSearchTermRef.current}". Try initials or another keyword.
           </div>
         )}
