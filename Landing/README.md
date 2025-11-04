@@ -27,6 +27,7 @@ This landing page is built following the design specification in [Spec-123-Landi
 Landing/
 ├── src/
 │   ├── components/      # React components
+│   │   ├── Header.tsx          # Fixed navigation header
 │   │   ├── Hero.tsx            # Hero section with waitlist form
 │   │   ├── Benefits.tsx        # 3-card benefits section
 │   │   ├── HowItWorks.tsx      # 4-step process section
@@ -110,6 +111,13 @@ npm run preview
 ```
 
 ## Page Sections
+
+### Header
+- Fixed navigation bar at the top (does not scroll)
+- Chat2Deal logo
+- "Join the Waitlist" button (scrolls to hero form)
+- "Sign in" button
+- Transparent background that blends seamlessly with hero section
 
 ### 1. Hero Section
 - Full viewport height
