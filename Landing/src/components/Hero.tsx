@@ -2,7 +2,7 @@ import { WaitlistForm } from './WaitlistForm';
 
 export function Hero() {
   return (
-    <header className="min-h-screen bg-white relative overflow-hidden pt-16">
+    <header className="min-h-screen bg-white relative overflow-hidden">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-indigo/5 via-transparent to-transparent pointer-events-none" />
 

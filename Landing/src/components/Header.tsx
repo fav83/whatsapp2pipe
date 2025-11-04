@@ -11,7 +11,7 @@ export function Header() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50">
+    <nav className="bg-white">
       <div className="max-w-7xl mx-auto px-5 md:px-10">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}

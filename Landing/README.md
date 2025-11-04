@@ -113,11 +113,11 @@ npm run preview
 ## Page Sections
 
 ### Header
-- Fixed navigation bar at the top (does not scroll)
-- Chat2Deal logo
+- Navigation bar at the top (scrolls with page content)
+- Chat2Deal logo with Momo Trust Display font
 - "Join the Waitlist" button (scrolls to hero form)
 - "Sign in" button
-- Transparent background that blends seamlessly with hero section
+- White background that blends seamlessly with hero section
 
 ### 1. Hero Section
 - Full viewport height
