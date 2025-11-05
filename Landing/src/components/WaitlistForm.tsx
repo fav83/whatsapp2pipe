@@ -21,9 +21,9 @@ export function WaitlistForm({ variant = 'hero' }: WaitlistFormProps) {
   if (formState.isSuccess) {
     return (
       <div className="text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full mb-4 bg-white/20">
+        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full mb-4 bg-slate-100">
           <svg
-            className="w-6 h-6 text-white"
+            className="w-6 h-6 text-slate-700"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -32,7 +32,7 @@ export function WaitlistForm({ variant = 'hero' }: WaitlistFormProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <p className={`text-lg ${isHero ? 'text-white' : 'text-white'}`}>
+        <p className="text-lg text-slate-700">
           You're on the waitlist! We'll email you when access is available.
         </p>
       </div>
@@ -65,11 +65,7 @@ export function WaitlistForm({ variant = 'hero' }: WaitlistFormProps) {
             aria-label="Email address"
             aria-invalid={!!fieldErrors.email}
             aria-describedby={fieldErrors.email ? 'email-error' : undefined}
-            className={`w-full px-4 py-3 text-base rounded-lg transition-all duration-200 ${
-              isCTA
-                ? 'bg-white text-black border-none shadow-sm focus:ring-2 focus:ring-white/30'
-                : 'bg-white text-black border border-gray-light focus:border-indigo focus:ring-2 focus:ring-indigo/20'
-            } ${
+            className={`w-full px-4 py-3 text-base rounded-lg transition-all duration-200 bg-white text-slate-700 border border-slate-300 focus:border-slate-500 focus:ring-2 focus:ring-slate-200 ${
               fieldErrors.email ? 'border-red-500 ring-2 ring-red-500/20' : ''
             } disabled:opacity-60 disabled:cursor-not-allowed outline-none`}
           />
@@ -85,11 +81,7 @@ export function WaitlistForm({ variant = 'hero' }: WaitlistFormProps) {
           type="submit"
           disabled={formState.isSubmitting}
           aria-busy={formState.isSubmitting}
-          className={`w-full px-6 py-3 text-base font-medium rounded-lg transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed ${
-            isCTA
-              ? 'bg-white text-indigo shadow-md hover:opacity-90 hover:shadow-lg active:opacity-85 active:shadow-md'
-              : 'bg-transparent text-white border-2 border-white hover:bg-white/10 active:bg-white/20 active:scale-[0.98]'
-          }`}
+          className="w-full px-6 py-3 text-base font-medium rounded-lg transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed bg-button-primary text-white hover:bg-button-primary-hover active:bg-button-primary-active active:scale-[0.98]"
         >
           {formState.isSubmitting ? (
             <span className="flex items-center justify-center gap-2">
@@ -117,7 +109,7 @@ export function WaitlistForm({ variant = 'hero' }: WaitlistFormProps) {
       </div>
 
       {/* Trust text */}
-      <p className="mt-3 text-sm text-center text-white/70">
+      <p className="mt-3 text-sm text-center text-slate-500">
         {isCTA
           ? 'Free during beta • No credit card'
           : 'Get early access. No credit card required.'}

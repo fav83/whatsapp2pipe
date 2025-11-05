@@ -16,20 +16,20 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <a href="/" className="flex items-center">
-            <span className="text-2xl font-normal text-white" style={{ fontFamily: "'Momo Trust Display', sans-serif" }}>chat2deal</span>
+            <span className="text-2xl font-normal text-slate-700" style={{ fontFamily: "'Momo Trust Display', sans-serif" }}>chat2deal</span>
           </a>
 
           {/* Navigation Buttons */}
           <div className="flex items-center gap-3">
             <button
               onClick={scrollToWaitlist}
-              className="hidden sm:inline-flex px-4 py-2 text-sm font-medium text-white/90 hover:text-white transition-colors duration-200"
+              className="hidden sm:inline-flex px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-700 transition-colors duration-200"
             >
               Join the Waitlist
             </button>
             <a
               href="/signin"
-              className="px-4 py-2 text-sm font-medium text-indigo-600 bg-white hover:bg-indigo-50 rounded-lg transition-all duration-200 active:scale-95"
+              className="px-4 py-2 text-sm font-medium text-white bg-button-primary hover:bg-button-primary-hover active:bg-button-primary-active rounded-lg transition-all duration-200 active:scale-95"
             >
               Sign in
             </a>
