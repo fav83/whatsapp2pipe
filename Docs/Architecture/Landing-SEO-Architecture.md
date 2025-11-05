@@ -400,7 +400,7 @@ export default defineConfig({
   base: './',  // Relative paths for assets (critical for SPAs)
 
   build: {
-    sourcemap: true,  // For debugging (not shipped)
+    sourcemap: false,  // Disabled for production (landing is public website)
     rollupOptions: {
       output: {
         manualChunks: {

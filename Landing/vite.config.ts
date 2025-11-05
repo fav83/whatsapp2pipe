@@ -9,8 +9,8 @@ export default defineConfig({
   base: './',
 
   build: {
-    // Generate source maps for debugging (but not shipped to users)
-    sourcemap: true,
+    // Don't generate source maps for production (landing is public website)
+    sourcemap: false,
 
     // Optimize chunk size for better loading performance
     rollupOptions: {
