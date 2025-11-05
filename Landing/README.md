@@ -232,13 +232,108 @@ The waitlist form includes:
 - iOS Safari (latest 2 versions)
 - Chrome Mobile (latest 2 versions)
 
-## SEO
+## SEO System
 
-- Proper meta tags (title, description)
-- Open Graph tags for social sharing
-- Twitter Card tags
-- Semantic HTML structure
-- Mobile-responsive design
+This landing page includes a comprehensive, automated SEO system. See [Docs/Architecture/Landing-SEO-Architecture.md](../Docs/Architecture/Landing-SEO-Architecture.md) for complete technical details.
+
+**Features:**
+- Dynamic meta tag management with react-helmet-async
+- Automated route discovery and sitemap generation
+- Static pre-rendering capability (optional)
+- Robots.txt configuration
+- Open Graph and Twitter Card tags
+
+### SEO Build Commands
+
+**Standard Build (Recommended):**
+```bash
+npm run build
+```
+Includes: TypeScript compilation → Vite build → Sitemap generation
+
+**Build with Pre-rendering:**
+```bash
+npm run build:prerender
+```
+Includes: Standard build + Automated pre-rendering + Sitemap
+
+**Individual Commands:**
+```bash
+npm run generate-sitemap   # Generate sitemap only
+npm run prerender:run       # Pre-render (requires preview server)
+```
+
+### SEO Configuration
+
+Create or update `.env.local`:
+```bash
+# Required for SEO
+VITE_SITE_URL=https://chat2deal.com
+
+# API endpoint
+VITE_API_BASE_URL=http://localhost:3000/api
+```
+
+### Adding Pages with SEO
+
+1. **Create page component** with `PageHelmet`:
+   ```tsx
+   // src/pages/About.tsx
+   import { PageHelmet } from '../components/SEO';
+
+   export default function About() {
+     return (
+       <>
+         <PageHelmet
+           title="About Us"
+           description="Learn about Chat2Deal"
+           url="/about"
+         />
+         {/* Page content */}
+       </>
+     );
+   }
+   ```
+
+2. **Add route** to `App.tsx`:
+   ```tsx
+   <Route path="/about" element={<About />} />
+   ```
+
+3. **Build** - The page is automatically included in sitemap!
+
+### SEO Files
+
+```
+Landing/
+├── public/
+│   └── robots.txt                    # Robots.txt (copied to dist/)
+├── scripts/
+│   ├── route-discovery.js           # Automated route discovery
+│   ├── generate-sitemap.js          # Sitemap generation
+│   ├── prerender.js                 # Static pre-rendering
+│   └── build-with-prerender.js      # Automated server management
+├── src/
+│   └── components/
+│       └── SEO/
+│           ├── PageHelmet.tsx       # SEO meta tag component
+│           └── index.ts
+└── dist/                             # Build output
+    ├── sitemap.xml                  # Generated sitemap
+    └── robots.txt                   # Copied from public/
+```
+
+### When to Use Pre-rendering
+
+**Use `npm run build:prerender` when:**
+- Deploying to pure CDN without server-side rendering
+- Targeting legacy search engine crawlers
+- Need instant SEO without JavaScript execution
+
+**Use standard `npm run build` when:**
+- Deploying to modern hosting (Netlify, Vercel, etc.)
+- Dynamic meta tags are sufficient (recommended for most cases)
+- Want faster build times
 
 ## Deployment
 

@@ -1,0 +1,15 @@
+# Chat2Deal Robots.txt
+# Allow all search engines to crawl all content
+
+User-agent: *
+Allow: /
+
+# Prevent indexing of duplicate URLs from tracking parameters
+# This avoids duplicate content penalties
+Disallow: /*?utm_*
+Disallow: /*?gclid=*
+Disallow: /*?fbclid=*
+Disallow: /*?ref=*
+
+# Sitemap location
+Sitemap: https://chat2deal.com/sitemap.xml

@@ -58,7 +58,8 @@
       "Bash(git rev-parse:*)",
       "Bash(bash:*)",
       "Bash(del DEBUG_IDS.md)",
-      "Bash(dotnet ef dbcontext:*)"
+      "Bash(dotnet ef dbcontext:*)",
+      "Bash(start /B npm run preview)"
     ],
     "deny": [],
     "ask": [

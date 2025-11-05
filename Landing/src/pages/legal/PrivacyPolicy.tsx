@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Markdown from 'react-markdown';
+import { PageHelmet } from '../../components/SEO';
 import { Header } from '../../components/Header';
 import { Footer } from '../../components/Footer';
 
@@ -30,8 +31,14 @@ export default function PrivacyPolicy() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
+    <>
+      <PageHelmet
+        title="Privacy Policy"
+        description="Chat2Deal Privacy Policy - How we collect, use, and protect your data when using our WhatsApp to Pipedrive CRM integration."
+        url="/privacy-policy"
+      />
+      <div className="min-h-screen flex flex-col">
+        <Header />
 
       <main className="flex-1 py-8 sm:py-12">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
@@ -145,6 +152,7 @@ export default function PrivacyPolicy() {
       </main>
 
       <Footer />
-    </div>
+      </div>
+    </>
   );
 }

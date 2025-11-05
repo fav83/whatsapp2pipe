@@ -66,6 +66,25 @@
 
 ---
 
+### Social Media Preview Images
+**Description:** Create custom Open Graph and Twitter Card preview images for social media sharing.
+
+**Current State:** Landing page SEO implementation references `/og-image.jpg` and `/twitter-image.jpg` but images don't exist yet.
+
+**Future Implementation:**
+- Design Open Graph image (1200x630px) with Chat2Deal branding
+- Design Twitter Card image (1200x675px) with Chat2Deal branding
+- Include key value proposition and visual brand elements
+- Optimize for file size while maintaining quality
+- Consider creating page-specific images (home, privacy, terms)
+
+**Documentation:** [Landing-SEO-Architecture.md](../Architecture/Landing-SEO-Architecture.md)
+
+**Priority:** Low (Meta tags work without images, just won't have rich previews)
+**Effort:** Low (Design work, not technical)
+
+---
+
 ## Notes
 
 - Features in this parking lot are not committed for any specific release
