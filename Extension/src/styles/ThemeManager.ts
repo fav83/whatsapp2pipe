@@ -12,7 +12,7 @@ export type ThemeName = keyof typeof palettes
 export interface ThemeMetadata {
   name: ThemeName
   displayName: string
-  category: 'Tailwind 600-Series' | 'Tailwind 500-Series'
+  category: 'Default' | 'Tailwind 600-Series' | 'Tailwind 500-Series'
   primaryColor: string
 }
 
@@ -20,6 +20,14 @@ export interface ThemeMetadata {
  * Theme metadata with display names and categories
  */
 export const THEME_METADATA: ThemeMetadata[] = [
+  // Default Theme
+  {
+    name: 'darkBlueGray',
+    displayName: 'Dark Blue-Gray',
+    category: 'Default',
+    primaryColor: '#656099',
+  },
+
   // Tailwind 600-Series Color Themes
   {
     name: 'modernBlue',
@@ -307,7 +315,7 @@ export const THEMES_BY_CATEGORY = THEME_METADATA.reduce(
  * Theme Manager Class
  */
 class ThemeManager {
-  private currentTheme: ThemeName = 'indigo500'
+  private currentTheme: ThemeName = 'darkBlueGray'
   private listeners: Set<(theme: ThemeName) => void> = new Set()
   private initialized = false
 

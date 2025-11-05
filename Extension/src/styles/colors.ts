@@ -1601,6 +1601,75 @@ const warmStone = {
   },
 }
 
+/**
+ * Dark Blue-Gray Theme (Custom)
+ */
+const darkBlueGray = {
+  // Brand Colors
+  brand: {
+    primary: '#656099', // Custom dark blue-gray
+    'primary-hover': '#4f4775', // Darker shade for hover
+    'primary-light': '#e8e6f0', // Very light blue-gray
+    'primary-light-hover': '#b8b3d0', // Medium light for hover
+  },
+
+  // Text Colors
+  text: {
+    primary: '#0a0a0a', // neutral-950
+    secondary: '#525252', // neutral-600
+    tertiary: '#a3a3a3', // neutral-400
+    'avatar-hover': '#404040', // neutral-700
+  },
+
+  // Background Colors
+  background: {
+    primary: '#ffffff',
+    secondary: '#f5f4f8', // Very light blue-gray tint
+    tertiary: '#f8fafc', // slate-50
+    main: '#e2e8f0', // slate-200
+  },
+
+  // Border Colors
+  border: {
+    primary: '#cbd5e1', // slate-300
+    secondary: '#e2e8f0', // slate-200
+  },
+
+  // State Colors
+  error: {
+    text: '#dc2626', // red-600
+    'text-hover': '#991b1b', // red-800
+    background: '#fef2f2', // red-50
+    border: '#fca5a5', // red-300
+  },
+
+  warning: {
+    background: '#fef3c7', // amber-100
+    border: '#fbbf24', // amber-400
+    icon: '#f59e0b', // amber-500
+  },
+
+  success: {
+    background: '#d1fae5', // emerald-100
+    border: '#10b981', // emerald-500
+  },
+
+  // Special UI
+  loading: {
+    spinner: '#656099', // Custom dark blue-gray
+  },
+
+  // Dev Mode Colors
+  dev: {
+    background: '#fde68a', // amber-200
+    border: '#f59e0b', // amber-500
+    'badge-background': '#fef3c7', // amber-100
+    'badge-text': '#78350f', // amber-900
+    'button-background': '#f59e0b', // amber-500
+    'button-border': '#d97706', // amber-600
+  },
+}
+
 // ============================================================================
 // TAILWIND 500-SERIES THEMES
 // ============================================================================
@@ -2816,6 +2885,9 @@ export const colors = coolCyan
 // ============================================================================
 
 export const palettes = {
+  // Custom themes
+  darkBlueGray,
+
   // Original themes
   whatsappGreen,
   modernBlue,
