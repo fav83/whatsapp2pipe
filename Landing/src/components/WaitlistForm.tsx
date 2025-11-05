@@ -14,7 +14,6 @@ export function WaitlistForm({ variant = 'hero' }: WaitlistFormProps) {
     handleSubmit,
   } = useWaitlistForm();
 
-  const isHero = variant === 'hero';
   const isCTA = variant === 'cta';
 
   // Success state

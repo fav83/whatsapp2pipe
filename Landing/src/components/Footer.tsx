@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 export function Footer() {
   return (
     <footer className="bg-white border-t border-slate-200 py-6">
@@ -10,19 +12,19 @@ export function Footer() {
 
           {/* Center - Links */}
           <div className="flex items-center gap-6">
-            <a
-              href="/privacy"
+            <Link
+              to="/privacy-policy"
               className="text-sm text-slate-600 hover:text-slate-700 hover:underline transition-colors duration-200"
             >
               Privacy Policy
-            </a>
+            </Link>
             <span className="text-slate-400">•</span>
-            <a
-              href="/terms"
+            <Link
+              to="/terms-of-service"
               className="text-sm text-slate-600 hover:text-slate-700 hover:underline transition-colors duration-200"
             >
               Terms of Service
-            </a>
+            </Link>
           </div>
 
           {/* Right - Sign in */}

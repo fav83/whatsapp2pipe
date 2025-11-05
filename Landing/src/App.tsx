@@ -1,20 +1,17 @@
-import { Hero } from './components/Hero';
-import { Benefits } from './components/Benefits';
-import { HowItWorks } from './components/HowItWorks';
-import { FinalCTA } from './components/FinalCTA';
-import { Footer } from './components/Footer';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Home from './pages/Home';
+import PrivacyPolicy from './pages/legal/PrivacyPolicy';
+import TermsOfService from './pages/legal/TermsOfService';
 
 function App() {
   return (
-    <div className="min-h-screen">
-      <Hero />
-      <main>
-        <Benefits />
-        <HowItWorks />
-        <FinalCTA />
-      </main>
-      <Footer />
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-service" element={<TermsOfService />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
