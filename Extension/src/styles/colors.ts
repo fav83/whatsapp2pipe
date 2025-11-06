@@ -1601,6 +1601,75 @@ const warmStone = {
   },
 }
 
+/**
+ * Dark Blue-Gray Theme (Custom)
+ */
+const darkBlueGray = {
+  // Brand Colors
+  brand: {
+    primary: '#656099', // Custom dark blue-gray
+    'primary-hover': '#4f4775', // Darker shade for hover
+    'primary-light': '#e8e6f0', // Very light blue-gray
+    'primary-light-hover': '#b8b3d0', // Medium light for hover
+  },
+
+  // Text Colors
+  text: {
+    primary: '#0a0a0a', // neutral-950
+    secondary: '#525252', // neutral-600
+    tertiary: '#a3a3a3', // neutral-400
+    'avatar-hover': '#404040', // neutral-700
+  },
+
+  // Background Colors
+  background: {
+    primary: '#ffffff',
+    secondary: '#f5f4f8', // Very light blue-gray tint
+    tertiary: '#f8fafc', // slate-50
+    main: '#e2e8f0', // slate-200
+  },
+
+  // Border Colors
+  border: {
+    primary: '#cbd5e1', // slate-300
+    secondary: '#e2e8f0', // slate-200
+  },
+
+  // State Colors
+  error: {
+    text: '#dc2626', // red-600
+    'text-hover': '#991b1b', // red-800
+    background: '#fef2f2', // red-50
+    border: '#fca5a5', // red-300
+  },
+
+  warning: {
+    background: '#fef3c7', // amber-100
+    border: '#fbbf24', // amber-400
+    icon: '#f59e0b', // amber-500
+  },
+
+  success: {
+    background: '#d1fae5', // emerald-100
+    border: '#10b981', // emerald-500
+  },
+
+  // Special UI
+  loading: {
+    spinner: '#656099', // Custom dark blue-gray
+  },
+
+  // Dev Mode Colors
+  dev: {
+    background: '#fde68a', // amber-200
+    border: '#f59e0b', // amber-500
+    'badge-background': '#fef3c7', // amber-100
+    'badge-text': '#78350f', // amber-900
+    'button-background': '#f59e0b', // amber-500
+    'button-border': '#d97706', // amber-600
+  },
+}
+
 // ============================================================================
 // TAILWIND 500-SERIES THEMES
 // ============================================================================
@@ -2798,36 +2867,16 @@ const rose500 = {
 // ============================================================================
 
 /**
- * Active Color Palette
+ * @deprecated This static export is deprecated. Use ThemeManager for runtime theme switching instead.
  *
- * To change the theme, update this export to use a different palette:
+ * IMPORTANT: Do not use this export in new code. Themes are now managed dynamically by ThemeManager,
+ * which loads the active theme from Chrome storage and applies it via CSS variables.
  *
- * Original Themes:
- * - export const colors = whatsappGreen;
- * - export const colors = modernBlue;
- * - export const colors = professionalPurple;
- * - export const colors = oceanTeal;
- * - export const colors = sunsetOrange;
- * - export const colors = deepIndigo;
- * - export const colors = forestGreen;
- * - export const colors = rosePink;
+ * To change themes:
+ * - Use: themeManager.setTheme('themeName')
+ * - Themes persist across sessions and change instantly without rebuild
  *
- * Tailwind 600-Series Themes:
- * - export const colors = crimsonRed;      // red-600
- * - export const colors = goldenAmber;     // amber-600
- * - export const colors = brightYellow;    // yellow-600
- * - export const colors = freshLime;       // lime-600
- * - export const colors = vibrantEmerald;  // emerald-600
- * - export const colors = coolCyan;        // cyan-600
- * - export const colors = clearSky;        // sky-600
- * - export const colors = royalPurple;     // purple-600
- * - export const colors = vividFuchsia;    // fuchsia-600
- * - export const colors = softPink;        // pink-600
- * - export const colors = slateGray;       // slate-600
- * - export const colors = neutralGray;     // gray-600
- * - export const colors = modernZinc;      // zinc-600
- * - export const colors = pureNeutral;     // neutral-600
- * - export const colors = warmStone;       // stone-600
+ * This export is kept for backward compatibility only.
  */
 export const colors = coolCyan
 
@@ -2836,6 +2885,9 @@ export const colors = coolCyan
 // ============================================================================
 
 export const palettes = {
+  // Custom themes
+  darkBlueGray,
+
   // Original themes
   whatsappGreen,
   modernBlue,

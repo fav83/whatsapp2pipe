@@ -27,7 +27,6 @@ import { UserAvatar } from './components/UserAvatar'
 import { SentryTest } from './components/SentryTest'
 import { exposePipedriveTestHelpers } from './testPipedriveApi'
 import type { Person } from '../types/person'
-import { themeManager } from '../styles/ThemeManager'
 
 interface ChatStatus {
   phone: string | null
@@ -67,10 +66,7 @@ export default function App() {
   const [state, setState] = useState<SidebarState>({ type: 'welcome' })
   const [sentryTestExpanded, setSentryTestExpanded] = useState(false)
 
-  // Initialize theme manager on mount
-  useEffect(() => {
-    themeManager.initialize()
-  }, [])
+  // Theme manager is now initialized in index.tsx before React mount (prevents flicker)
 
   // Listen for chat status events from MAIN world
   useEffect(() => {
@@ -115,8 +111,13 @@ export default function App() {
   return (
     <div className="h-full flex flex-col bg-white border-l border-border-primary">
       {/* Fixed Header */}
-      <header className="flex-shrink-0 h-14 px-3 border-b border-border-secondary flex items-center justify-between bg-white">
-        <h1 className="text-[17px] font-semibold text-text-primary">Chat2Deal</h1>
+      <header className="flex-shrink-0 h-[64px] px-3 border-b border-border-secondary flex items-center justify-between bg-white">
+        <h1
+          className="text-[17px] text-brand-primary brand-logo"
+          style={{ fontFamily: "'Momo Trust Display', sans-serif" }}
+        >
+          chat2deal
+        </h1>
         {authState === 'authenticated' && userName && (
           <UserAvatar userName={userName} onSignOut={signOut} />
         )}

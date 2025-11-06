@@ -12,7 +12,7 @@ export type ThemeName = keyof typeof palettes
 export interface ThemeMetadata {
   name: ThemeName
   displayName: string
-  category: 'Tailwind 600-Series' | 'Tailwind 500-Series'
+  category: 'Default' | 'Tailwind 600-Series' | 'Tailwind 500-Series'
   primaryColor: string
 }
 
@@ -20,6 +20,14 @@ export interface ThemeMetadata {
  * Theme metadata with display names and categories
  */
 export const THEME_METADATA: ThemeMetadata[] = [
+  // Default Theme
+  {
+    name: 'darkBlueGray',
+    displayName: 'Dark Blue-Gray',
+    category: 'Default',
+    primaryColor: '#656099',
+  },
+
   // Tailwind 600-Series Color Themes
   {
     name: 'modernBlue',
@@ -307,7 +315,7 @@ export const THEMES_BY_CATEGORY = THEME_METADATA.reduce(
  * Theme Manager Class
  */
 class ThemeManager {
-  private currentTheme: ThemeName = 'indigo500'
+  private currentTheme: ThemeName = 'darkBlueGray'
   private listeners: Set<(theme: ThemeName) => void> = new Set()
   private initialized = false
 
@@ -428,6 +436,21 @@ class ThemeManager {
     style.setProperty('--dev-badge-text', palette.dev['badge-text'])
     style.setProperty('--dev-button-bg', palette.dev['button-background'])
     style.setProperty('--dev-button-border', palette.dev['button-border'])
+
+    // Error colors
+    style.setProperty('--error-text', palette.error.text)
+    style.setProperty('--error-text-hover', palette.error['text-hover'])
+    style.setProperty('--error-background', palette.error.background)
+    style.setProperty('--error-border', palette.error.border)
+
+    // Warning colors
+    style.setProperty('--warning-background', palette.warning.background)
+    style.setProperty('--warning-border', palette.warning.border)
+    style.setProperty('--warning-icon', palette.warning.icon)
+
+    // Success colors
+    style.setProperty('--success-background', palette.success.background)
+    style.setProperty('--success-border', palette.success.border)
   }
 
   /**

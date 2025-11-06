@@ -272,7 +272,7 @@ export function PersonNoMatchState({
         <button
           onClick={handleCreate}
           disabled={isCreateDisabled}
-          className="w-full h-[38px] px-4 py-2 bg-brand-primary text-white text-sm font-medium rounded-lg disabled:opacity-60 disabled:cursor-not-allowed hover:bg-brand-primary-hover transition-colors flex items-center justify-center gap-2"
+          className="w-full h-[38px] px-4 py-2 bg-brand-primary text-white text-sm font-medium rounded-lg disabled:opacity-60 disabled:cursor-not-allowed hover:bg-brand-hover transition-colors flex items-center justify-center gap-2"
         >
           {isCreating ? <Spinner size="md" color="white" /> : 'Create'}
         </button>
@@ -341,7 +341,7 @@ export function PersonNoMatchState({
             <button
               type="submit"
               disabled={isSearchDisabled}
-              className="w-[34px] h-[34px] bg-brand-primary text-white text-sm font-medium rounded-lg disabled:opacity-60 disabled:cursor-not-allowed hover:bg-brand-primary-hover transition-colors flex items-center justify-center shrink-0"
+              className="w-[34px] h-[34px] bg-brand-primary text-white text-sm font-medium rounded-lg disabled:opacity-60 disabled:cursor-not-allowed hover:bg-brand-hover transition-colors flex items-center justify-center shrink-0"
               aria-label="Search"
               title="Search"
             >
@@ -401,8 +401,8 @@ export function PersonNoMatchState({
                     onClick={() => setSelectedPersonId(person.id)}
                     className={`w-full text-left px-3 py-2 border-2 rounded-lg transition-colors cursor-pointer ${
                       isSelected
-                        ? 'border-brand-primary hover:border-brand-primary-hover bg-brand-primary-light hover:bg-brand-primary-light-hover'
-                        : 'border-border-primary bg-white hover:border-text-tertiary hover:bg-background-main'
+                        ? 'border-brand-primary hover:border-brand-hover bg-brand-secondary hover:bg-background-hover'
+                        : 'border-border-primary bg-white hover:border-border-secondary hover:bg-background-main'
                     }`}
                   >
                     <div className="text-sm font-semibold text-text-primary">{person.name}</div>
@@ -426,7 +426,7 @@ export function PersonNoMatchState({
               type="button"
               onClick={handleAttach}
               disabled={disableAttach}
-              className="mt-3 w-full h-[38px] px-4 py-2 bg-brand-primary text-white text-sm font-medium rounded-lg disabled:opacity-60 disabled:cursor-not-allowed hover:bg-brand-primary-hover transition-colors flex items-center justify-center gap-2"
+              className="mt-3 w-full h-[38px] px-4 py-2 bg-brand-primary text-white text-sm font-medium rounded-lg disabled:opacity-60 disabled:cursor-not-allowed hover:bg-brand-hover transition-colors flex items-center justify-center gap-2"
             >
               {isAttaching ? <Spinner size="md" color="white" /> : 'Attach number'}
             </button>

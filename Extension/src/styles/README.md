@@ -6,34 +6,20 @@ All extension colors are centralized in [`colors.ts`](colors.ts) for easy theme 
 
 ## Available Palettes
 
-### 1. WhatsApp Green (Default)
-
-The original WhatsApp-inspired green theme with professional grays.
-
-### 2. Modern Blue
-
-A clean, professional blue theme with slate backgrounds.
-
-### 3. Professional Purple
-
-An elegant purple theme with sophisticated accents.
+**Note:** The default theme is managed by ThemeManager and can be changed at runtime. The static export in colors.ts is deprecated.
 
 ## How to Switch Palettes
 
-**Option 1: Quick Switch (Recommended)**
+**Runtime Theme Switching (Recommended)**
 
-Edit [colors.ts](colors.ts) line ~180 and change the export:
+The extension uses ThemeManager for dynamic theme switching without rebuild. Themes are persisted in Chrome storage and applied via CSS variables.
 
-```ts
-// Current (WhatsApp Green)
-export const colors = whatsappGreen
+To change themes:
 
-// Change to Modern Blue
-export const colors = modernBlue
+1. Use the theme selector in the extension UI (when implemented)
+2. Or programmatically via `themeManager.setTheme('themeName')`
 
-// Or Professional Purple
-export const colors = professionalPurple
-```
+Available theme names: `indigo500`, `modernBlue`, `coolCyan`, `oceanTeal`, `forestGreen`, `crimsonRed`, and many more (see `palettes` export in colors.ts)
 
 **Option 2: Create Custom Palette**
 
@@ -60,7 +46,7 @@ Use semantic color names in Tailwind classes:
 
 ```tsx
 // ✅ NEW - Semantic names
-<button className="bg-brand-primary hover:bg-brand-primary-hover text-white">
+<button className="bg-brand-primary hover:bg-brand-hover text-white">
   Click me
 </button>
 
@@ -83,9 +69,8 @@ Use semantic color names in Tailwind classes:
 #### Brand Colors
 
 - `bg-brand-primary` / `text-brand-primary` / `border-brand-primary`
-- `bg-brand-primary-hover` / `text-brand-primary-hover`
-- `bg-brand-primary-light` / `text-brand-primary-light`
-- `bg-brand-primary-light-hover` / `text-brand-primary-light-hover`
+- `bg-brand-secondary` - Light variant of primary
+- `hover:bg-brand-hover` / `hover:text-brand-hover` - Hover states
 
 #### Text Colors
 
@@ -96,10 +81,11 @@ Use semantic color names in Tailwind classes:
 
 #### Background Colors
 
-- `bg-background-primary` - White cards, inputs
+- `bg-white` - White cards, inputs
 - `bg-background-secondary` - Light gray backgrounds
 - `bg-background-tertiary` - Subtle backgrounds
 - `bg-background-main` - Main content area
+- `hover:bg-background-hover` - Hover state background
 
 #### Border Colors
 
@@ -140,7 +126,7 @@ Use semantic color names in Tailwind classes:
 ### After (New Code)
 
 ```tsx
-<div className="bg-brand-primary hover:bg-brand-primary-hover text-white rounded-lg">
+<div className="bg-brand-primary hover:bg-brand-hover text-white rounded-lg">
   <h3 className="text-text-primary font-medium">Title</h3>
   <p className="text-text-secondary">Description</p>
   <input className="border-border-primary focus:border-brand-primary" />
@@ -152,7 +138,7 @@ Use semantic color names in Tailwind classes:
 ### Primary Button
 
 ```tsx
-<button className="bg-brand-primary hover:bg-brand-primary-hover text-white px-4 py-2 rounded-lg">
+<button className="bg-brand-primary hover:bg-brand-hover text-white px-4 py-2 rounded-lg">
   Primary Action
 </button>
 ```
@@ -160,9 +146,7 @@ Use semantic color names in Tailwind classes:
 ### Card
 
 ```tsx
-<div className="bg-background-primary border border-border-secondary rounded-lg shadow-sm p-4">
-  Card content
-</div>
+<div className="bg-white border border-border-secondary rounded-lg shadow-sm p-4">Card content</div>
 ```
 
 ### Input Field
@@ -171,7 +155,7 @@ Use semantic color names in Tailwind classes:
 <input
   className="
   w-full px-3 py-2 rounded-lg
-  bg-background-primary
+  bg-white
   border border-border-primary
   text-text-primary
   placeholder:text-text-tertiary
@@ -199,8 +183,8 @@ Use semantic color names in Tailwind classes:
   px-4 py-2 rounded-lg
   ${
     isSelected
-      ? 'bg-brand-primary-light hover:bg-brand-primary-light-hover text-brand-primary'
-      : 'bg-background-primary hover:bg-background-secondary text-text-secondary'
+      ? 'bg-brand-secondary hover:bg-background-hover text-brand-primary'
+      : 'bg-white hover:bg-background-secondary text-text-secondary'
   }
 `}
 >
@@ -208,22 +192,12 @@ Use semantic color names in Tailwind classes:
 </button>
 ```
 
-## Testing Palettes
+## Testing Themes
 
-After changing the palette in [colors.ts](colors.ts):
+Themes change instantly via ThemeManager without rebuild:
 
-1. **Rebuild the extension:**
-
-   ```bash
-   cd Extension
-   npm run build
-   ```
-
-2. **Reload in Chrome:**
-   - Go to `chrome://extensions`
-   - Click the reload icon on the extension
-   - Hard refresh WhatsApp Web (Ctrl/Cmd + Shift + R)
-
+1. **Switch theme** using the UI selector or programmatically
+2. **No rebuild needed** - changes apply immediately
 3. **Test key states:**
    - Loading states (spinner color)
    - Authenticated state (primary colors)

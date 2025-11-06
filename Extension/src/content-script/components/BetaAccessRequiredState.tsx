@@ -57,7 +57,7 @@ export function BetaAccessRequiredState({ onSignIn }: BetaAccessRequiredStatePro
         href={`${WEBSITE_URL}/waitlist`}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center px-4 py-3 bg-brand-primary text-white text-sm font-medium rounded-lg hover:bg-brand-primary-hover transition-colors"
+        className="inline-flex items-center px-4 py-3 bg-brand-primary text-white text-sm font-medium rounded-lg hover:bg-brand-hover transition-colors"
       >
         Join Waitlist
         <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -75,7 +75,7 @@ export function BetaAccessRequiredState({ onSignIn }: BetaAccessRequiredStatePro
         Already have an account?{' '}
         <button
           onClick={onSignIn}
-          className="text-brand-primary hover:text-brand-primary-hover font-medium"
+          className="text-brand-primary hover:text-brand-hover font-medium"
         >
           Try signing in again
         </button>

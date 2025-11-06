@@ -5,6 +5,7 @@
 This project uses a structured organization:
 - **Extension/** - All Chrome extension source code, build configurations, and dependencies
 - **Website/** - User dashboard web application (React + TypeScript)
+- **Landing/** - Marketing landing page with SEO optimization (React + TypeScript)
 - **Docs/** - All project documentation (architecture, BRDs, plans, specs)
 
 **IMPORTANT:** All extension source code must be located under the `Extension/` folder. This includes:
@@ -22,6 +23,7 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 ### Architecture
 - [Chrome-Extension-Architecture.md](Docs/Architecture/Chrome-Extension-Architecture.md) - Technical architecture and component design
 - [Website-Architecture.md](Docs/Architecture/Website-Architecture.md) - User dashboard web application architecture (✅ Complete)
+- [Landing-SEO-Architecture.md](Docs/Architecture/Landing-SEO-Architecture.md) - Landing page SEO system architecture (✅ Complete)
 - [UI-Design-Specification.md](Docs/Architecture/UI-Design-Specification.md) - Complete UI design specification with visual system, components, and states (✅ Complete)
 
 ### BRDs (Business Requirements Documents)
@@ -51,6 +53,8 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 - [Spec-119-Website-Pipedrive-Auth.md](Docs/Specs/Spec-119-Website-Pipedrive-Auth.md) - Website OAuth implementation and user dashboard (✅ Complete Spec, ⏳ Implementation Pending)
 - [Spec-120a-Website-Invite-System.md](Docs/Specs/Spec-120a-Website-Invite-System.md) - Website closed beta invite system (✅ Complete Spec, ⏳ Implementation Pending)
 - [Spec-120b-Extension-Beta-Access.md](Docs/Specs/Spec-120b-Extension-Beta-Access.md) - Extension beta access control (✅ Complete Spec & Implementation)
+- [Spec-123-Landing-Legal-Pages.md](Docs/Specs/Spec-123-Landing-Legal-Pages.md) - Landing page legal pages with SEO system (✅ Complete)
+- [Spec-123-Implementation-Summary.md](Docs/Specs/Spec-123-Implementation-Summary.md) - Complete implementation summary with SEO enhancements
 
 ### External Documentation
 - [Pipedrive/](Docs/External/Pipedrive/) - Pipedrive API documentation and development resources

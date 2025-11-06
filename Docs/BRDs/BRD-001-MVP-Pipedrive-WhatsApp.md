@@ -433,6 +433,55 @@ To guide users through the extension setup process, the website dashboard detect
 - Version compatibility warnings: Alert if extension version is outdated
 - Quick actions: "Open WhatsApp Web" button when extension is installed
 
+### 6.8 Landing Page Legal Pages (Feature 23) (Draft - Spec-123)
+To meet legal compliance requirements and build user trust, the Chat2Deal landing page includes dedicated Privacy Policy and Terms of Service pages:
+
+**Purpose:**
+- Provide legally required disclosures (data collection, privacy practices, terms of use)
+- Build trust with potential users during closed beta
+- Support footer links on landing page (/privacy-policy and /terms-of-service)
+
+**Page Structure:**
+- Two separate pages: Privacy Policy (/privacy-policy) and Terms of Service (/terms-of-service)
+- Content stored as Markdown files in public/content/legal/ directory
+- React components fetch and render markdown with custom styling
+- Minimal distraction layout: Header + breadcrumb + legal content + Footer
+
+**Routing:**
+- React Router added to Landing site to support multi-page navigation
+- URL structure: /privacy-policy and /terms-of-service (explicit, SEO-friendly)
+- Home page remains at / with existing landing components (Hero, Benefits, HowItWorks, FinalCTA)
+- Footer links updated from /privacy and /terms to match new URLs
+
+**Layout:**
+- All pages share same Header component (existing: logo, "Join the Waitlist" button, "Sign in" button)
+- Legal pages include breadcrumb: "← Back to Home" at top of content
+- All pages share same Footer component (existing: branding, legal links, sign-in prompt)
+
+**Content:**
+- Markdown files (privacy-policy.md, terms-of-service.md) provided by user
+- Rendered using react-markdown library with custom component styling
+- Typography: Tailwind CSS utility classes for headings, paragraphs, lists, links
+- Content format matches reference implementation (boring-calc) styling approach
+
+**Dependencies:**
+- react-router-dom (routing)
+- react-markdown (markdown rendering)
+- No SEO library (react-helmet-async skipped for MVP)
+
+**Implementation Status:**
+- ✅ Spec complete: Spec-123-Landing-Legal-Pages.md
+- ✅ React Router setup: Complete (v7.9.5)
+- ✅ Page components: Complete (PrivacyPolicy.tsx, TermsOfService.tsx with SEO)
+- ✅ Markdown files: Complete (Basecamp conversational style with CC BY 4.0 attribution)
+- ✅ Footer link updates: Complete
+- ✅ SEO system: Complete (beyond original scope - see Landing-SEO-Architecture.md)
+
+**Privacy & Security:**
+- Legal content publicly accessible (no authentication required)
+- Markdown files served as static assets from public/ directory
+- No user data collection on legal pages
+
 ---
 
 ## 7) Metrics & Success Criteria
@@ -517,3 +566,4 @@ To guide users through the extension setup process, the website dashboard detect
 - [Spec-120b: Extension Beta Access](../Specs/Spec-120b-Extension-Beta-Access.md) - Closed beta access control (extension)
 - [Spec-121: Waitlist System](../Specs/Spec-121-Waitlist-System.md) - Waitlist for users without beta access
 - [Spec-122: Website Extension Detection](../Specs/Spec-122-Website-Extension-Detection.md) - Extension installation detection and installation prompt
+- [Spec-123: Landing Page Legal Pages](../Specs/Spec-123-Landing-Legal-Pages.md) - Privacy Policy and Terms of Service pages for landing site

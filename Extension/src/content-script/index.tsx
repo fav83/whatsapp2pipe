@@ -8,7 +8,9 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { waitForWhatsAppLoad } from './whatsapp-loader'
 import { logError } from '../utils/errorLogger'
 import { sentryScope } from './sentry'
+import { themeManager } from '../styles/ThemeManager'
 import '../styles/content-script.css'
+import { injectMomoTrustDisplay } from '../styles/loadBrandFont'
 
 console.log('[Content Script] Loading on WhatsApp Web')
 console.log('[Content Script] Development mode:', import.meta.env.DEV)
@@ -99,6 +101,9 @@ async function init() {
       console.log('[Content Script] WhatsApp container adjusted for sidebar')
     }
 
+    // Inject brand font (self-hosted) before rendering
+    injectMomoTrustDisplay()
+
     // Create sidebar container
     const sidebarContainer = document.createElement('div')
     sidebarContainer.id = 'pipedrive-whatsapp-sidebar'
@@ -116,6 +121,10 @@ async function init() {
     // Append to body
     document.body.appendChild(sidebarContainer)
     console.log('[Content Script] Sidebar container injected')
+
+    // Initialize theme before rendering React to prevent flicker
+    await themeManager.initialize()
+    console.log('[Content Script] Theme initialized')
 
     // Render React app into sidebar
     const root = ReactDOM.createRoot(sidebarContainer)
