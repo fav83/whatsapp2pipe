@@ -2,7 +2,7 @@ import { WaitlistForm } from './WaitlistForm';
 
 export function FinalCTA() {
   return (
-    <section className="relative bg-white py-24 md:py-28 overflow-hidden">
+    <section id="waitlist" className="relative bg-white py-24 md:py-28 overflow-hidden">
       {/* Background decorations (optional) */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-10 right-10 w-64 h-64 rounded-full bg-button-primary/10 blur-3xl" />

@@ -1,8 +1,8 @@
 export function Header() {
   const scrollToWaitlist = () => {
-    const heroSection = document.querySelector('header');
-    if (heroSection) {
-      heroSection.scrollIntoView({ behavior: 'smooth' });
+    const waitlistSection = document.getElementById('waitlist');
+    if (waitlistSection) {
+      waitlistSection.scrollIntoView({ behavior: 'smooth' });
       // Focus on email input after scroll
       setTimeout(() => {
         document.getElementById('email')?.focus();

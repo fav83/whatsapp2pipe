@@ -77,9 +77,9 @@ Landing/
    cp .env.example .env.local
    ```
 
-4. Update `.env.local` with your API endpoint:
+4. Update `.env.local` with your API endpoint (or copy from `.env.development`):
    ```
-   VITE_API_BASE_URL=http://localhost:3000/api
+   VITE_API_BASE_URL=http://localhost:7071/api
    ```
 
 ### Development
@@ -207,6 +207,53 @@ The waitlist form includes:
 }
 ```
 
+### Backend Connection Setup
+
+The landing page connects to the Azure Functions backend for waitlist submissions.
+
+**Environment Configuration:**
+
+The `VITE_API_BASE_URL` environment variable is automatically selected based on the build mode:
+
+- **Development** (`.env.development`): `http://localhost:7071/api`
+- **Production** (`.env.production`): `https://api.chat2deal.com/api`
+
+**CORS Configuration:**
+
+The backend must allow requests from the landing page origin. Update the Azure Function App's `CORS_ALLOWED_ORIGINS` environment variable:
+
+**Local Development** (already configured):
+```
+CORS_ALLOWED_ORIGINS=https://web.whatsapp.com,http://localhost:3000,http://localhost:5173,https://dashboard.chat2deal.com
+```
+
+**Production** (add your landing page URL):
+```
+CORS_ALLOWED_ORIGINS=https://web.whatsapp.com,https://dashboard.chat2deal.com,https://chat2deal.com
+```
+
+If using both www and non-www domains, include both:
+```
+CORS_ALLOWED_ORIGINS=https://web.whatsapp.com,https://dashboard.chat2deal.com,https://chat2deal.com,https://www.chat2deal.com
+```
+
+**Testing the Connection:**
+
+1. **Local Testing:**
+   ```bash
+   # Terminal 1 - Start backend
+   cd Backend/WhatsApp2Pipe.Api
+   func start
+
+   # Terminal 2 - Start landing page
+   cd Landing
+   npm run dev
+   ```
+
+2. **Verify CORS**: Open browser console and test form submission. If you see CORS errors, check the backend's `CORS_ALLOWED_ORIGINS` setting.
+
+3. **Production Testing**: After deploying, test the form on the live site and monitor Azure Function logs for errors.
+
 ## Accessibility
 
 - Semantic HTML structure
@@ -268,10 +315,10 @@ npm run prerender:run       # Pre-render (requires preview server)
 Create or update `.env.local`:
 ```bash
 # Required for SEO
-VITE_SITE_URL=https://chat2deal.com
+VITE_SITE_URL=http://localhost:5173
 
 # API endpoint
-VITE_API_BASE_URL=http://localhost:3000/api
+VITE_API_BASE_URL=http://localhost:7071/api
 ```
 
 ### Adding Pages with SEO
@@ -352,13 +399,25 @@ Deploy the `dist/` folder to your hosting provider:
 
 ## Environment Variables
 
-Create a `.env.local` file (not tracked in git):
+The project uses environment-specific configuration files:
 
-```
-VITE_API_BASE_URL=http://localhost:3000/api
+- **`.env.development`** - Used when running `npm run dev`
+- **`.env.production`** - Used when running `npm run build`
+- **`.env.local`** - Local overrides (not tracked in git)
+
+**Development:**
+```bash
+VITE_API_BASE_URL=http://localhost:7071/api
+VITE_SITE_URL=http://localhost:5173
 ```
 
-For production, set this to your actual API endpoint.
+**Production:**
+```bash
+VITE_API_BASE_URL=https://api.chat2deal.com/api
+VITE_SITE_URL=https://chat2deal.com
+```
+
+The `.env.local` file can override any setting for local testing.
 
 ## License
 

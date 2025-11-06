@@ -7,7 +7,7 @@ export function Footer() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           {/* Left - Branding */}
           <div className="text-center md:text-left">
-            <div className="text-base font-semibold text-slate-700">Chat2Deal</div>
+            <div className="text-base font-normal text-slate-700" style={{ fontFamily: "'Momo Trust Display', sans-serif" }}>chat2deal</div>
           </div>
 
           {/* Center - Links */}

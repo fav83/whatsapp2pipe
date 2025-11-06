@@ -19,10 +19,10 @@ export function WaitlistForm({ variant = 'hero' }: WaitlistFormProps) {
   // Success state
   if (formState.isSuccess) {
     return (
-      <div className="text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full mb-4 bg-slate-100">
+      <div className={isCTA ? 'text-center' : 'flex items-center gap-4'}>
+        <div className={`flex items-center justify-center w-12 h-12 rounded-full bg-button-primary flex-shrink-0 ${isCTA ? 'mx-auto mb-4' : ''}`}>
           <svg
-            className="w-6 h-6 text-slate-700"
+            className="w-6 h-6 text-white"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
