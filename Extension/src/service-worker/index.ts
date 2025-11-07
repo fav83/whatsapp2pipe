@@ -5,13 +5,17 @@ import { serviceWorkerAuthService } from './authService'
 import { pipedriveApiService } from './pipedriveApiService'
 import { logError, getErrorMessage } from '../utils/errorLogger'
 import { sentryScope } from './sentry'
+import { AUTH_CONFIG } from '../config'
 import type {
   ExtensionMessage,
+  AuthFetchUrlSuccess,
+  AuthFetchUrlError,
   AuthSignInSuccess,
   AuthSignInError,
   PipedriveRequest,
   PipedriveResponse,
 } from '../types/messages'
+import type { AuthUrlResponse } from '../types/auth'
 
 console.log('[Service Worker] Loaded')
 
@@ -71,6 +75,56 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
 
   if (message.type === 'PING') {
     sendResponse({ type: 'PONG', timestamp: Date.now() })
+    return true // Keep channel open for async response
+  }
+
+  // Handle OAuth URL fetch requests (bypasses CORS)
+  if (message.type === 'AUTH_FETCH_URL') {
+    console.log('[Service Worker] Handling AUTH_FETCH_URL request')
+
+    // Validate state exists
+    if (!message.state || typeof message.state !== 'string') {
+      console.error('[Service Worker] Invalid or missing state in message')
+      const response: AuthFetchUrlError = {
+        type: 'AUTH_FETCH_URL_ERROR',
+        error: 'Invalid request: missing OAuth state',
+      }
+      sendResponse(response)
+      return true
+    }
+
+    // Fetch OAuth URL from backend (no CORS restrictions in service worker)
+    const url = `${AUTH_CONFIG.backendUrl}${AUTH_CONFIG.endpoints.authStart}?state=${encodeURIComponent(message.state)}`
+    fetch(url)
+      .then(async (response) => {
+        if (!response.ok) {
+          console.error(
+            '[Service Worker] Failed to fetch OAuth URL:',
+            response.status,
+            response.statusText
+          )
+          throw new Error('Failed to start authentication')
+        }
+        return response.json() as Promise<AuthUrlResponse>
+      })
+      .then((data) => {
+        console.log('[Service Worker] Successfully fetched OAuth URL')
+        const response: AuthFetchUrlSuccess = {
+          type: 'AUTH_FETCH_URL_SUCCESS',
+          authUrl: data.AuthorizationUrl,
+        }
+        sendResponse(response)
+      })
+      .catch((error) => {
+        console.error('[Service Worker] Failed to fetch OAuth URL:', error)
+        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch OAuth URL'
+        const response: AuthFetchUrlError = {
+          type: 'AUTH_FETCH_URL_ERROR',
+          error: errorMessage,
+        }
+        sendResponse(response)
+      })
+
     return true // Keep channel open for async response
   }
 

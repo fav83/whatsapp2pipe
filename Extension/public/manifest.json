@@ -2,14 +2,15 @@
   "manifest_version": 3,
   "name": "Pipedrive for WhatsApp Web",
   "short_name": "Pipedrive WhatsApp",
-  "version": "0.32.133",
+  "version": "0.32.148",
   "description": "Find, create, and link Pipedrive contacts directly from WhatsApp Web conversations.",
   "author": "Your Name",
   "permissions": ["storage", "tabs", "identity"],
   "host_permissions": [
     "*://web.whatsapp.com/*",
     "http://localhost:7071/*",
-    "https://pipe-tmp-func-h0crhzghhsczbph9.eastus2-01.azurewebsites.net/*"
+    "https://pipe-tmp-func-h0crhzghhsczbph9.eastus2-01.azurewebsites.net/*",
+    "https://api.chat2deal.com/*"
   ],
   "background": {
     "service_worker": "service-worker.js",

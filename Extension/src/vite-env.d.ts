@@ -5,6 +5,7 @@ interface ImportMetaEnv {
   readonly VITE_SENTRY_ENABLED: string
   readonly VITE_ENV: 'development' | 'production'
   readonly VITE_BACKEND_URL: string
+  readonly VITE_LANDING_WEBSITE_URL: string
   readonly VITE_SHOW_DEV_INDICATOR: string
   readonly DEV: boolean
   readonly PROD: boolean

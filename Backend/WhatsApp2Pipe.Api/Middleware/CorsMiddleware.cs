@@ -20,9 +20,6 @@ public class CorsMiddleware : IFunctionsWorkerMiddleware
 
     public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next)
     {
-        // Execute the function first
-        await next(context);
-
         // Get the function name
         var functionName = context.FunctionDefinition.Name;
 
@@ -30,14 +27,14 @@ public class CorsMiddleware : IFunctionsWorkerMiddleware
         // AuthStart is NOT skipped because it returns JSON for extension clients
         if (Array.Exists(FunctionsToSkip, fn => fn.Equals(functionName, StringComparison.OrdinalIgnoreCase)))
         {
+            await next(context);
             return;
         }
 
-        // Get the HTTP request and response
+        // Get the HTTP request
         var httpRequestData = await context.GetHttpRequestDataAsync();
-        var httpResponseData = context.GetHttpResponseData();
 
-        if (httpRequestData != null && httpResponseData != null)
+        if (httpRequestData != null)
         {
             // Get allowed origins from configuration
             var allowedOriginsConfig = configuration["CORS_ALLOWED_ORIGINS"] ?? string.Empty;
@@ -50,8 +47,29 @@ public class CorsMiddleware : IFunctionsWorkerMiddleware
                 ? originValues.FirstOrDefault()
                 : null;
 
-            // Add CORS headers to the response if origin is allowed
-            if (!string.IsNullOrEmpty(origin) && allowedOrigins.Contains(origin))
+            var isOptionsRequest = httpRequestData.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase);
+            var isOriginAllowed = !string.IsNullOrEmpty(origin) && allowedOrigins.Contains(origin);
+
+            // Execute the function (may fail for OPTIONS if function doesn't handle it)
+            await next(context);
+
+            // Get the response
+            var httpResponseData = context.GetHttpResponseData();
+
+            // For OPTIONS requests, replace response with proper CORS response
+            if (isOptionsRequest && isOriginAllowed && httpRequestData != null)
+            {
+                var optionsResponse = httpRequestData.CreateResponse(System.Net.HttpStatusCode.OK);
+                optionsResponse.Headers.Add("Access-Control-Allow-Origin", origin);
+                optionsResponse.Headers.Add("Access-Control-Allow-Methods", AllowedMethods);
+                optionsResponse.Headers.Add("Access-Control-Allow-Headers", AllowedHeaders);
+
+                // Replace the response
+                var invocationResult = context.GetInvocationResult();
+                invocationResult.Value = optionsResponse;
+            }
+            // For non-OPTIONS requests, add CORS headers to existing response
+            else if (httpResponseData != null && isOriginAllowed)
             {
                 // Remove existing CORS headers if any
                 httpResponseData.Headers.Remove("Access-Control-Allow-Origin");
@@ -63,6 +81,11 @@ public class CorsMiddleware : IFunctionsWorkerMiddleware
                 httpResponseData.Headers.Add("Access-Control-Allow-Methods", AllowedMethods);
                 httpResponseData.Headers.Add("Access-Control-Allow-Headers", AllowedHeaders);
             }
+        }
+        else
+        {
+            // No HTTP request data, just execute the function
+            await next(context);
         }
     }
 }

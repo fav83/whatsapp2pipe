@@ -13,12 +13,49 @@ import type { Person, CreatePersonData, AttachPhoneData } from './person'
 // ============================================================================
 
 /**
+ * Request to fetch OAuth URL from backend
+ * Sent from: Content script
+ * Handled by: Service worker
+ *
+ * Service worker fetches OAuth URL from backend (bypasses CORS restrictions)
+ */
+export interface AuthFetchUrlRequest {
+  type: 'AUTH_FETCH_URL'
+  state: string // OAuth state parameter (base64-encoded JSON with extensionId, nonce, timestamp)
+}
+
+/**
+ * Response after successfully fetching OAuth URL
+ * Sent from: Service worker
+ * Received by: Content script
+ */
+export interface AuthFetchUrlSuccess {
+  type: 'AUTH_FETCH_URL_SUCCESS'
+  authUrl: string
+}
+
+/**
+ * Response after failing to fetch OAuth URL
+ * Sent from: Service worker
+ * Received by: Content script
+ */
+export interface AuthFetchUrlError {
+  type: 'AUTH_FETCH_URL_ERROR'
+  error: string
+}
+
+/**
+ * Union type for fetch URL responses
+ */
+export type AuthFetchUrlResponse = AuthFetchUrlSuccess | AuthFetchUrlError
+
+/**
  * Request to initiate OAuth sign-in flow
  * Sent from: Content script
  * Handled by: Service worker
  *
- * Content script generates OAuth state with extension ID, fetches authUrl from backend,
- * then passes both to service worker which launches chrome.identity and validates state on callback
+ * Content script generates OAuth state with extension ID, then service worker fetches authUrl
+ * from backend and launches chrome.identity, validating state on callback
  */
 export interface AuthSignInRequest {
   type: 'AUTH_SIGN_IN'
@@ -189,9 +226,17 @@ export interface PongMessage {
 /**
  * All possible message types that can be sent
  */
-export type ExtensionMessage = AuthSignInRequest | PipedriveRequest | PingMessage
+export type ExtensionMessage =
+  | AuthFetchUrlRequest
+  | AuthSignInRequest
+  | PipedriveRequest
+  | PingMessage
 
 /**
  * All possible response types
  */
-export type ExtensionResponse = AuthSignInResponse | PipedriveResponse | PongMessage
+export type ExtensionResponse =
+  | AuthFetchUrlResponse
+  | AuthSignInResponse
+  | PipedriveResponse
+  | PongMessage

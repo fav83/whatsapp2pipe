@@ -3,14 +3,17 @@
  *
  * Handles OAuth 2.0 authentication with hybrid approach:
  * 1. Generates OAuth state with extension ID
- * 2. Fetches OAuth URL from backend with state parameter
- * 3. Passes URL and state to service worker to launch chrome.identity
+ * 2. Asks service worker to fetch OAuth URL from backend (bypasses CORS)
+ * 3. Service worker launches chrome.identity with OAuth URL
  * 4. Service worker returns verification_code
  */
 
-import { AUTH_CONFIG } from '../../config'
-import type { AuthUrlResponse } from '../../types/auth'
-import type { AuthSignInRequest, AuthSignInResponse } from '../../types/messages'
+import type {
+  AuthFetchUrlRequest,
+  AuthFetchUrlResponse,
+  AuthSignInRequest,
+  AuthSignInResponse,
+} from '../../types/messages'
 
 interface OAuthState {
   extensionId: string
@@ -45,7 +48,7 @@ class AuthService {
    *
    * ARCHITECTURE:
    * - Content script generates state with extension ID
-   * - Content script fetches OAuth URL (from WhatsApp origin - CORS allowed)
+   * - Content script asks service worker to fetch OAuth URL (bypasses CORS)
    * - Service worker launches chrome.identity popup (only available in SW context)
    * - Service worker validates state on callback
    */
@@ -55,42 +58,34 @@ class AuthService {
       const state = this.generateOAuthState()
       console.log('[AuthService] Generated OAuth state with extension ID:', chrome.runtime.id)
 
-      // Step 2: Fetch OAuth URL from backend with state parameter
-      console.log('[AuthService] Fetching OAuth URL from backend...')
-      const url = `${AUTH_CONFIG.backendUrl}${AUTH_CONFIG.endpoints.authStart}?state=${encodeURIComponent(state)}`
-      const response = await fetch(url)
+      // Step 2: Ask service worker to fetch OAuth URL from backend (bypasses CORS)
+      console.log('[AuthService] Requesting service worker to fetch OAuth URL...')
+      const fetchMessage: AuthFetchUrlRequest = { type: 'AUTH_FETCH_URL', state }
+      const fetchResponse = (await chrome.runtime.sendMessage(fetchMessage)) as AuthFetchUrlResponse
 
-      if (!response.ok) {
-        console.error(
-          '[AuthService] Failed to fetch OAuth URL:',
-          response.status,
-          response.statusText
-        )
-        throw new Error('Failed to start authentication')
+      if (fetchResponse.type === 'AUTH_FETCH_URL_ERROR') {
+        console.error('[AuthService] Failed to fetch OAuth URL:', fetchResponse.error)
+        throw new Error(fetchResponse.error)
       }
 
-      const data: AuthUrlResponse = await response.json()
-      console.log('[AuthService] Backend response:', JSON.stringify(data))
-      const authUrl = data.AuthorizationUrl
-      console.log('[AuthService] Received OAuth URL from backend')
+      const authUrl = fetchResponse.authUrl
+      console.log('[AuthService] Received OAuth URL from service worker')
 
       // Step 3: Send OAuth URL and state to service worker to launch chrome.identity
-      console.log('[AuthService] OAuth URL to send:', authUrl)
       console.log('[AuthService] Sending AUTH_SIGN_IN message to service worker...')
-      const message: AuthSignInRequest = { type: 'AUTH_SIGN_IN', authUrl, state }
-      console.log('[AuthService] Message object:', JSON.stringify(message))
+      const signInMessage: AuthSignInRequest = { type: 'AUTH_SIGN_IN', authUrl, state }
 
       // Send message to service worker and wait for response
-      const swResponse = (await chrome.runtime.sendMessage(message)) as AuthSignInResponse
+      const signInResponse = (await chrome.runtime.sendMessage(signInMessage)) as AuthSignInResponse
 
-      console.log('[AuthService] Received response from service worker:', swResponse.type)
+      console.log('[AuthService] Received response from service worker:', signInResponse.type)
 
-      if (swResponse.type === 'AUTH_SIGN_IN_SUCCESS') {
+      if (signInResponse.type === 'AUTH_SIGN_IN_SUCCESS') {
         console.log('[AuthService] Sign-in successful')
-        return swResponse.verificationCode
-      } else if (swResponse.type === 'AUTH_SIGN_IN_ERROR') {
-        console.error('[AuthService] Sign-in failed:', swResponse.error)
-        throw new Error(swResponse.error)
+        return signInResponse.verificationCode
+      } else if (signInResponse.type === 'AUTH_SIGN_IN_ERROR') {
+        console.error('[AuthService] Sign-in failed:', signInResponse.error)
+        throw new Error(signInResponse.error)
       } else {
         throw new Error('Unexpected response from service worker')
       }
@@ -99,14 +94,10 @@ class AuthService {
 
       // Handle specific errors
       if (error instanceof Error) {
-        // Network or fetch errors
-        if (error.message.includes('fetch') || error.message.includes('Failed to fetch')) {
-          throw new Error('Could not connect to server')
-        }
-
         // Rethrow specific errors as-is
         if (
           error.message.includes('Failed to start authentication') ||
+          error.message.includes('Failed to fetch OAuth URL') ||
           error.message.includes('You cancelled the sign-in process')
         ) {
           throw error
