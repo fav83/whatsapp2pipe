@@ -96,9 +96,12 @@ Set authState = 'authenticating'
 Show loading state
     ↓
 Call authService.signIn():
-    ├─ Fetch OAuth URL from backend (GET /api/auth/start)
-    ├─ Receive: { authUrl: "https://oauth.pipedrive.com/..." }
-    └─ Launch chrome.identity.launchWebAuthFlow({ url: authUrl, interactive: true })
+    ├─ Generate OAuth state with extension ID
+    ├─ Send AUTH_FETCH_URL message to service worker
+    ├─ Service worker fetches GET /api/auth/start?state={state} (bypasses CORS)
+    ├─ Service worker receives: { authUrl: "https://oauth.pipedrive.com/..." }
+    ├─ Send AUTH_SIGN_IN message to service worker with authUrl and state
+    └─ Service worker launches chrome.identity.launchWebAuthFlow({ url: authUrl, interactive: true })
     ↓
 Chrome opens OAuth popup
 User sees Pipedrive authorization screen
@@ -107,15 +110,15 @@ User clicks "Allow and install"
     ↓
 Pipedrive redirects to backend callback
 Backend exchanges code for tokens
-Backend returns HTML with verification_code in URL
+Backend returns redirect URL with verification_code
     ↓
 chrome.identity.launchWebAuthFlow resolves with redirect URL
-Extension extracts verification_code from URL
+Service worker extracts verification_code from URL
+Service worker stores verification_code in chrome.storage.local
     ↓
-Store verification_code in chrome.storage.local
-    ↓
-Set authState = 'authenticated'
-Update sidebar to show authenticated state
+Service worker returns success with verification_code to content script
+Content script updates authState = 'authenticated'
+Sidebar shows authenticated state
     ↓
 Ready for Pipedrive API calls
 ```
@@ -225,48 +228,74 @@ export function SignInButton() {
 
 **File: services/authService.ts**
 
-**Purpose:** Encapsulate OAuth flow logic using chrome.identity API
+**Purpose:** Encapsulate OAuth flow logic using hybrid architecture (content script + service worker)
+
+**Architecture:**
+- Content script generates OAuth state with extension ID
+- Service worker fetches OAuth URL from backend (bypasses CORS)
+- Service worker launches chrome.identity popup
+- Service worker validates state on callback
 
 **Implementation:**
 ```typescript
-import { AUTH_CONFIG } from '../../config'
+import type {
+  AuthFetchUrlRequest,
+  AuthFetchUrlResponse,
+  AuthSignInRequest,
+  AuthSignInResponse,
+} from '../../types/messages'
 
-interface AuthUrlResponse {
-  authUrl: string
+interface OAuthState {
+  extensionId: string
+  nonce: string
+  timestamp: number
 }
 
 class AuthService {
+  /**
+   * Generates OAuth state parameter with extension ID
+   * State format: base64({ extensionId, nonce, timestamp })
+   */
+  private generateOAuthState(): string {
+    const stateData: OAuthState = {
+      extensionId: chrome.runtime.id,
+      nonce: crypto.randomUUID(),
+      timestamp: Date.now(),
+    }
+    const stateJson = JSON.stringify(stateData)
+    return btoa(stateJson)
+  }
+
   /**
    * Initiates OAuth flow with Pipedrive
    * Returns verification_code on success
    */
   async signIn(): Promise<string> {
     try {
-      // Step 1: Get OAuth URL from backend
-      const response = await fetch(`${AUTH_CONFIG.backendUrl}/api/auth/start`)
-      if (!response.ok) {
-        throw new Error('Failed to start authentication')
+      // Step 1: Generate OAuth state with extension ID
+      const state = this.generateOAuthState()
+
+      // Step 2: Ask service worker to fetch OAuth URL from backend (bypasses CORS)
+      const fetchMessage: AuthFetchUrlRequest = { type: 'AUTH_FETCH_URL', state }
+      const fetchResponse = (await chrome.runtime.sendMessage(fetchMessage)) as AuthFetchUrlResponse
+
+      if (fetchResponse.type === 'AUTH_FETCH_URL_ERROR') {
+        throw new Error(fetchResponse.error)
       }
 
-      const data: AuthUrlResponse = await response.json()
-      const authUrl = data.authUrl
+      const authUrl = fetchResponse.authUrl
 
-      // Step 2: Launch OAuth popup
-      const redirectUrl = await chrome.identity.launchWebAuthFlow({
-        url: authUrl,
-        interactive: true,
-      })
+      // Step 3: Send OAuth URL and state to service worker to launch chrome.identity
+      const signInMessage: AuthSignInRequest = { type: 'AUTH_SIGN_IN', authUrl, state }
+      const signInResponse = (await chrome.runtime.sendMessage(signInMessage)) as AuthSignInResponse
 
-      // Step 3: Extract verification_code from redirect URL
-      const verificationCode = this.extractVerificationCode(redirectUrl)
-      if (!verificationCode) {
-        throw new Error('No verification code received')
+      if (signInResponse.type === 'AUTH_SIGN_IN_SUCCESS') {
+        return signInResponse.verificationCode
+      } else if (signInResponse.type === 'AUTH_SIGN_IN_ERROR') {
+        throw new Error(signInResponse.error)
+      } else {
+        throw new Error('Unexpected response from service worker')
       }
-
-      // Step 4: Store verification_code
-      await chrome.storage.local.set({ verification_code: verificationCode })
-
-      return verificationCode
     } catch (error) {
       // Handle specific OAuth errors
       if (error instanceof Error) {
@@ -322,9 +351,12 @@ export const authService = new AuthService()
 ```
 
 **Acceptance Criteria:**
-- ✅ signIn() fetches OAuth URL from backend
-- ✅ chrome.identity.launchWebAuthFlow() opens OAuth popup
-- ✅ verification_code extracted from redirect URL
+- ✅ generateOAuthState() creates state with extension ID, nonce, and timestamp
+- ✅ signIn() sends AUTH_FETCH_URL message to service worker
+- ✅ Service worker fetches OAuth URL from backend (bypasses CORS)
+- ✅ signIn() sends AUTH_SIGN_IN message to service worker
+- ✅ Service worker launches chrome.identity.launchWebAuthFlow()
+- ✅ verification_code extracted from redirect URL by service worker
 - ✅ verification_code stored in chrome.storage.local
 - ✅ Error handling for user denial and auth failures
 - ✅ isAuthenticated() checks for verification_code
@@ -820,24 +852,34 @@ After Spec-105b completion:
    - Enhanced security with state parameter passing
    - Session storage for state validation
 
+3. **02fbde7** - Fix CORS preflight handling and refactor OAuth flow to bypass CORS restrictions
+   - Refactored to service worker-first fetch approach (bypasses all CORS issues)
+   - Added AUTH_FETCH_URL message type for service worker fetch requests
+   - Improved backend CORS middleware to handle OPTIONS preflight correctly
+   - Backend now returns proper preflight responses instead of 404 errors
+   - Environment variable updates: VITE_LANDING_WEBSITE_URL for beta access redirects
+
 ### Key Achievements
-✅ Hybrid OAuth architecture implemented
-✅ Content script successfully fetches OAuth URL (CORS works)
+✅ Hybrid OAuth architecture implemented and refined
+✅ Service worker handles ALL fetch requests (completely bypasses CORS)
+✅ Backend CORS middleware handles OPTIONS preflight correctly
 ✅ Service worker launches chrome.identity popup
 ✅ Dynamic extension ID support (no hardcoding)
 ✅ State parameter CSRF protection
 ✅ Automatic popup closure via chromiumapp.org redirect
 ✅ verification_code extraction and storage
-✅ Message passing architecture working
+✅ Message passing architecture working (AUTH_FETCH_URL + AUTH_SIGN_IN)
 ✅ Build successful with all tests passing
+✅ Production deployment configured with api.chat2deal.com backend URL
 
 ### Files Implemented
-- ✅ `content-script/services/authService.ts` - OAuth flow initiation, state generation
+- ✅ `content-script/services/authService.ts` - OAuth flow initiation, state generation, message passing to SW
 - ✅ `service-worker/authService.ts` - chrome.identity integration, state validation
-- ✅ `service-worker/index.ts` - Message handler for AUTH_SIGN_IN
-- ✅ `types/messages.ts` - Message types with state parameter
-- ✅ `config.ts` - Backend OAuth configuration
-- ✅ Updated tests for state parameter validation
+- ✅ `service-worker/index.ts` - Message handlers for AUTH_FETCH_URL and AUTH_SIGN_IN
+- ✅ `types/messages.ts` - Message types with AUTH_FETCH_URL, AUTH_SIGN_IN, and state parameter
+- ✅ `config.ts` - Backend OAuth configuration (VITE_BACKEND_URL, VITE_LANDING_WEBSITE_URL)
+- ✅ Updated tests for state parameter validation and message passing
+- ✅ Backend CORS middleware updated to handle OPTIONS preflight
 
 ### Build Status
 ✅ Production build successful
@@ -848,22 +890,26 @@ After Spec-105b completion:
 ```
 
 ### Architecture Highlights
-**Hybrid Approach:**
+**Hybrid Approach (Refactored to bypass CORS):**
 1. Content script generates OAuth state (extensionId + nonce + timestamp)
-2. Content script fetches `/api/auth/start?state={state}` from backend (CORS allowed from web.whatsapp.com)
-3. Content script sends OAuth URL + state to service worker
-4. Service worker launches `chrome.identity.launchWebAuthFlow()`
-5. User authorizes in Pipedrive popup
-6. Backend redirects to `chromiumapp.org` URL (popup auto-closes)
-7. Service worker extracts verification_code
-8. verification_code stored in chrome.storage.local
+2. Content script sends AUTH_FETCH_URL message to service worker with state
+3. Service worker fetches `/api/auth/start?state={state}` from backend (bypasses CORS)
+4. Service worker returns OAuth URL to content script
+5. Content script sends AUTH_SIGN_IN message to service worker with OAuth URL + state
+6. Service worker launches `chrome.identity.launchWebAuthFlow()`
+7. User authorizes in Pipedrive popup
+8. Backend redirects to `chromiumapp.org` URL (popup auto-closes)
+9. Service worker extracts verification_code
+10. Service worker stores verification_code in chrome.storage.local
+11. Service worker returns success to content script
 
 **Why this works:**
-- ✅ Avoids CORS issues (content script runs in WhatsApp origin)
+- ✅ Completely bypasses CORS issues (service worker makes fetch request, not content script)
 - ✅ Uses chrome.identity API (only available in service worker)
 - ✅ No hardcoded extension IDs (state includes runtime.id)
 - ✅ Popup auto-closes (chromiumapp.org redirect pattern)
 - ✅ CSRF protection (state validation)
+- ✅ Backend CORS middleware handles OPTIONS preflight correctly
 
 ### Testing Status
 - ✅ Unit tests updated and passing

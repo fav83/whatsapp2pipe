@@ -199,6 +199,29 @@ Extension/
 
 **Documentation:** See [DEPLOYMENT.md](Extension/DEPLOYMENT.md) for complete deployment workflow.
 
+### Environment Variables
+
+**Extension Environment Variables:**
+
+**.env.development:**
+```
+VITE_BACKEND_URL=http://localhost:7071
+VITE_LANDING_WEBSITE_URL=http://localhost:3000
+```
+
+**.env.production:**
+```
+VITE_BACKEND_URL=https://api.chat2deal.com
+VITE_LANDING_WEBSITE_URL=https://chat2deal.com
+```
+
+**Key Variables:**
+- `VITE_BACKEND_URL` - Backend OAuth and API service URL
+- `VITE_LANDING_WEBSITE_URL` - Landing website URL for authentication and beta access redirects
+- `VITE_SENTRY_ENABLED` - Enable/disable Sentry error tracking
+- `VITE_ENV` - Environment (development/production)
+- `VITE_SHOW_DEV_INDICATOR` - Show dev mode indicator banner
+
 ### Sentry Error Tracking
 
 The extension uses Sentry for error tracking and performance monitoring with PII filtering.
