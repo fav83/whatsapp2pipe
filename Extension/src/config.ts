@@ -4,11 +4,12 @@ export const config = {
   sentryEnabled: import.meta.env.VITE_SENTRY_ENABLED === 'true',
   env: import.meta.env.VITE_ENV as 'development' | 'production',
   showDevIndicator: import.meta.env.VITE_SHOW_DEV_INDICATOR === 'true',
+  websiteUrl: import.meta.env.VITE_WEBSITE_URL,
 }
 
 // Backend OAuth Service configuration
 export const AUTH_CONFIG = {
-  backendUrl: import.meta.env.VITE_BACKEND_URL || 'http://localhost:7071',
+  backendUrl: import.meta.env.VITE_BACKEND_URL,
   endpoints: {
     authStart: '/api/auth/start', // Now accepts ?state= parameter with extension ID
     authCallback: '/api/auth/callback',

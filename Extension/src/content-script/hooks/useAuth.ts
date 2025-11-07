@@ -8,12 +8,12 @@
 import { useState, useEffect } from 'react'
 import { authService } from '../services/authService'
 import type { AuthState } from '../../types/auth'
-import { OAuthErrorCode } from '../../types/errors'
+import { config } from '../../config'
 
 export function useAuth() {
   // Start in 'authenticating' to avoid flashing unauthenticated UI before the first check completes
   const [authState, setAuthState] = useState<AuthState>('authenticating')
-  const [error, setError] = useState<string | null>(null)
+  const [error] = useState<string | null>(null)
   const [verificationCode, setVerificationCode] = useState<string | null>(null)
   const [userName, setUserName] = useState<string | null>(null)
 
@@ -77,28 +77,13 @@ export function useAuth() {
   }, [])
 
   const signIn = async () => {
-    console.log('[useAuth] Starting sign-in flow...')
-    setAuthState('authenticating')
-    setError(null)
+    console.log('[useAuth] Navigating to website for sign-in:', config.websiteUrl)
 
-    try {
-      const code = await authService.signIn()
-      setVerificationCode(code)
-      setAuthState('authenticated')
-      console.log('[useAuth] Sign-in successful')
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Authentication failed'
-      console.error('[useAuth] Sign-in failed:', errorMessage)
+    // Navigate to website application for authentication
+    window.location.href = config.websiteUrl
 
-      // Check if error is beta access required
-      if (errorMessage === OAuthErrorCode.BETA_ACCESS_REQUIRED) {
-        console.log('[useAuth] Beta access required - user not in database')
-        setAuthState('beta_required')
-      } else {
-        setError(errorMessage)
-        setAuthState('error')
-      }
-    }
+    // Don't change auth state - user will authenticate on website
+    // Auth state will update when verification_code is stored (via storage listener)
   }
 
   const signOut = async () => {

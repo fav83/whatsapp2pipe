@@ -28,7 +28,7 @@ export function Header() {
               Join the Waitlist
             </button>
             <a
-              href="/signin"
+              href={import.meta.env.VITE_APP_URL}
               className="px-4 py-2 text-sm font-medium text-white bg-button-primary hover:bg-button-primary-hover active:bg-button-primary-active rounded-lg transition-all duration-200 active:scale-95"
             >
               Sign in
