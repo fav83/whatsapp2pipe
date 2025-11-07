@@ -1,5 +1,6 @@
 import { PageHelmet } from '../components/SEO';
 import { Hero } from '../components/Hero';
+import { DemoVideo } from '../components/DemoVideo';
 import { Benefits } from '../components/Benefits';
 import { HowItWorks } from '../components/HowItWorks';
 import { FinalCTA } from '../components/FinalCTA';
@@ -17,6 +18,7 @@ export default function Home() {
       <div className="min-h-screen">
         <Hero />
         <main>
+          <DemoVideo />
           <Benefits />
           <HowItWorks />
           <FinalCTA />
