@@ -24,7 +24,7 @@ export function ExtensionStatus() {
           <CardTitle>Chrome Extension</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-slate-600">
             Checking extension status...
           </div>
         </CardContent>
@@ -40,14 +40,14 @@ export function ExtensionStatus() {
           <CardTitle>Chrome Extension</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-slate-600">
             Extension available for desktop Chrome
           </p>
           <a
             href={storeUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-blue-600 hover:underline inline-flex items-center gap-1"
+            className="text-sm text-button-primary hover:text-button-primary-hover hover:underline inline-flex items-center gap-1"
           >
             View in Chrome Web Store
             <ExternalLink className="h-3 w-3" />
@@ -66,10 +66,10 @@ export function ExtensionStatus() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <p className="text-sm font-medium text-gray-900">
+            <p className="text-sm font-medium text-slate-700">
               Extension not installed
             </p>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-slate-600">
               Install the Chat2Deal Chrome extension to connect WhatsApp with Pipedrive
             </p>
           </div>
@@ -95,18 +95,18 @@ export function ExtensionStatus() {
         <CardTitle>Chrome Extension</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="flex items-center gap-2 text-violet-600">
+        <div className="flex items-center gap-2 text-button-primary">
           <CheckCircle2 className="h-5 w-5" />
           <span className="font-medium">Extension installed</span>
         </div>
         {version && (
-          <p className="text-xs text-gray-500">Version {version}</p>
+          <p className="text-xs text-slate-600">Version {version}</p>
         )}
         <a
           href={storeUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm text-gray-500 hover:text-gray-700 inline-flex items-center gap-1"
+          className="text-sm text-slate-600 hover:text-slate-700 inline-flex items-center gap-1"
         >
           View in Chrome Web Store
           <ExternalLink className="h-3 w-3" />

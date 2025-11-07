@@ -66,16 +66,16 @@ export default function WaitlistPage() {
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      <main className="flex-1 flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 px-4">
+      <main className="flex-1 flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-button-primary/5 px-4">
         <div className="max-w-md w-full py-12">
           {!isSuccess ? (
             <>
               {/* Title */}
               <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                <h1 className="text-3xl font-semibold text-slate-700 mb-2">
                   Join the Waitlist
                 </h1>
-                <p className="text-base text-gray-600">
+                <p className="text-base text-slate-600">
                   Chat2Deal is currently in closed beta. Sign up to be notified when we have space.
                 </p>
               </div>
@@ -87,7 +87,7 @@ export default function WaitlistPage() {
                   <div>
                     <label
                       htmlFor="email"
-                      className="block text-sm font-medium text-gray-700 mb-2"
+                      className="block text-sm font-medium text-slate-700 mb-2"
                     >
                       Email Address *
                     </label>
@@ -100,22 +100,19 @@ export default function WaitlistPage() {
                       placeholder="your@email.com"
                       required
                       maxLength={255}
-                      className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-button-primary ${
                         emailError
                           ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
                           : 'border-gray-300'
                       }`}
                     />
-                    {emailError && (
-                      <p className="mt-2 text-sm text-red-600">{emailError}</p>
-                    )}
                   </div>
 
                   {/* Name Field */}
                   <div>
                     <label
                       htmlFor="name"
-                      className="block text-sm font-medium text-gray-700 mb-2"
+                      className="block text-sm font-medium text-slate-700 mb-2"
                     >
                       Name (optional)
                     </label>
@@ -126,7 +123,7 @@ export default function WaitlistPage() {
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Your name"
                       maxLength={255}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-button-primary focus:border-button-primary"
                     />
                   </div>
 
@@ -169,10 +166,10 @@ export default function WaitlistPage() {
               </div>
 
               {/* Success Message */}
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              <h2 className="text-2xl font-semibold text-slate-700 mb-2">
                 You're on the waitlist!
               </h2>
-              <p className="text-base text-gray-600">
+              <p className="text-base text-slate-600">
                 We'll email you when access is available.
               </p>
             </div>

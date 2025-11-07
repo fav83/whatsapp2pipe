@@ -15,21 +15,20 @@ export function UserProfile({ user, onSignOut }: UserProfileProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <label className="text-sm font-medium text-gray-500">Name</label>
-          <p className="text-base text-gray-900">{user.name}</p>
+          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Name</label>
+          <p className="text-base font-medium text-slate-700 mt-1">{user.name}</p>
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-500">Email</label>
-          <p className="text-base text-gray-900">{user.email}</p>
+          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Email</label>
+          <p className="text-base font-medium text-slate-700 mt-1">{user.email}</p>
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-500">
+          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">
             Pipedrive Company
           </label>
-          <p className="text-base text-gray-900">{user.companyName}</p>
-          <p className="text-sm text-gray-500">{user.companyDomain}</p>
+          <p className="text-base font-medium text-slate-700 mt-1">{user.companyName}</p>
         </div>
 
         <div className="pt-4 border-t">

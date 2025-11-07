@@ -50,7 +50,7 @@ export default function DashboardPage() {
   if (authStatus === 'loading' || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-600">Loading...</div>
+        <div className="text-slate-600">Loading...</div>
       </div>
     )
   }
@@ -64,10 +64,10 @@ export default function DashboardPage() {
             <h2 className="text-2xl font-semibold text-red-600 mb-2">
               Error
             </h2>
-            <p className="text-gray-600 mb-4">{error}</p>
+            <p className="text-slate-600 mb-4">{error}</p>
             <button
               onClick={fetchUser}
-              className="text-blue-600 hover:underline"
+              className="text-button-primary hover:text-button-primary-hover hover:underline"
             >
               Try again
             </button>
@@ -78,11 +78,11 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-light">
       <Header />
 
       <main className="flex-1 container mx-auto px-4 py-8 max-w-6xl">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">
+        <h1 className="text-3xl font-semibold text-slate-700 mb-8">
           Dashboard
         </h1>
 

@@ -32,19 +32,19 @@ export default function AuthCallbackPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-light">
         <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full mx-4 text-center">
           <div className="text-5xl mb-4">❌</div>
           <h2 className="text-2xl font-semibold text-red-600 mb-4">
             Authentication Failed
           </h2>
-          <p className="text-gray-600 mb-6">{error}</p>
+          <p className="text-slate-600 mb-6">{error}</p>
 
           {/* Show Join Waitlist button for beta access errors */}
           {(errorCode === 'closed_beta' || errorCode === 'invalid_invite') && (
             <Link
               to="/waitlist"
-              className="inline-block mb-4 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors w-full"
+              className="inline-block mb-4 px-6 py-3 bg-button-primary text-white font-medium rounded-lg hover:bg-button-primary-hover active:bg-button-primary-active transition-colors w-full"
             >
               Join Waitlist
             </Link>
@@ -52,7 +52,7 @@ export default function AuthCallbackPage() {
 
           <button
             onClick={() => navigate('/')}
-            className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg transition-colors w-full"
+            className="bg-gray-secondary hover:bg-gray-600 text-white font-medium py-3 px-6 rounded-lg transition-colors w-full"
           >
             Return to Sign In
           </button>
@@ -64,8 +64,8 @@ export default function AuthCallbackPage() {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <h2 className="text-xl font-semibold text-gray-900">
+        <div className="w-12 h-12 border-4 border-button-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <h2 className="text-xl font-semibold text-slate-700">
           Completing sign in...
         </h2>
       </div>
