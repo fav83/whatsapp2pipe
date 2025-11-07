@@ -232,11 +232,11 @@ public class AuthCallbackFunction
             if (stateData.Type == "web")
             {
                 // Website flow - redirect to website callback URL
-                var websiteCallbackUrl = configuration["WEBSITE_CALLBACK_URL"];
+                var websiteCallbackUrl = configuration["APP_WEBSITE_CALLBACK_URL"];
 
                 if (string.IsNullOrEmpty(websiteCallbackUrl))
                 {
-                    logger.LogError("WEBSITE_CALLBACK_URL configuration is missing");
+                    logger.LogError("APP_WEBSITE_CALLBACK_URL configuration is missing");
                     return CreateErrorResponse(req, OAuthErrorCode.ConfigError, stateData);
                 }
 
@@ -299,7 +299,7 @@ public class AuthCallbackFunction
         // If state indicates web flow, redirect to website with error
         if (stateData?.Type == "web")
         {
-            var websiteCallbackUrl = configuration["WEBSITE_CALLBACK_URL"];
+            var websiteCallbackUrl = configuration["APP_WEBSITE_CALLBACK_URL"];
 
             if (string.IsNullOrEmpty(websiteCallbackUrl))
             {

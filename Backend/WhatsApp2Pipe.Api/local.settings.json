@@ -11,11 +11,10 @@
     "Pipedrive__AuthorizationEndpoint": "https://oauth.pipedrive.com/oauth/authorize",
     "Pipedrive__TokenEndpoint": "https://oauth.pipedrive.com/oauth/token",
     "Pipedrive__Scope": "contacts:full",
+    "Pipedrive__BaseUrl": "https://api.pipedrive.com",
+    "Pipedrive__ApiVersion": "v1",
 
-    "PipedriveApiBaseUrl": "https://api.pipedrive.com",
-    "PipedriveApiVersion": "v1",
-
-    "WEBSITE_CALLBACK_URL": "http://localhost:3000/auth/callback",
+    "APP_WEBSITE_CALLBACK_URL": "http://localhost:3000/auth/callback",
     "CORS_ALLOWED_ORIGINS": "https://web.whatsapp.com,http://localhost:3000,http://localhost:5173,https://dashboard.chat2deal.com"
   },
   "ConnectionStrings": {

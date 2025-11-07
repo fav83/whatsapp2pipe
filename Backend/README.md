@@ -291,6 +291,8 @@ Handles the OAuth callback, validates state, exchanges code for tokens, and crea
 | `Pipedrive__AuthorizationEndpoint` | Pipedrive auth URL | `https://oauth.pipedrive.com/oauth/authorize` |
 | `Pipedrive__TokenEndpoint` | Pipedrive token URL | `https://oauth.pipedrive.com/oauth/token` |
 | `Pipedrive__Scope` | OAuth scopes | `contacts:full` |
+| `Pipedrive__BaseUrl` | Pipedrive API base URL | `https://api.pipedrive.com` |
+| `Pipedrive__ApiVersion` | Pipedrive API version | `v1` |
 
 ### Azure Settings
 

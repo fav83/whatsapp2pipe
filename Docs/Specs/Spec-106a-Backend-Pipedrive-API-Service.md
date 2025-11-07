@@ -703,8 +703,8 @@ public class PersonTransformService
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
     "AzureTableStorageConnectionString": "UseDevelopmentStorage=true",
-    "PipedriveApiBaseUrl": "https://api.pipedrive.com",
-    "PipedriveApiVersion": "v1",
+    "Pipedrive__BaseUrl": "https://api.pipedrive.com",
+    "Pipedrive__ApiVersion": "v1",
     "AllowedOrigins": "https://web.whatsapp.com"
   }
 }
@@ -714,8 +714,8 @@ public class PersonTransformService
 
 ```
 AzureTableStorageConnectionString = <connection-string>
-PipedriveApiBaseUrl = https://api.pipedrive.com
-PipedriveApiVersion = v1
+Pipedrive__BaseUrl = https://api.pipedrive.com
+Pipedrive__ApiVersion = v1
 AllowedOrigins = https://web.whatsapp.com
 ```
 

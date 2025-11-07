@@ -120,7 +120,7 @@ if (existingUser != null)
     else
     {
         // Website success redirect
-        var websiteCallbackUrl = configuration["WEBSITE_CALLBACK_URL"];
+        var websiteCallbackUrl = configuration["APP_WEBSITE_CALLBACK_URL"];
         var redirectUrl = $"{websiteCallbackUrl}?verification_code={Uri.EscapeDataString(session.VerificationCode)}";
 
         var response = req.CreateResponse(HttpStatusCode.Redirect);

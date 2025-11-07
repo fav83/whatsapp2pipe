@@ -45,22 +45,8 @@ var host = new HostBuilder()
             var configuration = sp.GetRequiredService<IConfiguration>();
             var settings = new PipedriveSettings();
 
-            // Bind OAuth settings from configuration section
+            // Bind all Pipedrive settings from configuration section
             configuration.GetSection("Pipedrive").Bind(settings);
-
-            // Override API settings from environment variables if provided
-            var baseUrl = Environment.GetEnvironmentVariable("PipedriveApiBaseUrl");
-            var apiVersion = Environment.GetEnvironmentVariable("PipedriveApiVersion");
-
-            if (!string.IsNullOrEmpty(baseUrl))
-            {
-                settings.BaseUrl = baseUrl;
-            }
-
-            if (!string.IsNullOrEmpty(apiVersion))
-            {
-                settings.ApiVersion = apiVersion;
-            }
 
             return settings;
         });

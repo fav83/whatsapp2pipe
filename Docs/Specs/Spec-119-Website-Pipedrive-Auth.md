@@ -243,7 +243,7 @@ if (state.Type == "web")
     await sessionService.UpdateSessionAsync(session);
 
     // Redirect to website with verification_code
-    var websiteCallbackUrl = configuration["WEBSITE_CALLBACK_URL"];
+    var websiteCallbackUrl = configuration["APP_WEBSITE_CALLBACK_URL"];
     return new RedirectResult($"{websiteCallbackUrl}?verification_code={session.VerificationCode}");
 }
 else
@@ -526,14 +526,14 @@ VITE_WEBSITE_URL=https://app.chat2deal.com
 ```json
 {
   "Values": {
-    "WEBSITE_CALLBACK_URL": "http://localhost:5173/auth/callback"
+    "APP_WEBSITE_CALLBACK_URL": "http://localhost:5173/auth/callback"
   }
 }
 ```
 
 **Backend Configuration (Azure App Settings - Production):**
 ```
-WEBSITE_CALLBACK_URL=https://app.chat2deal.com/auth/callback
+APP_WEBSITE_CALLBACK_URL=https://app.chat2deal.com/auth/callback
 ```
 
 ---
@@ -1328,7 +1328,7 @@ export function Footer() {
 
 **Azure Function App Settings (New):**
 ```
-WEBSITE_CALLBACK_URL=https://app.chat2deal.com/auth/callback
+APP_WEBSITE_CALLBACK_URL=https://app.chat2deal.com/auth/callback
 ```
 
 **Database Migration:**
@@ -1341,7 +1341,7 @@ dotnet ef database update
 **Deploy Backend:**
 - Deploy updated Azure Functions code
 - Run database migration
-- Verify WEBSITE_CALLBACK_URL configured
+- Verify APP_WEBSITE_CALLBACK_URL configured
 
 ### 8.2 Frontend Deployment
 
@@ -1380,7 +1380,7 @@ http://localhost:5173 (dev only)
 - ✅ Website flow calls Pipedrive /users/me
 - ✅ User and Company created/updated in database
 - ✅ Session linked to User via UserId foreign key
-- ✅ Backend redirects to WEBSITE_CALLBACK_URL with verification_code
+- ✅ Backend redirects to APP_WEBSITE_CALLBACK_URL with verification_code
 - ✅ GET /api/user/me validates verification_code
 - ✅ GET /api/user/me returns user info from database
 - ✅ Database migration adds UserId to Sessions table
@@ -1441,7 +1441,7 @@ The following are explicitly **not** part of this specification:
 - ✅ Azure Functions deployed
 - ✅ Azure SQL Database running
 - ✅ Pipedrive Developer Hub app registered
-- ✅ WEBSITE_CALLBACK_URL configured in App Settings
+- ✅ APP_WEBSITE_CALLBACK_URL configured in App Settings
 
 **Frontend:**
 - ✅ Azure Static Web Apps provisioned
@@ -1474,7 +1474,7 @@ The following are explicitly **not** part of this specification:
 - [ ] Implement User/Company creation in callback
 - [ ] Link Session to User (populate UserId)
 - [ ] Implement GET /api/user/me endpoint
-- [ ] Add WEBSITE_CALLBACK_URL configuration
+- [ ] Add APP_WEBSITE_CALLBACK_URL configuration
 - [ ] Write unit tests for new logic
 - [ ] Write integration tests for website OAuth flow
 - [ ] Deploy to Azure
