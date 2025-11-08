@@ -48,6 +48,38 @@ self.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
   )
 })
 
+/**
+ * Register inspector-main.js content script programmatically
+ * This script must run in the MAIN world to access WhatsApp's internal APIs
+ */
+async function registerInspectorScript() {
+  try {
+    // First, unregister any existing registration to avoid duplicates
+    const existingScripts = await chrome.scripting.getRegisteredContentScripts()
+    const inspectorScript = existingScripts.find((s) => s.id === 'inspector-main')
+
+    if (inspectorScript) {
+      await chrome.scripting.unregisterContentScripts({ ids: ['inspector-main'] })
+      console.log('[Service Worker] Unregistered existing inspector-main script')
+    }
+
+    // Register the inspector-main.js script with MAIN world execution
+    await chrome.scripting.registerContentScripts([
+      {
+        id: 'inspector-main',
+        matches: ['*://web.whatsapp.com/*'],
+        js: ['inspector-main.js'],
+        runAt: 'document_start',
+        world: 'MAIN',
+      },
+    ])
+    console.log('[Service Worker] Successfully registered inspector-main script in MAIN world')
+  } catch (error) {
+    console.error('[Service Worker] Failed to register inspector-main script:', error)
+    logError('Failed to register inspector-main script', error, {}, sentryScope)
+  }
+}
+
 // Listen for extension installation
 chrome.runtime.onInstalled.addListener((details) => {
   console.log('[Service Worker] Extension installed:', details.reason)
@@ -64,6 +96,9 @@ chrome.runtime.onInstalled.addListener((details) => {
       chrome.runtime.getManifest().version
     )
   }
+
+  // Register inspector-main.js script programmatically
+  registerInspectorScript()
 })
 
 // Listen for messages from content script or popup
@@ -383,5 +418,8 @@ self.addEventListener('activate', () => {
 self.addEventListener('suspend', () => {
   console.log('[Service Worker] Suspending (Manifest V3 idle timeout)')
 })
+
+// Register inspector-main.js on startup to ensure it's always available
+registerInspectorScript()
 
 console.log('[Service Worker] Ready')
