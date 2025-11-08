@@ -57,7 +57,9 @@ Create Chrome Extension Manifest V3 configuration with all required permissions,
   ],
 
   "host_permissions": [
-    "*://web.whatsapp.com/*"
+    "*://web.whatsapp.com/*",
+    "http://localhost:7071/*",
+    "https://api.chat2deal.com/*"
   ],
 
   "background": {
@@ -71,6 +73,17 @@ Create Chrome Extension Manifest V3 configuration with all required permissions,
       "js": ["content-script.js"],
       "css": ["assets/content-script.css"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": ["*://web.whatsapp.com/*"],
+      "js": ["inspector-main.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["http://localhost:3000/*", "https://app.chat2deal.com/*"],
+      "js": ["dashboard-bridge.js"],
+      "run_at": "document_start"
     }
   ],
 
@@ -78,14 +91,16 @@ Create Chrome Extension Manifest V3 configuration with all required permissions,
     "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     },
-    "default_title": "Pipedrive for WhatsApp"
+    "default_title": "Chat2deal: WhatsApp to Pipedrive integration"
   },
 
   "icons": {
     "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
@@ -108,6 +123,8 @@ Create Chrome Extension Manifest V3 configuration with all required permissions,
 - **tabs:** Detect WhatsApp Web tab state and manage extension behavior per tab
 - **identity:** Enable chrome.identity.launchWebAuthFlow() for Pipedrive OAuth authentication
 - **host_permissions (web.whatsapp.com):** Inject sidebar UI and extract chat metadata from WhatsApp Web
+- **host_permissions (localhost:7071):** Development backend OAuth service
+- **host_permissions (api.chat2deal.com):** Production backend OAuth and Pipedrive API service
 
 **Key Manifest Features:**
 - `run_at: "document_idle"` - Wait for WhatsApp to fully load before injection
@@ -129,6 +146,7 @@ Create Chrome Extension Manifest V3 configuration with all required permissions,
 
 **File Locations:**
 - `public/icons/icon16.png` - 16×16px
+- `public/icons/icon32.png` - 32×32px
 - `public/icons/icon48.png` - 48×48px
 - `public/icons/icon128.png` - 128×128px
 
@@ -143,7 +161,7 @@ Create Chrome Extension Manifest V3 configuration with all required permissions,
 3. Simple SVG converted to PNG at 3 sizes
 
 **Acceptance Criteria:**
-- [ ] All three icon sizes exist
+- [ ] All four icon sizes exist (16px, 32px, 48px, 128px)
 - [ ] Icons display correctly in chrome://extensions
 - [ ] Icons display correctly in extension popup
 - [ ] Icons are recognizable at 16px (smallest size)
@@ -639,6 +657,7 @@ public/
 ├── manifest.json
 └── icons/
     ├── icon16.png
+    ├── icon32.png
     ├── icon48.png
     └── icon128.png
 ```
@@ -649,6 +668,8 @@ dist/
 ├── manifest.json
 ├── service-worker.js
 ├── content-script.js
+├── inspector-main.js
+├── dashboard-bridge.js
 ├── popup.html
 ├── assets/
 │   ├── popup.js
@@ -658,6 +679,7 @@ dist/
 │   └── (code-split chunks)
 └── icons/
     ├── icon16.png
+    ├── icon32.png
     ├── icon48.png
     └── icon128.png
 ```

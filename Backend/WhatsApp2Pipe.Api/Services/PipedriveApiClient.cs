@@ -78,7 +78,13 @@ public class PipedriveApiClient : IPipedriveApiClient
             PropertyNameCaseInsensitive = true
         });
 
-        return result ?? new PipedriveSearchResponse { Success = false };
+        if (result == null)
+        {
+            logger.LogError("Failed to deserialize Pipedrive search response");
+            throw new PipedriveApiException("Invalid response from Pipedrive API - deserialization failed");
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -131,7 +137,13 @@ public class PipedriveApiClient : IPipedriveApiClient
             PropertyNameCaseInsensitive = true
         });
 
-        return result ?? new PipedrivePersonResponse { Success = false };
+        if (result == null)
+        {
+            logger.LogError("Failed to deserialize Pipedrive create person response");
+            throw new PipedriveApiException("Invalid response from Pipedrive API - deserialization failed");
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -182,7 +194,13 @@ public class PipedriveApiClient : IPipedriveApiClient
             PropertyNameCaseInsensitive = true
         });
 
-        return result ?? new PipedrivePersonResponse { Success = false };
+        if (result == null)
+        {
+            logger.LogError("Failed to deserialize Pipedrive get person response");
+            throw new PipedriveApiException("Invalid response from Pipedrive API - deserialization failed");
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -235,7 +253,13 @@ public class PipedriveApiClient : IPipedriveApiClient
             PropertyNameCaseInsensitive = true
         });
 
-        return result ?? new PipedrivePersonResponse { Success = false };
+        if (result == null)
+        {
+            logger.LogError("Failed to deserialize Pipedrive update person response");
+            throw new PipedriveApiException("Invalid response from Pipedrive API - deserialization failed");
+        }
+
+        return result;
     }
 
     /// <summary>

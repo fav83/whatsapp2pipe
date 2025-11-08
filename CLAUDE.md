@@ -6,7 +6,9 @@ This project uses a structured organization:
 - **Extension/** - All Chrome extension source code, build configurations, and dependencies
 - **Website/** - User dashboard web application (React + TypeScript)
 - **Landing/** - Marketing landing page with SEO optimization (React + TypeScript)
+- **Backend/** - Azure Functions-based OAuth and Pipedrive API backend service (.NET 8)
 - **Docs/** - All project documentation (architecture, BRDs, plans, specs)
+- **Resources/** - Design assets, UI resources, and demo materials
 
 **IMPORTANT:** All extension source code must be located under the `Extension/` folder. This includes:
 - Source files (src/)
