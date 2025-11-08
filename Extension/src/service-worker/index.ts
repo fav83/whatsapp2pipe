@@ -457,7 +457,4 @@ self.addEventListener('suspend', () => {
   console.log('[Service Worker] Suspending (Manifest V3 idle timeout)')
 })
 
-// Register inspector-main.js on startup to ensure it's always available
-registerInspectorScript()
-
 console.log('[Service Worker] Ready')
