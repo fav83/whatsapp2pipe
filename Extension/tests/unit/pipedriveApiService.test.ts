@@ -7,12 +7,19 @@ import { pipedriveApiService } from '../../src/service-worker/pipedriveApiServic
 
 describe('PipedriveApiService', () => {
   beforeEach(() => {
-    // Mock chrome.storage.local
+    // Mock chrome.storage.local and chrome.runtime.getManifest
     global.chrome = {
       storage: {
         local: {
           get: vi.fn().mockResolvedValue({ verification_code: 'test_code' }),
         },
+      },
+      runtime: {
+        getManifest: vi.fn(() => ({
+          version: '1.0.0',
+          manifest_version: 3,
+          name: 'Test Extension',
+        })),
       },
     } as typeof chrome
 
@@ -307,6 +314,115 @@ describe('PipedriveApiService', () => {
       })
 
       expect(result).toEqual(mockPerson)
+    })
+  })
+
+  describe('submitFeedback', () => {
+    it('sends POST request to /api/feedback', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        json: async () => ({ success: true }),
+      } as Response)
+
+      await pipedriveApiService.submitFeedback('This is my feedback')
+
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/feedback'),
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            Authorization: 'Bearer test_code',
+            'Content-Type': 'application/json',
+          }),
+        })
+      )
+    })
+
+    it('includes message in request body', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        json: async () => ({ success: true }),
+      } as Response)
+
+      await pipedriveApiService.submitFeedback('My feedback message')
+
+      const callArgs = vi.mocked(fetch).mock.calls[0]
+      const body = JSON.parse(callArgs[1]?.body as string)
+      expect(body.message).toBe('My feedback message')
+    })
+
+    it('includes extension version in request body', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        json: async () => ({ success: true }),
+      } as Response)
+
+      await pipedriveApiService.submitFeedback('My feedback message')
+
+      const callArgs = vi.mocked(fetch).mock.calls[0]
+      const body = JSON.parse(callArgs[1]?.body as string)
+      expect(body.extensionVersion).toBe('1.0.0')
+    })
+
+    it('returns void on success', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        json: async () => ({ success: true }),
+      } as Response)
+
+      const result = await pipedriveApiService.submitFeedback('My feedback')
+      expect(result).toBeUndefined()
+    })
+
+    it('handles 401 error', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: false,
+        status: 401,
+      } as Response)
+
+      await expect(pipedriveApiService.submitFeedback('My feedback')).rejects.toMatchObject({
+        statusCode: 401,
+        message: expect.stringContaining('Authentication expired'),
+      })
+    })
+
+    it('handles 500 server error', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: false,
+        status: 500,
+      } as Response)
+
+      await expect(pipedriveApiService.submitFeedback('My feedback')).rejects.toMatchObject({
+        statusCode: 500,
+        message: expect.stringContaining('Server error'),
+      })
+    })
+
+    it('handles network error', async () => {
+      vi.mocked(fetch).mockRejectedValue(new Error('Network error'))
+
+      await expect(pipedriveApiService.submitFeedback('My feedback')).rejects.toMatchObject({
+        statusCode: 0,
+        message: expect.stringContaining('Unable to connect'),
+      })
+    })
+
+    it('requires authentication', async () => {
+      global.chrome = {
+        storage: {
+          local: {
+            get: vi.fn().mockResolvedValue({}),
+          },
+        },
+        runtime: {
+          getManifest: vi.fn(() => ({ version: '1.0.0' })),
+        },
+      } as typeof chrome
+
+      await expect(pipedriveApiService.submitFeedback('My feedback')).rejects.toMatchObject({
+        statusCode: 401,
+        message: 'Not authenticated',
+      })
     })
   })
 

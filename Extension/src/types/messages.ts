@@ -201,6 +201,39 @@ export type PipedriveResponse =
   | PipedriveError
 
 // ============================================================================
+// Feedback Messages
+// ============================================================================
+
+/**
+ * Submit user feedback
+ */
+export interface FeedbackSubmitRequest {
+  type: 'FEEDBACK_SUBMIT'
+  message: string
+}
+
+/**
+ * Successful feedback submission
+ */
+export interface FeedbackSubmitSuccess {
+  type: 'FEEDBACK_SUBMIT_SUCCESS'
+}
+
+/**
+ * Feedback submission error
+ */
+export interface FeedbackSubmitError {
+  type: 'FEEDBACK_SUBMIT_ERROR'
+  error: string
+  statusCode: number
+}
+
+/**
+ * Union of all feedback responses
+ */
+export type FeedbackResponse = FeedbackSubmitSuccess | FeedbackSubmitError
+
+// ============================================================================
 // General Messages
 // ============================================================================
 
@@ -230,6 +263,7 @@ export type ExtensionMessage =
   | AuthFetchUrlRequest
   | AuthSignInRequest
   | PipedriveRequest
+  | FeedbackSubmitRequest
   | PingMessage
 
 /**
@@ -239,4 +273,5 @@ export type ExtensionResponse =
   | AuthFetchUrlResponse
   | AuthSignInResponse
   | PipedriveResponse
+  | FeedbackResponse
   | PongMessage

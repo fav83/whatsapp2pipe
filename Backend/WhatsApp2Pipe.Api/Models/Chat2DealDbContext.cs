@@ -42,6 +42,11 @@ public class Chat2DealDbContext : DbContext
     /// </summary>
     public DbSet<WaitlistEntry> WaitlistEntries { get; set; } = null!;
 
+    /// <summary>
+    /// Feedback table - User feedback submissions.
+    /// </summary>
+    public DbSet<Feedback> Feedback { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -265,6 +270,43 @@ public class Chat2DealDbContext : DbContext
 
             entity.Property(w => w.UpdatedAt)
                   .IsRequired();
+        });
+
+        // Configure Feedback entity
+        modelBuilder.Entity<Feedback>(entity =>
+        {
+            entity.ToTable("Feedback");
+
+            entity.HasKey(f => f.FeedbackEntityId);
+
+            // Index on UserId for user feedback queries
+            entity.HasIndex(f => f.UserId)
+                  .HasDatabaseName("IX_Feedback_UserId");
+
+            // Index on CreatedAt for chronological queries (descending)
+            entity.HasIndex(f => f.CreatedAt)
+                  .HasDatabaseName("IX_Feedback_CreatedAt")
+                  .IsDescending();
+
+            // Required fields
+            entity.Property(f => f.Message)
+                  .IsRequired()
+                  .HasMaxLength(10000);
+
+            entity.Property(f => f.CreatedAt)
+                  .IsRequired();
+
+            entity.Property(f => f.UserAgent)
+                  .HasMaxLength(500);
+
+            entity.Property(f => f.ExtensionVersion)
+                  .HasMaxLength(50);
+
+            // Foreign key relationship to User
+            entity.HasOne(f => f.User)
+                  .WithMany()
+                  .HasForeignKey(f => f.UserId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

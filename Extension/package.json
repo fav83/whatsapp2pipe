@@ -1,6 +1,6 @@
 {
   "name": "whatsapp2pipe-extension",
-  "version": "0.32.149",
+  "version": "0.32.156",
   "description": "Chrome extension that integrates Pipedrive CRM with WhatsApp Web",
   "type": "module",
   "scripts": {

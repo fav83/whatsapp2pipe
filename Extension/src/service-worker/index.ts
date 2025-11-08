@@ -14,6 +14,8 @@ import type {
   AuthSignInError,
   PipedriveRequest,
   PipedriveResponse,
+  FeedbackSubmitRequest,
+  FeedbackResponse,
 } from '../types/messages'
 import type { AuthUrlResponse } from '../types/auth'
 
@@ -212,6 +214,12 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
     return true
   }
 
+  // Handle feedback submission
+  if (message.type === 'FEEDBACK_SUBMIT') {
+    handleFeedbackSubmit(message, sendResponse)
+    return true
+  }
+
   // If all known message types are handled above, TypeScript narrows `message` to `never` here.
   // Avoid accessing `message.type` to keep this branch type-safe.
   sendResponse({ type: 'UNKNOWN_MESSAGE' })
@@ -332,6 +340,35 @@ async function handlePipedriveAttach(
         : 500
     sendResponse({
       type: 'PIPEDRIVE_ERROR',
+      error: errorMessage,
+      statusCode,
+    })
+  }
+}
+
+/**
+ * Handle feedback submission
+ */
+async function handleFeedbackSubmit(
+  message: FeedbackSubmitRequest,
+  sendResponse: (response: FeedbackResponse) => void
+) {
+  try {
+    if (message.type !== 'FEEDBACK_SUBMIT') return
+
+    await pipedriveApiService.submitFeedback(message.message)
+
+    sendResponse({
+      type: 'FEEDBACK_SUBMIT_SUCCESS',
+    })
+  } catch (error) {
+    const errorMessage = getErrorMessage(error, 'Failed to submit feedback')
+    const statusCode =
+      typeof error === 'object' && error !== null && 'statusCode' in error
+        ? (error.statusCode as number)
+        : 500
+    sendResponse({
+      type: 'FEEDBACK_SUBMIT_ERROR',
       error: errorMessage,
       statusCode,
     })

@@ -207,6 +207,25 @@ class PipedriveApiService {
     console.log('[PipedriveAPI] Phone attached successfully')
     return person
   }
+
+  /**
+   * Submit user feedback
+   */
+  async submitFeedback(message: string): Promise<void> {
+    console.log('[PipedriveAPI] Submitting feedback')
+
+    const extensionVersion = chrome.runtime.getManifest().version
+
+    await this.makeRequest<{ success: boolean }>('/api/feedback', {
+      method: 'POST',
+      body: JSON.stringify({
+        message,
+        extensionVersion,
+      }),
+    })
+
+    console.log('[PipedriveAPI] Feedback submitted successfully')
+  }
 }
 
 export const pipedriveApiService = new PipedriveApiService()

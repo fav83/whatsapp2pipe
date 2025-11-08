@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WhatsApp2Pipe.Api.Models;
 
@@ -11,9 +12,11 @@ using WhatsApp2Pipe.Api.Models;
 namespace WhatsApp2Pipe.Api.Migrations
 {
     [DbContext(typeof(Chat2DealDbContext))]
-    partial class Chat2DealDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251108150731_AddFeedbackTable")]
+    partial class AddFeedbackTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

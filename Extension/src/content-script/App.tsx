@@ -25,6 +25,8 @@ import { PersonNoMatchState } from './components/PersonNoMatchState'
 import { PersonLookupError } from './components/PersonLookupError'
 import { UserAvatar } from './components/UserAvatar'
 import { SentryTest } from './components/SentryTest'
+import { FeedbackButton } from './components/FeedbackButton'
+import { FeedbackModal } from './components/FeedbackModal'
 import { exposePipedriveTestHelpers } from './testPipedriveApi'
 import type { Person } from '../types/person'
 
@@ -65,6 +67,7 @@ export default function App() {
   const { authState, userName, signIn, signOut, error } = useAuth()
   const [state, setState] = useState<SidebarState>({ type: 'welcome' })
   const [sentryTestExpanded, setSentryTestExpanded] = useState(false)
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false)
 
   // Theme manager is now initialized in index.tsx before React mount (prevents flicker)
 
@@ -141,6 +144,13 @@ export default function App() {
         {authState === 'authenticated' && <SidebarContent state={state} setState={setState} />}
       </main>
 
+      {/* Feedback Button - Fixed at bottom, only visible when authenticated */}
+      {authState === 'authenticated' && (
+        <div className="flex-shrink-0 px-4 py-2 bg-bg-main border-t border-border-secondary">
+          <FeedbackButton onClick={() => setIsFeedbackModalOpen(true)} />
+        </div>
+      )}
+
       {/* Dev Mode Indicator - Only visible in development */}
       <DevModeIndicator
         sentryTestExpanded={sentryTestExpanded}
@@ -149,6 +159,11 @@ export default function App() {
 
       {/* Sentry Test Panel - Only visible in development */}
       <SentryTest isExpanded={sentryTestExpanded} />
+
+      {/* Feedback Modal - Only rendered when authenticated */}
+      {authState === 'authenticated' && (
+        <FeedbackModal isOpen={isFeedbackModalOpen} onClose={() => setIsFeedbackModalOpen(false)} />
+      )}
     </div>
   )
 }

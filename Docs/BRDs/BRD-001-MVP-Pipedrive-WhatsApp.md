@@ -146,6 +146,53 @@ During extension initialization, the extension performs critical setup (webpack 
 - [✅] No console errors during normal operation
 - [✅] Test hooks exposed for unit and integration testing
 
+### 4.8 User Feedback System (Feature 24) (Draft - Spec-124)
+Authenticated users can submit feedback directly from the extension UI to help improve Chat2Deal. This provides a low-friction channel for bug reports, feature requests, and general feedback.
+
+**Feedback Button:**
+- Fixed button at bottom of sidebar (above dev indicator in dev mode, at absolute bottom in production)
+- Button text: "Send Feedback" with speech bubble icon
+- 38px height, full width minus horizontal margins (318px)
+- Secondary/subtle styling (text-secondary color with border)
+
+**Feedback Modal:**
+- Centered modal overlay with semi-transparent backdrop (rgba(0, 0, 0, 0.5))
+- Modal container: 300px wide, white card with border and shadow
+- Header: "Send Feedback" title with close X button
+- Instructional text: "Share your thoughts with us! Whether it's a bug you've encountered, a feature you'd like to see, or general feedback about Chat2Deal - we'd love to hear from you."
+- Textarea: Placeholder "Tell us what's on your mind...", 120px min-height, 5000 character limit
+- Character counter: Shows "X / 5000" below textarea
+- Footer: Cancel button (left) and Submit button (right)
+
+**Form States:**
+- Default: Submit button disabled if textarea empty, enabled with text
+- Submitting: Submit button shows spinner, textarea disabled
+- Success: Modal content replaced with success message ("Thank you!"), single Close button
+- Error: Error banner at top of modal, textarea content preserved, user can retry
+
+**Backend Integration:**
+- New Feedback table in Azure SQL: FeedbackEntityId (GUID), UserId (GUID), Message (NVARCHAR(10000)), CreatedAt, UserAgent, ExtensionVersion
+- New POST /api/feedback endpoint (authenticated, requires Pipedrive access token)
+- Auto-populated fields: UserId from token, timestamps, UserAgent, ExtensionVersion
+
+**Accessibility:**
+- Full keyboard navigation (Tab, Escape, Enter)
+- Focus trap within modal when open
+- ARIA labels on all interactive elements
+- Click-outside-to-close with confirmation if text entered
+
+**Acceptance Criteria**
+- [ ] Feedback button appears at correct position (bottom in prod, above dev in dev mode)
+- [ ] Modal opens/closes correctly with backdrop and animations
+- [ ] Textarea enforces 5000 character limit with visible counter
+- [ ] Submit button disabled when empty, enabled with text
+- [ ] All four states (default, submitting, success, error) render correctly
+- [ ] Backend endpoint validates authentication and stores feedback in database
+- [ ] Error handling preserves user's message and allows retry
+- [ ] Success state shows confirmation before closing
+- [ ] Keyboard navigation works (Tab, Escape, Enter)
+- [ ] Click-outside closes modal with confirmation if text present
+
 ---
 
 ## 5) UX Overview (Happy Path)
@@ -567,3 +614,4 @@ To meet legal compliance requirements and build user trust, the Chat2Deal landin
 - [Spec-121: Waitlist System](../Specs/Spec-121-Waitlist-System.md) - Waitlist for users without beta access
 - [Spec-122: Website Extension Detection](../Specs/Spec-122-Website-Extension-Detection.md) - Extension installation detection and installation prompt
 - [Spec-123: Landing Page Legal Pages](../Specs/Spec-123-Landing-Legal-Pages.md) - Privacy Policy and Terms of Service pages for landing site
+- [Spec-124: User Feedback System](../Specs/Spec-124-User-Feedback-System.md) - In-extension feedback submission for authenticated users
