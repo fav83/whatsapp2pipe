@@ -27,6 +27,7 @@ import { UserAvatar } from './components/UserAvatar'
 import { SentryTest } from './components/SentryTest'
 import { FeedbackButton } from './components/FeedbackButton'
 import { FeedbackModal } from './components/FeedbackModal'
+import { ConfigMessageBanner } from './components/ConfigMessageBanner'
 import { exposePipedriveTestHelpers } from './testPipedriveApi'
 import type { Person } from '../types/person'
 
@@ -68,6 +69,8 @@ export default function App() {
   const [state, setState] = useState<SidebarState>({ type: 'welcome' })
   const [sentryTestExpanded, setSentryTestExpanded] = useState(false)
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false)
+  const [configMessage, setConfigMessage] = useState<string | null>(null)
+  const [showConfigMessage, setShowConfigMessage] = useState<boolean>(false)
 
   // Theme manager is now initialized in index.tsx before React mount (prevents flicker)
 
@@ -111,6 +114,45 @@ export default function App() {
     }
   }, [])
 
+  // Fetch config when user becomes authenticated
+  useEffect(() => {
+    if (authState === 'authenticated') {
+      fetchConfig()
+    }
+  }, [authState])
+
+  /**
+   * Fetch user configuration from backend
+   */
+  const fetchConfig = async () => {
+    try {
+      const response = await chrome.runtime.sendMessage({ type: 'CONFIG_GET' })
+
+      if (response.type === 'CONFIG_GET_SUCCESS') {
+        if (response.config.message) {
+          setConfigMessage(response.config.message)
+          setShowConfigMessage(true)
+        }
+      }
+      // Silent failure - error logged to Sentry by service worker
+    } catch (error) {
+      // Silent failure - log to console and Sentry only
+      console.error('[App] Failed to fetch config:', error)
+      if (window.Sentry) {
+        window.Sentry.captureException(error, {
+          tags: { context: 'config_fetch' },
+        })
+      }
+    }
+  }
+
+  /**
+   * Handle dismissing the config message banner
+   */
+  const handleDismissConfigMessage = () => {
+    setShowConfigMessage(false)
+  }
+
   return (
     <div className="h-full flex flex-col bg-white border-l border-border-primary">
       {/* Fixed Header */}
@@ -125,6 +167,11 @@ export default function App() {
           <UserAvatar userName={userName} onSignOut={signOut} />
         )}
       </header>
+
+      {/* Config Message Banner - conditionally rendered */}
+      {authState === 'authenticated' && showConfigMessage && configMessage && (
+        <ConfigMessageBanner markdown={configMessage} onDismiss={handleDismissConfigMessage} />
+      )}
 
       {/* Scrollable Body */}
       <main className="flex-1 overflow-y-auto bg-background-main">

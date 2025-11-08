@@ -16,6 +16,8 @@ import type {
   PipedriveResponse,
   FeedbackSubmitRequest,
   FeedbackResponse,
+  ConfigGetRequest,
+  ConfigResponse,
 } from '../types/messages'
 import type { AuthUrlResponse } from '../types/auth'
 
@@ -255,6 +257,12 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
     return true
   }
 
+  // Handle config fetch
+  if (message.type === 'CONFIG_GET') {
+    handleConfigGet(message, sendResponse)
+    return true
+  }
+
   // If all known message types are handled above, TypeScript narrows `message` to `never` here.
   // Avoid accessing `message.type` to keep this branch type-safe.
   sendResponse({ type: 'UNKNOWN_MESSAGE' })
@@ -404,6 +412,36 @@ async function handleFeedbackSubmit(
         : 500
     sendResponse({
       type: 'FEEDBACK_SUBMIT_ERROR',
+      error: errorMessage,
+      statusCode,
+    })
+  }
+}
+
+/**
+ * Handle config fetch
+ */
+async function handleConfigGet(
+  message: ConfigGetRequest,
+  sendResponse: (response: ConfigResponse) => void
+) {
+  try {
+    if (message.type !== 'CONFIG_GET') return
+
+    const config = await pipedriveApiService.getConfig()
+
+    sendResponse({
+      type: 'CONFIG_GET_SUCCESS',
+      config,
+    })
+  } catch (error) {
+    const errorMessage = getErrorMessage(error, 'Failed to fetch config')
+    const statusCode =
+      typeof error === 'object' && error !== null && 'statusCode' in error
+        ? (error.statusCode as number)
+        : 500
+    sendResponse({
+      type: 'CONFIG_GET_ERROR',
       error: errorMessage,
       statusCode,
     })

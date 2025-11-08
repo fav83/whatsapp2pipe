@@ -7,6 +7,7 @@
  */
 
 import type { Person, CreatePersonData, AttachPhoneData } from './person'
+import type { UserConfig } from './config'
 
 // ============================================================================
 // Auth Messages
@@ -234,6 +235,39 @@ export interface FeedbackSubmitError {
 export type FeedbackResponse = FeedbackSubmitSuccess | FeedbackSubmitError
 
 // ============================================================================
+// Config Messages
+// ============================================================================
+
+/**
+ * Get user configuration
+ */
+export interface ConfigGetRequest {
+  type: 'CONFIG_GET'
+}
+
+/**
+ * Successful config fetch
+ */
+export interface ConfigGetSuccess {
+  type: 'CONFIG_GET_SUCCESS'
+  config: UserConfig
+}
+
+/**
+ * Config fetch error
+ */
+export interface ConfigGetError {
+  type: 'CONFIG_GET_ERROR'
+  error: string
+  statusCode: number
+}
+
+/**
+ * Union of all config responses
+ */
+export type ConfigResponse = ConfigGetSuccess | ConfigGetError
+
+// ============================================================================
 // General Messages
 // ============================================================================
 
@@ -264,6 +298,7 @@ export type ExtensionMessage =
   | AuthSignInRequest
   | PipedriveRequest
   | FeedbackSubmitRequest
+  | ConfigGetRequest
   | PingMessage
 
 /**
@@ -274,4 +309,5 @@ export type ExtensionResponse =
   | AuthSignInResponse
   | PipedriveResponse
   | FeedbackResponse
+  | ConfigResponse
   | PongMessage

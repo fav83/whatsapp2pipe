@@ -15,7 +15,9 @@
     "Pipedrive__ApiVersion": "v1",
 
     "APP_WEBSITE_CALLBACK_URL": "http://localhost:3000/auth/callback",
-    "CORS_ALLOWED_ORIGINS": "https://web.whatsapp.com,http://localhost:3000,http://localhost:5173,https://dashboard.chat2deal.com"
+    "CORS_ALLOWED_ORIGINS": "https://web.whatsapp.com,http://localhost:3000,http://localhost:5173,https://dashboard.chat2deal.com",
+
+    "ConfigMessage": "Check out our **new features** and learn how to boost your workflow! <a href=\"https://chat2deal.com/updates\" target=\"_blank\">Read more</a>"
   },
   "ConnectionStrings": {
     "Chat2DealDb": "Server=localhost;Database=chat2deal-dev;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"

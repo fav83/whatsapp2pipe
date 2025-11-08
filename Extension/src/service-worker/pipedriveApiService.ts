@@ -8,6 +8,7 @@
 
 import { AUTH_CONFIG } from '../config'
 import type { Person, CreatePersonData, AttachPhoneData } from '../types/person'
+import type { UserConfig } from '../types/config'
 import { logError } from '../utils/errorLogger'
 import { logBreadcrumb } from '../utils/breadcrumbs'
 import { sentryScope } from './sentry'
@@ -42,13 +43,20 @@ class PipedriveApiService {
 
       const verificationCode = await this.getVerificationCode()
 
+      // Build headers - only include Content-Type for requests with body
+      const headers: Record<string, string> = {
+        Authorization: `Bearer ${verificationCode}`,
+        ...(options.headers as Record<string, string>),
+      }
+
+      // Add Content-Type only for requests with a body (POST, PUT, PATCH)
+      if (options.body) {
+        headers['Content-Type'] = 'application/json'
+      }
+
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
         ...options,
-        headers: {
-          Authorization: `Bearer ${verificationCode}`,
-          'Content-Type': 'application/json',
-          ...options.headers,
-        },
+        headers,
       })
 
       // Handle HTTP errors
@@ -225,6 +233,13 @@ class PipedriveApiService {
     })
 
     console.log('[PipedriveAPI] Feedback submitted successfully')
+  }
+
+  /**
+   * Get user configuration (e.g., admin messages)
+   */
+  async getConfig(): Promise<UserConfig> {
+    return this.makeRequest<UserConfig>('/api/config')
   }
 }
 

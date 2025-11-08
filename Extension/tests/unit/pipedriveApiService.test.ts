@@ -317,6 +317,119 @@ describe('PipedriveApiService', () => {
     })
   })
 
+  describe('getConfig', () => {
+    it('sends GET request to /api/config', async () => {
+      const mockConfig = { message: 'Test message' }
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        json: async () => mockConfig,
+      } as Response)
+
+      await pipedriveApiService.getConfig()
+
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/config'),
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            Authorization: 'Bearer test_code',
+          }),
+        })
+      )
+    })
+
+    it('returns config with message when available', async () => {
+      const mockConfig = { message: 'Check out our **new features**!' }
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        json: async () => mockConfig,
+      } as Response)
+
+      const result = await pipedriveApiService.getConfig()
+
+      expect(result).toEqual(mockConfig)
+      expect(result.message).toBe('Check out our **new features**!')
+    })
+
+    it('returns config with null message when not set', async () => {
+      const mockConfig = { message: null }
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        json: async () => mockConfig,
+      } as Response)
+
+      const result = await pipedriveApiService.getConfig()
+
+      expect(result).toEqual({ message: null })
+      expect(result.message).toBeNull()
+    })
+
+    it('includes authorization header', async () => {
+      const mockConfig = { message: 'Test' }
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        json: async () => mockConfig,
+      } as Response)
+
+      await pipedriveApiService.getConfig()
+
+      const callArgs = vi.mocked(fetch).mock.calls[0]
+      const headers = callArgs[1]?.headers as Record<string, string>
+      expect(headers.Authorization).toBe('Bearer test_code')
+    })
+
+    it('handles 401 error', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: false,
+        status: 401,
+      } as Response)
+
+      await expect(pipedriveApiService.getConfig()).rejects.toMatchObject({
+        statusCode: 401,
+        message: expect.stringContaining('Authentication expired'),
+      })
+    })
+
+    it('handles 500 server error', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: false,
+        status: 500,
+      } as Response)
+
+      await expect(pipedriveApiService.getConfig()).rejects.toMatchObject({
+        statusCode: 500,
+        message: expect.stringContaining('Server error'),
+      })
+    })
+
+    it('handles network error', async () => {
+      vi.mocked(fetch).mockRejectedValue(new Error('Network error'))
+
+      await expect(pipedriveApiService.getConfig()).rejects.toMatchObject({
+        statusCode: 0,
+        message: expect.stringContaining('Unable to connect'),
+      })
+    })
+
+    it('requires authentication', async () => {
+      global.chrome = {
+        storage: {
+          local: {
+            get: vi.fn().mockResolvedValue({}),
+          },
+        },
+        runtime: {
+          getManifest: vi.fn(() => ({ version: '1.0.0' })),
+        },
+      } as typeof chrome
+
+      await expect(pipedriveApiService.getConfig()).rejects.toMatchObject({
+        statusCode: 401,
+        message: 'Not authenticated',
+      })
+    })
+  })
+
   describe('submitFeedback', () => {
     it('sends POST request to /api/feedback', async () => {
       vi.mocked(fetch).mockResolvedValue({

@@ -193,6 +193,61 @@ Authenticated users can submit feedback directly from the extension UI to help i
 - [ ] Keyboard navigation works (Tab, Escape, Enter)
 - [ ] Click-outside closes modal with confirmation if text present
 
+### 4.9 Admin Config Message Banner (Feature 25) (Draft - Spec-125)
+Allow admins to display important announcements, updates, or notifications to all authenticated users via a configurable message banner at the top of the sidebar. Messages support Markdown with inline HTML for formatting and links.
+
+**Config Endpoint:**
+- New GET /api/config endpoint (authenticated, requires Pipedrive access token)
+- Returns JSON: `{ "message": string | null }`
+- Message content is Markdown with inline HTML support (links can specify target via `<a>` tags)
+- Called once per sidebar session on initial load for authenticated users
+- API failures handled silently (logged to Sentry only, sidebar continues normally)
+
+**Message Banner UI:**
+- Positioned immediately below fixed header (logo + avatar), above all scrollable content
+- Visible across ALL sidebar states (welcome, contact info, person-matched, etc.)
+- Full sidebar width (350px minus padding)
+- Dismissible with X button in top-right corner
+- Background: Light info color (e.g., bg-blue-50) with border to distinguish from main content
+- Markdown rendered using react-markdown with rehype-raw (HTML support) and rehype-sanitize (security)
+- Links open in new tab (backend specifies via `target="_blank"` in HTML)
+
+**Dismissal Behavior:**
+- Clicking X closes the banner (removes from UI completely)
+- Dismissal is temporary UI state only (no persistence to storage)
+- Message reappears on next sidebar session (page reload)
+- Each config endpoint call shows the message if non-null, regardless of previous dismissals
+
+**Backend Storage:**
+- MVP: Message stored as configuration setting (environment variable, Azure App Configuration, or hard-coded constant)
+- When message is null, banner does not appear
+- Future enhancement: Database table for per-company or per-user messages
+
+**Security:**
+- Markdown rendered with sanitization (allow safe HTML tags only)
+- Allowed tags: `<p>`, `<a>`, `<strong>`, `<em>`, `<br>`, `<ul>`, `<ol>`, `<li>`, `<b>`, `<i>`
+- Allowed attributes: `href`, `target`, `rel` on `<a>` tags
+- Strip dangerous attributes: `onclick`, `onerror`, script tags, etc.
+
+**Dependencies:**
+- react-markdown: Markdown rendering library
+- rehype-raw: Plugin to allow inline HTML in Markdown
+- rehype-sanitize: Plugin to sanitize HTML output
+
+**Acceptance Criteria**
+- [ ] Backend GET /api/config endpoint implemented and deployed
+- [ ] Endpoint validates authentication (Pipedrive access token)
+- [ ] Endpoint returns `{ "message": null }` or `{ "message": "markdown content" }`
+- [ ] Extension calls config endpoint once on initial load for authenticated users
+- [ ] ConfigMessageBanner component renders Markdown with inline HTML
+- [ ] Banner positioned below header, above scrollable content
+- [ ] Banner visible across all sidebar states
+- [ ] X button dismisses banner (removes from UI)
+- [ ] Dismissal is temporary (message reappears on page reload)
+- [ ] API failures are silent (logged to Sentry, sidebar loads normally)
+- [ ] Markdown sanitization prevents XSS attacks
+- [ ] Links open in new tab when specified by backend
+
 ---
 
 ## 5) UX Overview (Happy Path)
