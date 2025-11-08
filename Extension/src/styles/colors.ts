@@ -1607,7 +1607,7 @@ const warmStone = {
 const darkBlueGray = {
   // Brand Colors
   brand: {
-    primary: '#656099', // Custom dark blue-gray
+    primary: '#665F98', // Custom dark blue-gray (matches Landing/Website)
     'primary-hover': '#4f4775', // Darker shade for hover
     'primary-light': '#e8e6f0', // Very light blue-gray
     'primary-light-hover': '#b8b3d0', // Medium light for hover
@@ -1656,7 +1656,7 @@ const darkBlueGray = {
 
   // Special UI
   loading: {
-    spinner: '#656099', // Custom dark blue-gray
+    spinner: '#656099', // Custom dark blue-gray (matches brand primary)
   },
 
   // Dev Mode Colors
@@ -2878,7 +2878,7 @@ const rose500 = {
  *
  * This export is kept for backward compatibility only.
  */
-export const colors = coolCyan
+export const colors = darkBlueGray
 
 // ============================================================================
 // AVAILABLE PALETTES (for easy switching)

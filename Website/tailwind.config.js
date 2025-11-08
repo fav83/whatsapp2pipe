@@ -30,7 +30,7 @@ export default {
           active: '#3D2BC8',
         },
         'button-primary': '#665F98',
-        'button-primary-hover': '#574F85',
+        'button-primary-hover': '#4f4775',
         'button-primary-active': '#483F70',
         'gray-secondary': '#66748d',
         'gray-light': '#e2e8f0',

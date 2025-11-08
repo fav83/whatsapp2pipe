@@ -1,16 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve, dirname } from 'path'
-import {
-  copyFileSync,
-  existsSync,
-  readFileSync,
-  writeFileSync,
-  mkdirSync,
-  readdirSync,
-  renameSync,
-  unlinkSync,
-} from 'fs'
+import { copyFileSync, existsSync, mkdirSync, readdirSync, renameSync, unlinkSync } from 'fs'
 
 export default defineConfig({
   base: './', // Enable relative asset loading for Chrome extension compatibility
@@ -27,21 +18,6 @@ export default defineConfig({
           resolve(__dirname, 'dist/manifest.json')
         )
         console.log('✓ Copied manifest.json to dist/')
-      },
-    },
-    // Move popup.html to root of dist and fix asset paths
-    {
-      name: 'move-popup-html',
-      closeBundle() {
-        const popupSrc = resolve(__dirname, 'dist/src/popup/index.html')
-        const popupDest = resolve(__dirname, 'dist/popup.html')
-        if (existsSync(popupSrc)) {
-          let popupContent = readFileSync(popupSrc, 'utf-8')
-          // Fix asset paths: ../../assets/ becomes ./assets/ since we're moving from dist/src/popup/ to dist/
-          popupContent = popupContent.replace(/\.\.(\/\.\.)+\//g, './')
-          writeFileSync(popupDest, popupContent)
-          console.log('✓ Moved popup.html to dist/ and fixed asset paths')
-        }
       },
     },
     // Note: No post-build inlining. content-script and inspector are
@@ -115,7 +91,6 @@ export default defineConfig({
       input: {
         // content-script and inspector are built in separate configs
         'service-worker': resolve(__dirname, 'src/service-worker/index.ts'),
-        popup: resolve(__dirname, 'src/popup/index.html'),
       },
       output: {
         entryFileNames: (chunkInfo) => {

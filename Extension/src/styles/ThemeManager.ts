@@ -25,7 +25,7 @@ export const THEME_METADATA: ThemeMetadata[] = [
     name: 'darkBlueGray',
     displayName: 'Dark Blue-Gray',
     category: 'Default',
-    primaryColor: '#656099',
+    primaryColor: '#665F98',
   },
 
   // Tailwind 600-Series Color Themes

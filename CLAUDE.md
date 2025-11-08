@@ -22,6 +22,9 @@ This project uses a structured organization:
 
 All project documents are located in the [Docs/](Docs/) folder, organized as follows:
 
+### Brand & Design
+- [Brand-Guide.md](Docs/Brand-Guide.md) - Complete brand guidelines including colors, typography, voice, tone, and visual style for Chat2Deal
+
 ### Architecture
 - [Chrome-Extension-Architecture.md](Docs/Architecture/Chrome-Extension-Architecture.md) - Technical architecture and component design
 - [Website-Architecture.md](Docs/Architecture/Website-Architecture.md) - User dashboard web application architecture (✅ Complete)

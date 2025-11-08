@@ -24,10 +24,10 @@ Create Chrome Extension Manifest V3 configuration with all required permissions,
 - Create valid Manifest V3 configuration
 - Implement basic service worker (background script)
 - Implement basic content script that loads on WhatsApp Web
-- Implement basic popup UI
+- ~~Implement basic popup UI~~ *(Removed - extension has no popup action)*
 - Verify extension loads and runs on WhatsApp Web
 - Test message passing between components
-- Create extension icons (placeholder)
+- Create extension icons
 
 ---
 
@@ -44,11 +44,11 @@ Create Chrome Extension Manifest V3 configuration with all required permissions,
 ```json
 {
   "manifest_version": 3,
-  "name": "Pipedrive for WhatsApp Web",
-  "short_name": "Pipedrive WhatsApp",
+  "name": "Chat2deal: Sync your Whatsapp to Pipedrive",
+  "short_name": "Chat2deal",
   "version": "0.1.0",
   "description": "Find, create, and link Pipedrive contacts directly from WhatsApp Web conversations.",
-  "author": "Your Name",
+  "author": "chat2deal.com",
 
   "permissions": [
     "storage",
@@ -86,17 +86,6 @@ Create Chrome Extension Manifest V3 configuration with all required permissions,
       "run_at": "document_start"
     }
   ],
-
-  "action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "icons/icon16.png",
-      "32": "icons/icon32.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
-    },
-    "default_title": "Chat2deal: WhatsApp to Pipedrive integration"
-  },
 
   "icons": {
     "16": "icons/icon16.png",
@@ -163,8 +152,8 @@ Create Chrome Extension Manifest V3 configuration with all required permissions,
 **Acceptance Criteria:**
 - [ ] All four icon sizes exist (16px, 32px, 48px, 128px)
 - [ ] Icons display correctly in chrome://extensions
-- [ ] Icons display correctly in extension popup
 - [ ] Icons are recognizable at 16px (smallest size)
+- [ ] Icons follow Chat2Deal brand guidelines (see [Brand-Guide.md](../Brand-Guide.md))
 
 ---
 
@@ -425,7 +414,11 @@ export default function App() {
 
 ---
 
-### 3.5 Popup UI - Extension Icon Click
+### 3.5 Popup UI - Extension Icon Click *(REMOVED)*
+
+**Note:** The popup UI was removed in commit 496f14b. The extension now operates entirely through the WhatsApp Web sidebar injection and does not have a browser action popup. This simplifies the user experience - users interact with the extension only through the sidebar that appears on WhatsApp Web.
+
+~~Original specification (for reference):~~
 
 **Description:** Implement basic popup that displays when clicking the extension icon.
 
@@ -670,9 +663,7 @@ dist/
 ├── content-script.js
 ├── inspector-main.js
 ├── dashboard-bridge.js
-├── popup.html
 ├── assets/
-│   ├── popup.js
 │   ├── content-script.css
 │   └── (other assets)
 ├── chunks/

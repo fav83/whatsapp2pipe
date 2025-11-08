@@ -60,7 +60,8 @@
       "Bash(del DEBUG_IDS.md)",
       "Bash(dotnet ef dbcontext:*)",
       "Bash(start /B npm run preview)",
-      "Bash(del /q distassets*.map)"
+      "Bash(del /q distassets*.map)",
+      "Bash(xargs:*)"
     ],
     "deny": [],
     "ask": [
