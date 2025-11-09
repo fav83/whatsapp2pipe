@@ -39,6 +39,9 @@ var host = new HostBuilder()
         // Register UserService as Scoped (uses DbContext directly)
         services.AddScoped<IUserService, UserService>();
 
+        // Register HTTP request logger
+        services.AddScoped<HttpRequestLogger>();
+
         // Register Pipedrive configuration
         services.AddSingleton(sp =>
         {

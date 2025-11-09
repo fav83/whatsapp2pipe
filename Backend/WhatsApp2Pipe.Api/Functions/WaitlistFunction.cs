@@ -6,6 +6,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using WhatsApp2Pipe.Api.Models;
+using WhatsApp2Pipe.Api.Services;
 using Microsoft.Data.SqlClient;
 
 namespace WhatsApp2Pipe.Api.Functions;
@@ -14,6 +15,7 @@ public class WaitlistFunction
 {
     private readonly ILogger<WaitlistFunction> logger;
     private readonly Chat2DealDbContext dbContext;
+    private readonly HttpRequestLogger httpRequestLogger;
 
     // Basic email regex pattern
     private static readonly Regex EmailRegex = new(
@@ -22,10 +24,12 @@ public class WaitlistFunction
 
     public WaitlistFunction(
         ILogger<WaitlistFunction> logger,
-        Chat2DealDbContext dbContext)
+        Chat2DealDbContext dbContext,
+        HttpRequestLogger httpRequestLogger)
     {
         this.logger = logger;
         this.dbContext = dbContext;
+        this.httpRequestLogger = httpRequestLogger;
     }
 
     [Function("Waitlist")]
@@ -33,6 +37,8 @@ public class WaitlistFunction
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "waitlist")]
         HttpRequestData req)
     {
+        await httpRequestLogger.LogRequestAsync(req);
+
         logger.LogInformation("Waitlist signup request received");
 
         try

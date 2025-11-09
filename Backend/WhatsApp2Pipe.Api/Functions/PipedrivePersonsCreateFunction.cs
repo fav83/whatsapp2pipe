@@ -14,6 +14,7 @@ public class PipedrivePersonsCreateFunction
     private readonly ISessionService sessionService;
     private readonly IPipedriveApiClient pipedriveApiClient;
     private readonly PersonTransformService transformService;
+    private readonly HttpRequestLogger httpRequestLogger;
 
     // Cached JSON serializer options for camelCase output
     private static readonly System.Text.Json.JsonSerializerOptions JsonOptions = new()
@@ -25,12 +26,14 @@ public class PipedrivePersonsCreateFunction
         ILogger<PipedrivePersonsCreateFunction> logger,
         ISessionService sessionService,
         IPipedriveApiClient pipedriveApiClient,
-        PersonTransformService transformService)
+        PersonTransformService transformService,
+        HttpRequestLogger httpRequestLogger)
     {
         this.logger = logger;
         this.sessionService = sessionService;
         this.pipedriveApiClient = pipedriveApiClient;
         this.transformService = transformService;
+        this.httpRequestLogger = httpRequestLogger;
     }
 
     [Function("PipedrivePersonsCreate")]
@@ -42,6 +45,8 @@ public class PipedrivePersonsCreateFunction
         {
             return req.CreateResponse(HttpStatusCode.OK);
         }
+
+        await httpRequestLogger.LogRequestAsync(req);
 
         logger.LogInformation("PipedrivePersonsCreate function triggered");
 

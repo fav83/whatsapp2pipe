@@ -15,23 +15,28 @@ public class AuthStartFunction
     private readonly OAuthStateValidator stateValidator;
     private readonly ISessionService sessionService;
     private readonly ILogger<AuthStartFunction> logger;
+    private readonly HttpRequestLogger httpRequestLogger;
 
     public AuthStartFunction(
         IOAuthService oauthService,
         OAuthStateValidator stateValidator,
         ISessionService sessionService,
-        ILogger<AuthStartFunction> logger)
+        ILogger<AuthStartFunction> logger,
+        HttpRequestLogger httpRequestLogger)
     {
         this.oauthService = oauthService;
         this.stateValidator = stateValidator;
         this.sessionService = sessionService;
         this.logger = logger;
+        this.httpRequestLogger = httpRequestLogger;
     }
 
     [Function("AuthStart")]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "auth/start")] HttpRequestData req)
     {
+        await httpRequestLogger.LogRequestAsync(req);
+
         logger.LogInformation("AuthStart endpoint called");
 
         try

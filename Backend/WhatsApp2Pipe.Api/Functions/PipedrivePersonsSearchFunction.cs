@@ -13,6 +13,7 @@ public class PipedrivePersonsSearchFunction
     private readonly ISessionService sessionService;
     private readonly IPipedriveApiClient pipedriveApiClient;
     private readonly PersonTransformService transformService;
+    private readonly HttpRequestLogger httpRequestLogger;
 
     // Cached JSON serializer options for camelCase output
     private static readonly System.Text.Json.JsonSerializerOptions JsonOptions = new()
@@ -24,26 +25,29 @@ public class PipedrivePersonsSearchFunction
         ILogger<PipedrivePersonsSearchFunction> logger,
         ISessionService sessionService,
         IPipedriveApiClient pipedriveApiClient,
-        PersonTransformService transformService)
+        PersonTransformService transformService,
+        HttpRequestLogger httpRequestLogger)
     {
         this.logger = logger;
         this.sessionService = sessionService;
         this.pipedriveApiClient = pipedriveApiClient;
         this.transformService = transformService;
+        this.httpRequestLogger = httpRequestLogger;
     }
 
     [Function("PipedrivePersonsSearch")]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", "options", Route = "pipedrive/persons/search")] HttpRequestData req)
     {
-        logger.LogInformation("[PipedrivePersonsSearch] Function triggered - Method: {Method}, URL: {Url}", req.Method, req.Url);
-
         // Handle CORS preflight
         if (req.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
         {
-            logger.LogInformation("[PipedrivePersonsSearch] Handling OPTIONS preflight request");
             return req.CreateResponse(HttpStatusCode.OK);
         }
+
+        await httpRequestLogger.LogRequestAsync(req);
+
+        logger.LogInformation("[PipedrivePersonsSearch] Function triggered - Method: {Method}, URL: {Url}", req.Method, req.Url);
 
         try
         {

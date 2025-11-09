@@ -12,21 +12,26 @@ public class GetCurrentUserFunction
     private readonly ISessionService sessionService;
     private readonly IUserService userService;
     private readonly ILogger<GetCurrentUserFunction> logger;
+    private readonly HttpRequestLogger httpRequestLogger;
 
     public GetCurrentUserFunction(
         ISessionService sessionService,
         IUserService userService,
-        ILogger<GetCurrentUserFunction> logger)
+        ILogger<GetCurrentUserFunction> logger,
+        HttpRequestLogger httpRequestLogger)
     {
         this.sessionService = sessionService;
         this.userService = userService;
         this.logger = logger;
+        this.httpRequestLogger = httpRequestLogger;
     }
 
     [Function("GetCurrentUser")]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "user/me")] HttpRequestData req)
     {
+        await httpRequestLogger.LogRequestAsync(req);
+
         logger.LogInformation("GetCurrentUser endpoint called");
 
         try

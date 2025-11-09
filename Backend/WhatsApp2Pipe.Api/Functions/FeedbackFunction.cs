@@ -16,21 +16,26 @@ public class FeedbackFunction
     private readonly ILogger<FeedbackFunction> logger;
     private readonly ISessionService sessionService;
     private readonly Chat2DealDbContext dbContext;
+    private readonly HttpRequestLogger httpRequestLogger;
 
     public FeedbackFunction(
         ILogger<FeedbackFunction> logger,
         ISessionService sessionService,
-        Chat2DealDbContext dbContext)
+        Chat2DealDbContext dbContext,
+        HttpRequestLogger httpRequestLogger)
     {
         this.logger = logger;
         this.sessionService = sessionService;
         this.dbContext = dbContext;
+        this.httpRequestLogger = httpRequestLogger;
     }
 
     [Function("Feedback")]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "feedback")] HttpRequestData req)
     {
+        await httpRequestLogger.LogRequestAsync(req);
+
         logger.LogInformation("[Feedback] Function triggered - Method: {Method}", req.Method);
 
         try

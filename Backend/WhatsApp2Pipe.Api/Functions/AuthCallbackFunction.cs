@@ -20,6 +20,7 @@ public class AuthCallbackFunction
     private readonly IUserService userService;
     private readonly IConfiguration configuration;
     private readonly ILogger<AuthCallbackFunction> logger;
+    private readonly HttpRequestLogger httpRequestLogger;
 
     public AuthCallbackFunction(
         ISessionService sessionService,
@@ -28,7 +29,8 @@ public class AuthCallbackFunction
         IPipedriveApiClient pipedriveApiClient,
         IUserService userService,
         IConfiguration configuration,
-        ILogger<AuthCallbackFunction> logger)
+        ILogger<AuthCallbackFunction> logger,
+        HttpRequestLogger httpRequestLogger)
     {
         this.sessionService = sessionService;
         this.oauthService = oauthService;
@@ -37,12 +39,15 @@ public class AuthCallbackFunction
         this.userService = userService;
         this.configuration = configuration;
         this.logger = logger;
+        this.httpRequestLogger = httpRequestLogger;
     }
 
     [Function("AuthCallback")]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "auth/callback")] HttpRequestData req)
     {
+        await httpRequestLogger.LogRequestAsync(req);
+
         logger.LogInformation("AuthCallback endpoint called");
 
         try

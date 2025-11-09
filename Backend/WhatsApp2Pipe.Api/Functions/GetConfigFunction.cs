@@ -13,15 +13,18 @@ public class GetConfigFunction
     private readonly ILogger<GetConfigFunction> logger;
     private readonly ISessionService sessionService;
     private readonly IConfiguration configuration;
+    private readonly HttpRequestLogger httpRequestLogger;
 
     public GetConfigFunction(
         ILogger<GetConfigFunction> logger,
         ISessionService sessionService,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        HttpRequestLogger httpRequestLogger)
     {
         this.logger = logger;
         this.sessionService = sessionService;
         this.configuration = configuration;
+        this.httpRequestLogger = httpRequestLogger;
     }
 
     [Function("GetConfig")]
@@ -29,6 +32,8 @@ public class GetConfigFunction
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "config")]
         HttpRequestData req)
     {
+        await httpRequestLogger.LogRequestAsync(req);
+
         logger.LogInformation("Config request received");
 
         try
