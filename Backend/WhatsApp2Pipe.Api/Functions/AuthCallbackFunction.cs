@@ -251,6 +251,7 @@ public class AuthCallbackFunction
 
                 var response = req.CreateResponse(HttpStatusCode.Redirect);
                 response.Headers.Add("Location", redirectUrl);
+                httpRequestLogger.LogResponse("AuthCallback", (int)HttpStatusCode.Redirect);
                 return response;
             }
             else
@@ -271,6 +272,7 @@ public class AuthCallbackFunction
 
                 var response = req.CreateResponse(HttpStatusCode.Redirect);
                 response.Headers.Add("Location", redirectUrl);
+                httpRequestLogger.LogResponse("AuthCallback", (int)HttpStatusCode.Redirect);
                 return response;
             }
         }
@@ -319,6 +321,7 @@ public class AuthCallbackFunction
 
             var response = req.CreateResponse(HttpStatusCode.Redirect);
             response.Headers.Add("Location", redirectUrl);
+            httpRequestLogger.LogResponse("AuthCallback", (int)HttpStatusCode.Redirect);
             return response;
         }
         else if (stateData?.Type == "extension" && error == OAuthErrorCode.BetaAccessRequired)
@@ -337,6 +340,7 @@ public class AuthCallbackFunction
 
             var response = req.CreateResponse(HttpStatusCode.Redirect);
             response.Headers.Add("Location", redirectUrl);
+            httpRequestLogger.LogResponse("AuthCallback", (int)HttpStatusCode.Redirect);
             return response;
         }
         else
@@ -357,6 +361,7 @@ public class AuthCallbackFunction
         var html = GenerateErrorHtml(error);
         response.WriteString(html);
 
+        httpRequestLogger.LogResponse("AuthCallback", (int)statusCode, html);
         return response;
     }
 

@@ -85,6 +85,7 @@ public class AuthStartFunction
                 logger.LogInformation("Website client - redirecting to Pipedrive OAuth");
                 var response = req.CreateResponse(HttpStatusCode.Redirect);
                 response.Headers.Add("Location", authorizationUrl);
+                httpRequestLogger.LogResponse("AuthStart", (int)HttpStatusCode.Redirect);
                 return response;
             }
             else
@@ -99,7 +100,9 @@ public class AuthStartFunction
                     AuthorizationUrl = authorizationUrl
                 };
 
-                await response.WriteStringAsync(JsonSerializer.Serialize(responseBody));
+                var responseJson = JsonSerializer.Serialize(responseBody);
+                await response.WriteStringAsync(responseJson);
+                httpRequestLogger.LogResponse("AuthStart", (int)HttpStatusCode.OK, responseBody);
                 return response;
             }
         }
@@ -127,6 +130,7 @@ public class AuthStartFunction
         };
 
         response.WriteString(JsonSerializer.Serialize(errorBody));
+        httpRequestLogger.LogResponse("AuthStart", (int)statusCode, errorBody);
 
         return response;
     }

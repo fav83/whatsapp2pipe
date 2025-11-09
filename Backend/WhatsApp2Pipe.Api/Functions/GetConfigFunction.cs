@@ -75,6 +75,7 @@ public class GetConfigFunction
             };
 
             await response.WriteStringAsync(JsonSerializer.Serialize(responseBody));
+            httpRequestLogger.LogResponse("GetConfig", (int)HttpStatusCode.OK, responseBody);
 
             return response;
         }
@@ -96,6 +97,7 @@ public class GetConfigFunction
         };
 
         response.WriteString(JsonSerializer.Serialize(errorBody));
+        httpRequestLogger.LogResponse("GetConfig", (int)HttpStatusCode.Unauthorized, errorBody);
 
         return response;
     }
@@ -111,6 +113,7 @@ public class GetConfigFunction
         };
 
         response.WriteString(JsonSerializer.Serialize(errorBody));
+        httpRequestLogger.LogResponse("GetConfig", (int)statusCode, errorBody);
 
         return response;
     }

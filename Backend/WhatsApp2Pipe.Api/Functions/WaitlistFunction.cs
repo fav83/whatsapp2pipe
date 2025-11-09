@@ -165,22 +165,26 @@ public class WaitlistFunction
     private async Task<HttpResponseData> CreateSuccessResponse(HttpRequestData req)
     {
         var response = req.CreateResponse(HttpStatusCode.OK);
-        await response.WriteAsJsonAsync(new
+        var responseBody = new
         {
             success = true,
             message = "You're on the waitlist! We'll email you when access is available."
-        });
+        };
+        await response.WriteAsJsonAsync(responseBody);
+        httpRequestLogger.LogResponse("Waitlist", (int)HttpStatusCode.OK, responseBody);
         return response;
     }
 
     private async Task<HttpResponseData> CreateErrorResponse(HttpRequestData req, string error, HttpStatusCode statusCode = HttpStatusCode.BadRequest)
     {
         var response = req.CreateResponse(statusCode);
-        await response.WriteAsJsonAsync(new
+        var errorBody = new
         {
             success = false,
             error
-        });
+        };
+        await response.WriteAsJsonAsync(errorBody);
+        httpRequestLogger.LogResponse("Waitlist", (int)statusCode, errorBody);
         return response;
     }
 }

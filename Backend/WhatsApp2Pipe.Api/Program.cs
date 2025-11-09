@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using WhatsApp2Pipe.Api.Configuration;
 using WhatsApp2Pipe.Api.Middleware;
 using WhatsApp2Pipe.Api.Models;
@@ -17,6 +18,18 @@ var host = new HostBuilder()
     {
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
+
+        // Configure logging to ensure all ILogger output reaches Application Insights
+        services.Configure<LoggerFilterOptions>(options =>
+        {
+            // Remove default filter that might suppress logs
+            var defaultRule = options.Rules.FirstOrDefault(rule =>
+                rule.ProviderName == "Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider");
+            if (defaultRule != null)
+            {
+                options.Rules.Remove(defaultRule);
+            }
+        });
 
         // Register OAuth services
         services.AddSingleton<IOAuthService, OAuthService>();

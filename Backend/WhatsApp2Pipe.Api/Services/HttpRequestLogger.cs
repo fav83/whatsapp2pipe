@@ -85,4 +85,88 @@ public class HttpRequestLogger
             logger.LogError(ex, "[HttpRequestLogger] Failed to log HTTP request - this error is swallowed to prevent impact on function execution");
         }
     }
+
+    /// <summary>
+    /// Log HTTP response with status code only (for simple responses)
+    /// </summary>
+    public void LogResponse(string functionName, int statusCode)
+    {
+        try
+        {
+            logger.LogInformation(
+                "[HTTP Response] Function: {FunctionName}, Status: {StatusCode}, Body: None",
+                functionName,
+                statusCode
+            );
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "[HttpRequestLogger] Failed to log HTTP response");
+        }
+    }
+
+    /// <summary>
+    /// Log HTTP response with JSON object body
+    /// </summary>
+    public void LogResponse(string functionName, int statusCode, object responseData)
+    {
+        try
+        {
+            var bodyJson = JsonSerializer.Serialize(responseData);
+            logger.LogInformation(
+                "[HTTP Response] Function: {FunctionName}, Status: {StatusCode}, Body: {Body}",
+                functionName,
+                statusCode,
+                bodyJson
+            );
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "[HttpRequestLogger] Failed to log HTTP response");
+        }
+    }
+
+    /// <summary>
+    /// Log HTTP response with pre-serialized string body
+    /// </summary>
+    public void LogResponse(string functionName, int statusCode, string responseBody)
+    {
+        try
+        {
+            logger.LogInformation(
+                "[HTTP Response] Function: {FunctionName}, Status: {StatusCode}, Body: {Body}",
+                functionName,
+                statusCode,
+                responseBody
+            );
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "[HttpRequestLogger] Failed to log HTTP response");
+        }
+    }
+
+    /// <summary>
+    /// Log HTTP response with full details (status, headers, body)
+    /// </summary>
+    public void LogResponse(string functionName, int statusCode, Dictionary<string, string>? headers, object? responseData)
+    {
+        try
+        {
+            var headersJson = headers != null ? JsonSerializer.Serialize(headers) : "None";
+            var bodyJson = responseData != null ? JsonSerializer.Serialize(responseData) : "None";
+
+            logger.LogInformation(
+                "[HTTP Response] Function: {FunctionName}, Status: {StatusCode}, Headers: {Headers}, Body: {Body}",
+                functionName,
+                statusCode,
+                headersJson,
+                bodyJson
+            );
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "[HttpRequestLogger] Failed to log HTTP response");
+        }
+    }
 }

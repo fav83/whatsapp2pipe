@@ -4,16 +4,21 @@ using System.Text.Json;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using WhatsApp2Pipe.Api.Services;
 
 namespace WhatsApp2Pipe.Api.Functions;
 
 public class StatusFunction
 {
     private readonly ILogger<StatusFunction> logger;
+    private readonly HttpRequestLogger httpRequestLogger;
 
-    public StatusFunction(ILogger<StatusFunction> logger)
+    public StatusFunction(
+        ILogger<StatusFunction> logger,
+        HttpRequestLogger httpRequestLogger)
     {
         this.logger = logger;
+        this.httpRequestLogger = httpRequestLogger;
     }
 
     [Function("Status")]
@@ -21,6 +26,8 @@ public class StatusFunction
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "status")]
         HttpRequestData req)
     {
+        await httpRequestLogger.LogRequestAsync(req);
+
         logger.LogInformation("Status request received");
 
         try
@@ -39,6 +46,7 @@ public class StatusFunction
             };
 
             await response.WriteStringAsync(JsonSerializer.Serialize(responseBody));
+            httpRequestLogger.LogResponse("Status", (int)HttpStatusCode.OK, responseBody);
 
             logger.LogInformation("Status returned: {Version}", version);
 
@@ -58,6 +66,7 @@ public class StatusFunction
             };
 
             await response.WriteStringAsync(JsonSerializer.Serialize(responseBody));
+            httpRequestLogger.LogResponse("Status", (int)HttpStatusCode.OK, responseBody);
 
             return response;
         }

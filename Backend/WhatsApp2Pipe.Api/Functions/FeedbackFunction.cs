@@ -137,7 +137,9 @@ public class FeedbackFunction
             // Return success response
             var response = req.CreateResponse(HttpStatusCode.OK);
             response.Headers.Add("Content-Type", "application/json");
-            await response.WriteStringAsync(JsonSerializer.Serialize(new { success = true }));
+            var responseBody = new { success = true };
+            await response.WriteStringAsync(JsonSerializer.Serialize(responseBody));
+            httpRequestLogger.LogResponse("Feedback", (int)HttpStatusCode.OK, responseBody);
             return response;
         }
         catch (Exception ex)
@@ -151,7 +153,9 @@ public class FeedbackFunction
     {
         var response = req.CreateResponse(statusCode);
         response.Headers.Add("Content-Type", "application/json");
-        response.WriteString(JsonSerializer.Serialize(new { error = message }));
+        var errorBody = new { error = message };
+        response.WriteString(JsonSerializer.Serialize(errorBody));
+        httpRequestLogger.LogResponse("Feedback", (int)statusCode, errorBody);
         return response;
     }
 

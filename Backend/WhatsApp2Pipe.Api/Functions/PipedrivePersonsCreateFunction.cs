@@ -56,14 +56,18 @@ public class PipedrivePersonsCreateFunction
             if (!req.Headers.TryGetValues("Authorization", out var authHeaders))
             {
                 logger.LogWarning("Missing Authorization header");
-                return req.CreateResponse(HttpStatusCode.Unauthorized);
+                var unauthorizedResponse = req.CreateResponse(HttpStatusCode.Unauthorized);
+                httpRequestLogger.LogResponse("PipedrivePersonsCreate", (int)HttpStatusCode.Unauthorized);
+                return unauthorizedResponse;
             }
 
             var authHeader = authHeaders.FirstOrDefault();
             if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
             {
                 logger.LogWarning("Invalid Authorization header format");
-                return req.CreateResponse(HttpStatusCode.Unauthorized);
+                var unauthorizedResponse = req.CreateResponse(HttpStatusCode.Unauthorized);
+                httpRequestLogger.LogResponse("PipedrivePersonsCreate", (int)HttpStatusCode.Unauthorized);
+                return unauthorizedResponse;
             }
 
             var verificationCode = authHeader.Substring("Bearer ".Length);
@@ -73,7 +77,9 @@ public class PipedrivePersonsCreateFunction
             if (session == null)
             {
                 logger.LogWarning("Invalid or expired verification code");
-                return req.CreateResponse(HttpStatusCode.Unauthorized);
+                var unauthorizedResponse = req.CreateResponse(HttpStatusCode.Unauthorized);
+                httpRequestLogger.LogResponse("PipedrivePersonsCreate", (int)HttpStatusCode.Unauthorized);
+                return unauthorizedResponse;
             }
 
             // Parse request body
@@ -83,6 +89,7 @@ public class PipedrivePersonsCreateFunction
                 logger.LogWarning("Empty request body");
                 var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
                 await badRequestResponse.WriteStringAsync("Request body is required");
+                httpRequestLogger.LogResponse("PipedrivePersonsCreate", (int)HttpStatusCode.BadRequest, "Request body is required");
                 return badRequestResponse;
             }
 
@@ -96,6 +103,7 @@ public class PipedrivePersonsCreateFunction
                 logger.LogWarning("Invalid request body");
                 var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
                 await badRequestResponse.WriteStringAsync("Invalid request body");
+                httpRequestLogger.LogResponse("PipedrivePersonsCreate", (int)HttpStatusCode.BadRequest, "Invalid request body");
                 return badRequestResponse;
             }
 
@@ -105,6 +113,7 @@ public class PipedrivePersonsCreateFunction
                 logger.LogWarning("Missing required field: name");
                 var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
                 await badRequestResponse.WriteStringAsync("Name is required");
+                httpRequestLogger.LogResponse("PipedrivePersonsCreate", (int)HttpStatusCode.BadRequest, "Name is required");
                 return badRequestResponse;
             }
 
@@ -113,6 +122,7 @@ public class PipedrivePersonsCreateFunction
                 logger.LogWarning("Missing required field: phone");
                 var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
                 await badRequestResponse.WriteStringAsync("Phone is required");
+                httpRequestLogger.LogResponse("PipedrivePersonsCreate", (int)HttpStatusCode.BadRequest, "Phone is required");
                 return badRequestResponse;
             }
 
@@ -122,6 +132,7 @@ public class PipedrivePersonsCreateFunction
                 logger.LogWarning($"Invalid phone format: {createRequest.Phone}");
                 var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
                 await badRequestResponse.WriteStringAsync("Phone must be in E.164 format (start with +)");
+                httpRequestLogger.LogResponse("PipedrivePersonsCreate", (int)HttpStatusCode.BadRequest, "Phone must be in E.164 format (start with +)");
                 return badRequestResponse;
             }
 
@@ -161,7 +172,9 @@ public class PipedrivePersonsCreateFunction
             if (pipedriveResponse.Data == null)
             {
                 logger.LogError("Pipedrive returned null data");
-                return req.CreateResponse(HttpStatusCode.InternalServerError);
+                var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+                httpRequestLogger.LogResponse("PipedrivePersonsCreate", (int)HttpStatusCode.InternalServerError);
+                return errorResponse;
             }
 
             // Transform response to minimal format
@@ -174,24 +187,31 @@ public class PipedrivePersonsCreateFunction
             response.Headers.Add("Content-Type", "application/json");
             var json = System.Text.Json.JsonSerializer.Serialize(person, JsonOptions);
             await response.WriteStringAsync(json);
+            httpRequestLogger.LogResponse("PipedrivePersonsCreate", (int)HttpStatusCode.Created, person);
             return response;
         }
         catch (PipedriveUnauthorizedException ex)
         {
             logger.LogWarning(ex, "Token refresh failed - session_expired");
             var response = req.CreateResponse(HttpStatusCode.Unauthorized);
-            await response.WriteAsJsonAsync(new { error = "session_expired", message = "Refresh token expired, please sign in again" });
+            var errorBody = new { error = "session_expired", message = "Refresh token expired, please sign in again" };
+            await response.WriteAsJsonAsync(errorBody);
+            httpRequestLogger.LogResponse("PipedrivePersonsCreate", (int)HttpStatusCode.Unauthorized, errorBody);
             return response;
         }
         catch (PipedriveRateLimitException)
         {
             logger.LogWarning("Pipedrive rate limit exceeded");
-            return req.CreateResponse((HttpStatusCode)429);
+            var rateLimitResponse = req.CreateResponse((HttpStatusCode)429);
+            httpRequestLogger.LogResponse("PipedrivePersonsCreate", 429);
+            return rateLimitResponse;
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error creating person in Pipedrive");
-            return req.CreateResponse(HttpStatusCode.InternalServerError);
+            var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+            httpRequestLogger.LogResponse("PipedrivePersonsCreate", (int)HttpStatusCode.InternalServerError);
+            return errorResponse;
         }
     }
 }

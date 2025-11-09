@@ -3,14 +3,16 @@
   "logging": {
     "applicationInsights": {
       "samplingSettings": {
-        "isEnabled": true,
-        "excludedTypes": "Request"
+        "isEnabled": false
       },
       "enableLiveMetricsFilters": true
     },
     "logLevel": {
       "default": "Information",
-      "Microsoft.AspNetCore": "Warning"
+      "Microsoft.AspNetCore": "Warning",
+      "WhatsApp2Pipe.Api": "Information",
+      "WhatsApp2Pipe.Api.Functions": "Information",
+      "WhatsApp2Pipe.Api.Services": "Information"
     }
   },
   "extensions": {

@@ -56,7 +56,9 @@ public class PipedrivePersonsSearchFunction
             if (!req.Headers.TryGetValues("Authorization", out var authHeaders))
             {
                 logger.LogWarning("[PipedrivePersonsSearch] FAILED Step 1: Missing Authorization header");
-                return req.CreateResponse(HttpStatusCode.Unauthorized);
+                var unauthorizedResponse = req.CreateResponse(HttpStatusCode.Unauthorized);
+                httpRequestLogger.LogResponse("PipedrivePersonsSearch", (int)HttpStatusCode.Unauthorized);
+                return unauthorizedResponse;
             }
 
             var authHeader = authHeaders.FirstOrDefault();
@@ -65,7 +67,9 @@ public class PipedrivePersonsSearchFunction
             if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
             {
                 logger.LogWarning("[PipedrivePersonsSearch] FAILED Step 1: Invalid Authorization header format - Header: {AuthHeader}", authHeader);
-                return req.CreateResponse(HttpStatusCode.Unauthorized);
+                var unauthorizedResponse = req.CreateResponse(HttpStatusCode.Unauthorized);
+                httpRequestLogger.LogResponse("PipedrivePersonsSearch", (int)HttpStatusCode.Unauthorized);
+                return unauthorizedResponse;
             }
 
             var verificationCode = authHeader.Substring("Bearer ".Length);
@@ -78,7 +82,9 @@ public class PipedrivePersonsSearchFunction
             if (session == null)
             {
                 logger.LogWarning("[PipedrivePersonsSearch] FAILED Step 2: Session not found or expired");
-                return req.CreateResponse(HttpStatusCode.Unauthorized);
+                var unauthorizedResponse = req.CreateResponse(HttpStatusCode.Unauthorized);
+                httpRequestLogger.LogResponse("PipedrivePersonsSearch", (int)HttpStatusCode.Unauthorized);
+                return unauthorizedResponse;
             }
 
             logger.LogInformation("[PipedrivePersonsSearch] Step 2 PASSED: Valid session retrieved - User: {UserId}, Company: {CompanyId}",
@@ -97,6 +103,7 @@ public class PipedrivePersonsSearchFunction
                 logger.LogWarning("[PipedrivePersonsSearch] FAILED Step 3: Missing required query parameters - term: {Term}, fields: {Fields}", term ?? "NULL", fields ?? "NULL");
                 var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
                 await badRequestResponse.WriteStringAsync("Missing required query parameters: term and fields");
+                httpRequestLogger.LogResponse("PipedrivePersonsSearch", (int)HttpStatusCode.BadRequest, "Missing required query parameters: term and fields");
                 return badRequestResponse;
             }
 
@@ -138,6 +145,7 @@ public class PipedrivePersonsSearchFunction
             response.Headers.Add("Content-Type", "application/json");
             var json = System.Text.Json.JsonSerializer.Serialize(persons, JsonOptions);
             await response.WriteStringAsync(json);
+            httpRequestLogger.LogResponse("PipedrivePersonsSearch", (int)HttpStatusCode.OK, persons);
             logger.LogInformation("[PipedrivePersonsSearch] SUCCESS: Request completed successfully");
             return response;
         }
@@ -145,18 +153,24 @@ public class PipedrivePersonsSearchFunction
         {
             logger.LogWarning(ex, "[PipedrivePersonsSearch] EXCEPTION: Token refresh failed - session_expired");
             var response = req.CreateResponse(HttpStatusCode.Unauthorized);
-            await response.WriteAsJsonAsync(new { error = "session_expired", message = "Refresh token expired, please sign in again" });
+            var errorBody = new { error = "session_expired", message = "Refresh token expired, please sign in again" };
+            await response.WriteAsJsonAsync(errorBody);
+            httpRequestLogger.LogResponse("PipedrivePersonsSearch", (int)HttpStatusCode.Unauthorized, errorBody);
             return response;
         }
         catch (PipedriveRateLimitException ex)
         {
             logger.LogWarning(ex, "[PipedrivePersonsSearch] EXCEPTION: Pipedrive rate limit exceeded");
-            return req.CreateResponse((HttpStatusCode)429);
+            var rateLimitResponse = req.CreateResponse((HttpStatusCode)429);
+            httpRequestLogger.LogResponse("PipedrivePersonsSearch", 429);
+            return rateLimitResponse;
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "[PipedrivePersonsSearch] EXCEPTION: Error searching persons in Pipedrive - Message: {Message}, StackTrace: {StackTrace}", ex.Message, ex.StackTrace);
-            return req.CreateResponse(HttpStatusCode.InternalServerError);
+            var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+            httpRequestLogger.LogResponse("PipedrivePersonsSearch", (int)HttpStatusCode.InternalServerError);
+            return errorResponse;
         }
     }
 }

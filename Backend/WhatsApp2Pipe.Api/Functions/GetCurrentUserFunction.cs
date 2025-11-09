@@ -108,6 +108,7 @@ public class GetCurrentUserFunction
             };
 
             await response.WriteStringAsync(JsonSerializer.Serialize(responseBody));
+            httpRequestLogger.LogResponse("GetCurrentUser", (int)HttpStatusCode.OK, responseBody);
 
             return response;
         }
@@ -129,6 +130,7 @@ public class GetCurrentUserFunction
         };
 
         response.WriteString(JsonSerializer.Serialize(errorBody));
+        httpRequestLogger.LogResponse("GetCurrentUser", (int)HttpStatusCode.Unauthorized, errorBody);
 
         return response;
     }
@@ -144,6 +146,7 @@ public class GetCurrentUserFunction
         };
 
         response.WriteString(JsonSerializer.Serialize(errorBody));
+        httpRequestLogger.LogResponse("GetCurrentUser", (int)statusCode, errorBody);
 
         return response;
     }
