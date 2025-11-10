@@ -630,6 +630,22 @@ public class MyService
 - Use `PascalCase` for React components and types
 - Use `UPPER_CASE` for constants
 
+### Line Endings
+
+**IMPORTANT:** This project enforces LF (Unix-style) line endings for all text files across all platforms.
+
+- All text files use LF (`\n`) line endings, never CRLF (`\r\n`)
+- Enforced via `.gitattributes` and `.editorconfig` at repo root
+- Git is configured to normalize line endings on commit
+- Modern editors (VS Code, Visual Studio) handle LF transparently on Windows
+
+**For Contributors:**
+- Windows users: Set `git config --global core.autocrlf false`
+- VS Code users: Set `"files.eol": "\n"` in settings.json
+- The build system expects LF and may fail with CRLF
+
+**Documentation:** See [Line-Endings-Policy.md](Docs/Line-Endings-Policy.md) for complete policy details and setup instructions.
+
 ## Git Commit Guidelines
 
 **IMPORTANT:** Git commit messages must NOT include any mention of AI tools, including but not limited to:
