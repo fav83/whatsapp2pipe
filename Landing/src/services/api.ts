@@ -1,10 +1,10 @@
 import type { WaitlistFormData, WaitlistResponse } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:7071';
 
 export async function submitWaitlist(data: WaitlistFormData): Promise<WaitlistResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/waitlist`, {
+    const response = await fetch(`${BACKEND_URL}/api/waitlist`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
