@@ -61,6 +61,10 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 - [Spec-123-Landing-Legal-Pages.md](Docs/Specs/Spec-123-Landing-Legal-Pages.md) - Landing page legal pages with SEO system (✅ Complete)
 - [Spec-123-Implementation-Summary.md](Docs/Specs/Spec-123-Implementation-Summary.md) - Complete implementation summary with SEO enhancements
 - [Spec-127-Comprehensive-Backend-Logging.md](Docs/Specs/Spec-127-Comprehensive-Backend-Logging.md) - Comprehensive backend logging with HTTP response tracking (✅ Complete)
+- [Spec-128-Landing-Pricing-Section.md](Docs/Specs/Spec-128-Landing-Pricing-Section.md) - Landing page pricing section (✅ Complete)
+
+### Testing Documentation
+- [Testing/Manual/](Docs/Testing/Manual/) - Manual testing checklists for Extension, Landing, and Website
 
 ### External Documentation
 - [Pipedrive/](Docs/External/Pipedrive/) - Pipedrive API documentation and development resources
@@ -562,6 +566,7 @@ The extension uses Tailwind CSS v3 for styling:
 - `/` - Homepage with sign-in button
 - `/auth/callback` - OAuth callback handler
 - `/dashboard` - Authenticated user dashboard
+- `/dashboard?verification_code=xxx` - NEW: Auto sign-in from extension (URL parameter-based authentication)
 
 ### Backend Authentication (Open Access)
 
@@ -580,6 +585,36 @@ The extension uses Tailwind CSS v3 for styling:
 6. **EXISTING USER:** Updates LastLoginAt timestamp
 7. Backend creates session and returns verification_code
 8. User is authenticated and redirected to dashboard/extension
+
+### Extension Features (v0.32.181)
+
+**New Profile Link in User Avatar Dropdown:**
+- File: `Extension/src/content-script/components/UserAvatar.tsx`
+- Feature: Added "Profile" menu item that opens website dashboard in new tab
+- Behavior: Passes `verification_code` as URL parameter for auto sign-in
+- Message Type: `TAB_OPEN` sent to service worker (content scripts can't access chrome.tabs)
+
+**Service Worker Tab Management:**
+- File: `Extension/src/service-worker/index.ts`
+- New Handler: `handleTabOpen()` - Opens URLs in new tabs on behalf of content scripts
+- Message Types: `TAB_OPEN_REQUEST`, `TAB_OPEN_SUCCESS`, `TAB_OPEN_ERROR`
+- Usage: Enables content scripts to open tabs without direct chrome.tabs access
+
+**Website Dashboard Auto Sign-In:**
+- File: `Website/src/pages/DashboardPage.tsx`
+- Feature: Detects `verification_code` URL parameter and auto signs in
+- Flow: Extension → `?verification_code=xxx` → Store in localStorage → Reload → Authenticated
+- Use Case: Seamless transition from extension to website dashboard
+
+### Landing Page Features
+
+**Pricing Section (Spec-128):**
+- File: `Landing/src/components/Pricing.tsx`
+- Location: After "Your CRM" section, before "How It Works"
+- Tiers: Free (Beta) with active CTA, Pro (Coming Soon) with disabled button
+- Copy: "Free during beta. Paid plans coming soon."
+- Anchor: `id="pricing"` for header navigation link
+- Header Link: `Landing/src/components/Header.tsx` includes "Pricing" link with smooth scroll
 
 ## Code Style Guidelines
 

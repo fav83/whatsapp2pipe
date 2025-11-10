@@ -66,7 +66,7 @@ type SidebarState =
  * Shows sign-in UI when unauthenticated, otherwise shows chat-based content.
  */
 export default function App() {
-  const { authState, userName, signIn, signOut, error } = useAuth()
+  const { authState, userName, verificationCode, signIn, signOut, error } = useAuth()
   const [state, setState] = useState<SidebarState>({ type: 'welcome' })
   const [sentryTestExpanded, setSentryTestExpanded] = useState(false)
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false)
@@ -163,7 +163,7 @@ export default function App() {
           chat2deal
         </h1>
         {authState === 'authenticated' && userName && (
-          <UserAvatar userName={userName} onSignOut={signOut} />
+          <UserAvatar userName={userName} verificationCode={verificationCode} onSignOut={signOut} />
         )}
       </header>
 

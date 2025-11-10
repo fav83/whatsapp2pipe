@@ -4,10 +4,11 @@ import { config } from '../../config'
 
 interface UserAvatarProps {
   userName: string
+  verificationCode: string | null
   onSignOut: () => void
 }
 
-export function UserAvatar({ userName, onSignOut }: UserAvatarProps) {
+export function UserAvatar({ userName, verificationCode, onSignOut }: UserAvatarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false)
   const [currentTheme, setCurrentTheme] = useState<ThemeName>(themeManager.getCurrentTheme())
@@ -80,6 +81,22 @@ export function UserAvatar({ userName, onSignOut }: UserAvatarProps) {
     setIsThemeMenuOpen(false)
   }
 
+  const handleProfileClick = () => {
+    // Build dashboard URL with verification code for auto sign-in
+    let dashboardUrl = `${config.landingWebsiteUrl}/dashboard`
+    if (verificationCode) {
+      dashboardUrl += `?verification_code=${encodeURIComponent(verificationCode)}`
+    }
+
+    // Send message to service worker to open tab (chrome.tabs not available in content script)
+    chrome.runtime.sendMessage({
+      type: 'TAB_OPEN',
+      url: dashboardUrl,
+    })
+
+    setIsMenuOpen(false)
+  }
+
   return (
     <div className="relative">
       {/* Avatar Circle */}
@@ -105,6 +122,18 @@ export function UserAvatar({ userName, onSignOut }: UserAvatarProps) {
           <div className="px-4 py-3 text-sm font-semibold text-text-primary truncate">
             {userName}
           </div>
+
+          {/* Divider */}
+          <div className="h-px bg-border-secondary my-1" />
+
+          {/* Profile Menu Item */}
+          <button
+            onClick={handleProfileClick}
+            className="w-full text-left px-4 py-3 text-sm text-text-secondary hover:bg-background-secondary transition-colors"
+            role="menuitem"
+          >
+            Profile
+          </button>
 
           {/* Divider */}
           <div className="h-px bg-border-secondary my-1" />

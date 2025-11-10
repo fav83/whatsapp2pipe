@@ -19,6 +19,8 @@ import type {
   FeedbackResponse,
   ConfigGetRequest,
   ConfigResponse,
+  TabOpenRequest,
+  TabResponse,
 } from '../types/messages'
 import type { AuthUrlResponse } from '../types/auth'
 
@@ -264,6 +266,12 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
     return true
   }
 
+  // Handle tab open
+  if (message.type === 'TAB_OPEN') {
+    handleTabOpen(message, sendResponse)
+    return true
+  }
+
   // If all known message types are handled above, TypeScript narrows `message` to `never` here.
   // Avoid accessing `message.type` to keep this branch type-safe.
   sendResponse({ type: 'UNKNOWN_MESSAGE' })
@@ -445,6 +453,30 @@ async function handleConfigGet(
       type: 'CONFIG_GET_ERROR',
       error: errorMessage,
       statusCode,
+    })
+  }
+}
+
+/**
+ * Handle tab open
+ */
+async function handleTabOpen(
+  message: TabOpenRequest,
+  sendResponse: (response: TabResponse) => void
+) {
+  try {
+    if (message.type !== 'TAB_OPEN') return
+
+    await chrome.tabs.create({ url: message.url })
+
+    sendResponse({
+      type: 'TAB_OPEN_SUCCESS',
+    })
+  } catch (error) {
+    const errorMessage = getErrorMessage(error, 'Failed to open tab')
+    sendResponse({
+      type: 'TAB_OPEN_ERROR',
+      error: errorMessage,
     })
   }
 }

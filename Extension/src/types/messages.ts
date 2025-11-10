@@ -268,6 +268,38 @@ export interface ConfigGetError {
 export type ConfigResponse = ConfigGetSuccess | ConfigGetError
 
 // ============================================================================
+// Tab Messages
+// ============================================================================
+
+/**
+ * Request to open a URL in a new tab
+ */
+export interface TabOpenRequest {
+  type: 'TAB_OPEN'
+  url: string
+}
+
+/**
+ * Successful tab open
+ */
+export interface TabOpenSuccess {
+  type: 'TAB_OPEN_SUCCESS'
+}
+
+/**
+ * Tab open error
+ */
+export interface TabOpenError {
+  type: 'TAB_OPEN_ERROR'
+  error: string
+}
+
+/**
+ * Union of all tab responses
+ */
+export type TabResponse = TabOpenSuccess | TabOpenError
+
+// ============================================================================
 // General Messages
 // ============================================================================
 
@@ -299,6 +331,7 @@ export type ExtensionMessage =
   | PipedriveRequest
   | FeedbackSubmitRequest
   | ConfigGetRequest
+  | TabOpenRequest
   | PingMessage
 
 /**
@@ -310,4 +343,5 @@ export type ExtensionResponse =
   | PipedriveResponse
   | FeedbackResponse
   | ConfigResponse
+  | TabResponse
   | PongMessage

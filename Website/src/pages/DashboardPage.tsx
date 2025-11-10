@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { authService } from '../services/authService'
 import { userService } from '../services/userService'
 import { Header } from '../components/layout/Header'
 import { UserProfile } from '../components/auth/UserProfile'
@@ -11,9 +12,21 @@ import type { User } from '../types/user'
 export default function DashboardPage() {
   const { authStatus, verificationCode, signOut } = useAuth()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Auto sign-in from extension verification code (if present in URL)
+  useEffect(() => {
+    const urlVerificationCode = searchParams.get('verification_code')
+    if (urlVerificationCode && authStatus === 'unauthenticated') {
+      // Store verification code from URL and remove parameter
+      authService.handleCallback(urlVerificationCode)
+      setSearchParams({}) // Clear URL parameter
+      window.location.reload() // Reload to trigger AuthContext update
+    }
+  }, [searchParams, setSearchParams, authStatus])
 
   // Redirect unauthenticated users to home
   useEffect(() => {
