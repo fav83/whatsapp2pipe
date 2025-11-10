@@ -2,6 +2,7 @@ import { PageHelmet } from '../components/SEO';
 import { Hero } from '../components/Hero';
 import { DemoVideo } from '../components/DemoVideo';
 import { Benefits } from '../components/Benefits';
+import { Pricing } from '../components/Pricing';
 import { HowItWorks } from '../components/HowItWorks';
 import { FinalCTA } from '../components/FinalCTA';
 import { Footer } from '../components/Footer';
@@ -21,6 +22,7 @@ export default function Home() {
           <DemoVideo />
           <Benefits />
           <HowItWorks />
+          <Pricing />
           <FinalCTA />
         </main>
         <Footer />
