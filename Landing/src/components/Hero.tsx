@@ -1,4 +1,4 @@
-import { WaitlistForm } from './WaitlistForm';
+import { SignInButton } from './SignInButton';
 import { Header } from './Header';
 
 export function Hero() {
@@ -22,7 +22,7 @@ export function Hero() {
             </p>
 
             <div className="mt-10">
-              <WaitlistForm variant="hero" />
+              <SignInButton variant="hero" />
             </div>
           </div>
 

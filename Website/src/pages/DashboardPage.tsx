@@ -5,6 +5,7 @@ import { userService } from '../services/userService'
 import { Header } from '../components/layout/Header'
 import { UserProfile } from '../components/auth/UserProfile'
 import { ExtensionStatus } from '../components/dashboard/ExtensionStatus'
+import { HowToUse } from '../components/dashboard/HowToUse'
 import type { User } from '../types/user'
 
 export default function DashboardPage() {
@@ -88,14 +89,19 @@ export default function DashboardPage() {
 
         {/* Two-column responsive grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Left column: User Profile */}
-          <div>
+          {/* Left column */}
+          <div className="space-y-6">
+            {/* User Profile */}
             {user && <UserProfile user={user} onSignOut={signOut} />}
+
+            {/* Extension Status */}
+            <ExtensionStatus />
           </div>
 
-          {/* Right column: Extension Status */}
+          {/* Right column */}
           <div>
-            <ExtensionStatus />
+            {/* How to use */}
+            <HowToUse />
           </div>
         </div>
       </main>

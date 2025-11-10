@@ -1,8 +1,8 @@
-import { WaitlistForm } from './WaitlistForm';
+import { SignInButton } from './SignInButton';
 
 export function FinalCTA() {
   return (
-    <section id="waitlist" className="relative bg-white py-24 md:py-28 overflow-hidden">
+    <section id="get-started" className="relative bg-white py-24 md:py-28 overflow-hidden">
       {/* Background decorations (optional) */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-10 right-10 w-64 h-64 rounded-full bg-button-primary/10 blur-3xl" />
@@ -15,11 +15,11 @@ export function FinalCTA() {
         </h2>
 
         <p className="text-lg text-slate-600 leading-relaxed mb-8">
-          Join the waitlist and get early access to Chat2Deal. Start capturing every WhatsApp conversation in your CRM.
+          Connect your Pipedrive account to start capturing every WhatsApp conversation in your CRM.
         </p>
 
         <div className="flex justify-center">
-          <WaitlistForm variant="cta" />
+          <SignInButton variant="cta" />
         </div>
       </div>
     </section>

@@ -173,39 +173,27 @@ public class AuthCallbackFunction
             }
             else
             {
-                // NEW USER
+                // NEW USER - Allow any Pipedrive user to sign in
                 logger.LogInformation("New user detected for client type: {Type}", stateData.Type);
 
-                // EXTENSION: Reject new users (no invite mechanism in extension)
-                if (stateData.Type == "extension")
-                {
-                    logger.LogWarning("New user attempted signup via extension - rejected (beta access required)");
-                    return CreateErrorResponse(req, OAuthErrorCode.BetaAccessRequired, stateData);
-                }
-
-                // WEBSITE: Validate invite code
-                logger.LogInformation("New website user detected, validating invite code");
-
-                if (string.IsNullOrWhiteSpace(inviteCode))
-                {
-                    logger.LogWarning("New user attempted signup without invite code");
-                    return CreateErrorResponse(req, OAuthErrorCode.ClosedBeta, stateData);
-                }
-
-                // Validate and consume invite code through UserService
-                var invite = await userService.ValidateAndConsumeInviteAsync(inviteCode);
-
-                if (invite == null)
-                {
-                    logger.LogWarning("New user provided invalid invite code: {InviteCode}", inviteCode);
-                    return CreateErrorResponse(req, OAuthErrorCode.InvalidInvite, stateData);
-                }
-
-                // Create user and link to invite
+                // Create user without invite requirement
+                // Note: Invite infrastructure remains in database but is no longer required
                 try
                 {
-                    user = await userService.CreateOrUpdateUserAsync(userResponse.Data, invite.InviteId);
-                    logger.LogInformation("New user {UserId} created with invite {InviteId}", user.UserId, invite.InviteId);
+                    // Check if invite code was provided (optional, will be linked if valid)
+                    Guid? inviteIdToLink = null;
+                    if (!string.IsNullOrWhiteSpace(inviteCode))
+                    {
+                        var invite = await userService.ValidateAndConsumeInviteAsync(inviteCode);
+                        if (invite != null)
+                        {
+                            inviteIdToLink = invite.InviteId;
+                            logger.LogInformation("New user provided valid invite code, will link to invite {InviteId}", inviteIdToLink);
+                        }
+                    }
+
+                    user = await userService.CreateOrUpdateUserAsync(userResponse.Data, inviteIdToLink);
+                    logger.LogInformation("New user {UserId} created successfully", user.UserId);
                 }
                 catch (Exception ex)
                 {

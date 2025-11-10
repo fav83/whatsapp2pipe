@@ -55,9 +55,9 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 - [Spec-116-Implementation-Summary.md](Docs/Specs/Spec-116-Implementation-Summary.md) - Complete implementation summary and configuration details
 - [Spec-117-User-Avatar-Dropdown.md](Docs/Specs/Spec-117-User-Avatar-Dropdown.md) - User avatar with profile dropdown (✅ Complete)
 - [Spec-118-Module-Raid-Loading-Overlay.md](Docs/Specs/Spec-118-Module-Raid-Loading-Overlay.md) - Module raid loading overlay with Sentry error reporting (✅ Complete)
-- [Spec-119-Website-Pipedrive-Auth.md](Docs/Specs/Spec-119-Website-Pipedrive-Auth.md) - Website OAuth implementation and user dashboard (✅ Complete Spec, ⏳ Implementation Pending)
-- [Spec-120a-Website-Invite-System.md](Docs/Specs/Spec-120a-Website-Invite-System.md) - Website closed beta invite system (✅ Complete Spec, ⏳ Implementation Pending)
-- [Spec-120b-Extension-Beta-Access.md](Docs/Specs/Spec-120b-Extension-Beta-Access.md) - Extension beta access control (✅ Complete Spec & Implementation)
+- [Spec-119-Website-Pipedrive-Auth.md](Docs/Specs/Spec-119-Website-Pipedrive-Auth.md) - Website OAuth implementation and user dashboard (✅ Complete - Open to All Pipedrive Users)
+- [Spec-120a-Website-Invite-System.md](Docs/Specs/Spec-120a-Website-Invite-System.md) - Website closed beta invite system (⚠️ SUPERSEDED - Not Implemented, Open Access Instead)
+- [Spec-120b-Extension-Beta-Access.md](Docs/Specs/Spec-120b-Extension-Beta-Access.md) - Extension beta access control (⚠️ PARTIALLY SUPERSEDED - Backend Allows Open Access, Extension UI Not Implemented)
 - [Spec-123-Landing-Legal-Pages.md](Docs/Specs/Spec-123-Landing-Legal-Pages.md) - Landing page legal pages with SEO system (✅ Complete)
 - [Spec-123-Implementation-Summary.md](Docs/Specs/Spec-123-Implementation-Summary.md) - Complete implementation summary with SEO enhancements
 
@@ -285,6 +285,61 @@ The extension uses Tailwind CSS v3 for styling:
 - Typical CSS bundle size: ~10-11 KB (minified, before gzip)
 
 **Important:** Avoid using `all: revert` or similar aggressive CSS resets as they will override Tailwind utility classes. Use targeted resets only when necessary.
+
+## Website & Landing Page Components
+
+### Landing Page (Open Access - No Waitlist)
+
+**Key Components:**
+- `Landing/src/components/SignInButton.tsx` - Direct sign-in with Pipedrive button (replaces WaitlistForm)
+- `Landing/src/components/Hero.tsx` - Hero section with SignInButton
+- `Landing/src/components/FinalCTA.tsx` - Final CTA section with SignInButton
+- `Landing/src/components/Header.tsx` - Navigation header with sign-in button
+
+**Important Changes (2025-11-10):**
+- **Removed WaitlistForm** - Replaced with direct sign-in flow
+- **Section ID changed** - From `#waitlist` to `#get-started`
+- **Open to all Pipedrive users** - No invite code or waitlist required
+
+### Website Dashboard (Open Access)
+
+**Key Components:**
+- `Website/src/components/auth/UserProfile.tsx` - User profile card with sign-out
+- `Website/src/components/dashboard/ExtensionStatus.tsx` - Chrome extension installation status
+- `Website/src/components/dashboard/HowToUse.tsx` - NEW: Step-by-step usage instructions
+- `Website/src/pages/HomePage.tsx` - Landing page with direct sign-in (no invite input)
+- `Website/src/pages/DashboardPage.tsx` - User dashboard with profile and extension status
+- `Website/src/pages/AuthCallbackPage.tsx` - OAuth callback handler
+
+**Important Changes (2025-11-10):**
+- **Removed invite code requirement** - Any Pipedrive user can sign in directly
+- **Removed WaitlistPage route** - Simplified to direct sign-in flow
+- **Added HowToUse component** - User guidance on dashboard
+- **Updated error messages** - Removed closed beta/invalid invite user-facing errors
+- **Updated auth types** - Marked inviteCode as unused in OAuthState
+
+**Website Routes:**
+- `/` - Homepage with sign-in button
+- `/auth/callback` - OAuth callback handler
+- `/dashboard` - Authenticated user dashboard
+
+### Backend Authentication (Open Access)
+
+**Key Changes in AuthCallbackFunction.cs (Lines 173-197):**
+- **New users allowed** - Both extension and website users can sign in without invites
+- **Invite code optional** - If provided and valid, linked to user account for tracking
+- **No rejection logic** - All Pipedrive users proceed to authenticated state
+- **Invite infrastructure preserved** - Database tables remain but are not enforced
+
+**OAuth Flow (Current Implementation):**
+1. User clicks "Sign in with Pipedrive" (no invite required)
+2. Backend generates OAuth URL and redirects to Pipedrive
+3. User authorizes on Pipedrive
+4. Backend checks if user exists in database
+5. **NEW USER:** Creates user record (with optional invite link if provided)
+6. **EXISTING USER:** Updates LastLoginAt timestamp
+7. Backend creates session and returns verification_code
+8. User is authenticated and redirected to dashboard/extension
 
 ## Code Style Guidelines
 

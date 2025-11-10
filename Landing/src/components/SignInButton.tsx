@@ -1,4 +1,8 @@
-export function Header() {
+interface SignInButtonProps {
+  variant?: 'hero' | 'cta';
+}
+
+export function SignInButton({ variant = 'hero' }: SignInButtonProps) {
   const handleSignIn = () => {
     // Generate OAuth state for website
     const state = {
@@ -24,24 +28,16 @@ export function Header() {
       Math.random().toString(36).substring(2, 15);
   };
 
-  return (
-    <nav>
-      <div className="max-w-7xl mx-auto px-5 md:px-10">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <a href="/" className="flex items-center">
-            <span className="text-2xl font-normal text-slate-700" style={{ fontFamily: "'Momo Trust Display', sans-serif" }}>chat2deal</span>
-          </a>
+  const baseClasses = 'font-medium rounded-lg transition-colors inline-flex items-center justify-center';
+  const sizeClasses = variant === 'hero' ? 'px-8 py-4 text-lg' : 'px-6 py-3 text-base';
+  const colorClasses = 'bg-button-primary text-white hover:bg-button-primary-hover active:bg-button-primary-active';
 
-          {/* Sign in Button */}
-          <button
-            onClick={handleSignIn}
-            className="px-4 py-2 text-sm font-medium text-white bg-button-primary hover:bg-button-primary-hover active:bg-button-primary-active rounded-lg transition-all duration-200 active:scale-95"
-          >
-            Sign in with Pipedrive
-          </button>
-        </div>
-      </div>
-    </nav>
+  return (
+    <button
+      onClick={handleSignIn}
+      className={`${baseClasses} ${sizeClasses} ${colorClasses}`}
+    >
+      Sign in with Pipedrive
+    </button>
   );
 }

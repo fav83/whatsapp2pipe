@@ -2,9 +2,32 @@
 
 **Feature:** Feature 20 - Closed Beta Invite System (Extension)
 **Date:** 2025-11-03
-**Status:** ✅ Complete (Specification)
-**Implementation Status:** ✅ Complete (Backend + Extension UI)
-**Dependencies:** Spec-120a (Website Invite System), Spec-105b (Extension OAuth Integration)
+**Status:** ⚠️ PARTIALLY SUPERSEDED - Open Access Implemented
+**Implementation Status:** ✅ Backend Complete (Open Access) | ❌ Extension UI Not Implemented
+**Last Updated:** 2025-11-10
+**Dependencies:** Spec-120a (Website Invite System - SUPERSEDED), Spec-105b (Extension OAuth Integration)
+
+---
+
+## ⚠️ IMPORTANT: Backend Implementation Has Changed
+
+**As of 2025-11-10, Chat2Deal backend now allows all Pipedrive users to sign in. The extension beta access rejection logic described in this specification was NOT implemented in the final backend code.**
+
+**Current Backend Implementation (AuthCallbackFunction.cs:173-197):**
+- New users are allowed to sign in via both extension and website
+- NO rejection for extension users without invites
+- Invite code is optional - if provided and valid, it will be linked to the user account
+- Extension users proceed directly to authenticated state
+
+**Extension UI Status:**
+- `BetaAccessRequiredState` component was NOT implemented
+- Extension does not have invite rejection logic
+- Extension OAuth flow proceeds normally for all users
+
+**This Specification Remains For:**
+- Historical reference showing original closed beta design
+- Understanding the extension error state architecture (if needed in future)
+- Documentation of BetaAccessRequiredState component design (not implemented)
 
 ---
 

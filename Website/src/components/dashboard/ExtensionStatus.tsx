@@ -19,7 +19,7 @@ export function ExtensionStatus() {
 
   if (loading) {
     return (
-      <Card>
+      <Card className="w-full">
         <CardHeader>
           <CardTitle>Chrome Extension</CardTitle>
         </CardHeader>
@@ -35,7 +35,7 @@ export function ExtensionStatus() {
   // Mobile/tablet: Show informational message
   if (isMobile) {
     return (
-      <Card>
+      <Card className="w-full">
         <CardHeader>
           <CardTitle>Chrome Extension</CardTitle>
         </CardHeader>
@@ -60,7 +60,7 @@ export function ExtensionStatus() {
   // Desktop: Extension NOT installed
   if (!installed) {
     return (
-      <Card>
+      <Card className="w-full">
         <CardHeader>
           <CardTitle>Chrome Extension</CardTitle>
         </CardHeader>
@@ -90,27 +90,28 @@ export function ExtensionStatus() {
 
   // Desktop: Extension IS installed
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>Chrome Extension</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex items-center gap-2 text-button-primary">
+      <CardContent className="space-y-4">
+        <div className="flex items-center gap-2 text-green-600">
           <CheckCircle2 className="h-5 w-5" />
           <span className="font-medium">Extension installed</span>
         </div>
         {version && (
           <p className="text-xs text-slate-600">Version {version}</p>
         )}
-        <a
-          href={storeUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-sm text-slate-600 hover:text-slate-700 inline-flex items-center gap-1"
-        >
-          View in Chrome Web Store
-          <ExternalLink className="h-3 w-3" />
-        </a>
+        <Button asChild variant="outline" size="default" className="w-full">
+          <a
+            href={storeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View in Chrome Web Store
+            <ExternalLink className="ml-2 h-4 w-4" />
+          </a>
+        </Button>
       </CardContent>
     </Card>
   );

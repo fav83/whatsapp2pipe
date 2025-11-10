@@ -3,14 +3,17 @@
 **Feature:** Website Pipedrive OAuth Authentication
 **Date:** 2025-11-02
 **Status:** ✅ Complete (Specification)
-**Implementation Status:** ⏳ Not Started
+**Implementation Status:** ✅ Complete (Open Access - No Invite Required)
+**Last Updated:** 2025-11-10
 **Dependencies:** Spec-105a (Backend OAuth Service), Spec-116 (User Entity Tracking)
 
 ---
 
 ## Implementation Context
 
-This specification extends the existing OAuth infrastructure built for the Chrome extension to support the Chat2Deal user dashboard website. The website will share the same backend OAuth endpoints and follow the same session-based authentication pattern using `verification_code`.
+This specification extends the existing OAuth infrastructure built for the Chrome extension to support the Chat2Deal user dashboard website. The website shares the same backend OAuth endpoints and follows the same session-based authentication pattern using `verification_code`.
+
+**IMPORTANT UPDATE (2025-11-10):** Chat2Deal is now open to all Pipedrive users. The invite system described in Spec-120a is NO LONGER REQUIRED. Any Pipedrive user can sign in directly via the website without an invite code. The invite infrastructure remains in the database for tracking purposes but is no longer enforced during authentication.
 
 ---
 

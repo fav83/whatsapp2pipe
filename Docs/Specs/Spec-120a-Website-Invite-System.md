@@ -2,9 +2,35 @@
 
 **Feature:** Feature 20 - Closed Beta Invite System (Website)
 **Date:** 2025-11-03
-**Status:** ✅ Complete (Specification)
-**Implementation Status:** ⏳ Not Started
+**Status:** ⚠️ SUPERSEDED - Open Access Implemented
+**Implementation Status:** ❌ Not Implemented (Requirements Changed)
+**Last Updated:** 2025-11-10
 **Dependencies:** Spec-119 (Website Pipedrive Authentication), Spec-105a (Backend OAuth Service)
+
+---
+
+## ⚠️ IMPORTANT: This Specification Has Been Superseded
+
+**As of 2025-11-10, Chat2Deal is now open to all Pipedrive users. The closed beta invite system described in this specification was NOT implemented.**
+
+**Current Implementation:**
+- Any Pipedrive user can sign in directly via the website
+- NO invite code is required for new users
+- The invite database infrastructure exists but is not enforced
+- Users who provide an invite code will have it linked to their account (optional)
+
+**What Changed:**
+- Backend (AuthCallbackFunction.cs) allows all new Pipedrive users to sign in
+- Landing page removed waitlist form, replaced with direct sign-in button
+- Website homepage removed invite code input field
+- Error states for `closed_beta` and `invalid_invite` removed from user-facing UI
+- Invite tracking remains in database but is no longer required
+
+**This Document Remains For:**
+- Historical reference
+- Understanding the original closed beta design
+- Database schema documentation (Invites table still exists)
+- Future invite-based campaigns (infrastructure is present but not enforced)
 
 ---
 

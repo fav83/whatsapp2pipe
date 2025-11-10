@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams, Link } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { authService } from '../services/authService'
 
 export default function AuthCallbackPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [error, setError] = useState<string | null>(null)
-  const [errorCode, setErrorCode] = useState<string | null>(null)
 
   useEffect(() => {
     // Extract verification_code from URL
@@ -15,7 +14,6 @@ export default function AuthCallbackPage() {
 
     if (errorParam) {
       // OAuth error (user denied, etc.)
-      setErrorCode(errorParam)
       setError(getErrorMessage(errorParam))
       return
     }
@@ -39,16 +37,6 @@ export default function AuthCallbackPage() {
             Authentication Failed
           </h2>
           <p className="text-slate-600 mb-6">{error}</p>
-
-          {/* Show Join Waitlist button for beta access errors */}
-          {(errorCode === 'closed_beta' || errorCode === 'invalid_invite') && (
-            <Link
-              to="/waitlist"
-              className="inline-block mb-4 px-6 py-3 bg-button-primary text-white font-medium rounded-lg hover:bg-button-primary-hover active:bg-button-primary-active transition-colors w-full"
-            >
-              Join Waitlist
-            </Link>
-          )}
 
           <button
             onClick={() => navigate('/')}
@@ -94,9 +82,9 @@ function getErrorMessage(error: string): string {
     case 'internal_error':
       return 'An internal error occurred.'
     case 'closed_beta':
-      return 'Chat2Deal is currently in closed beta. Access is limited to invited users only.'
+      return 'Unable to complete sign-in. Please try again or contact support.'
     case 'invalid_invite':
-      return 'Invalid invite code. Please check your invite and try again.'
+      return 'Unable to complete sign-in. Please try again or contact support.'
     default:
       return 'An error occurred during authentication'
   }

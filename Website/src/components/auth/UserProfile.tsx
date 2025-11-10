@@ -9,7 +9,7 @@ interface UserProfileProps {
 
 export function UserProfile({ user, onSignOut }: UserProfileProps) {
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>Profile Information</CardTitle>
       </CardHeader>
