@@ -59,7 +59,7 @@ export default function DashboardPage() {
   if (error) {
     return (
       <div className="min-h-screen flex flex-col">
-        <Header />
+        <Header onSignOut={signOut} />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <h2 className="text-2xl font-semibold text-red-600 mb-2">
@@ -80,7 +80,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-light">
-      <Header />
+      <Header onSignOut={signOut} />
 
       <main className="flex-1 container mx-auto px-4 py-8 max-w-6xl">
         <h1 className="text-3xl font-semibold text-slate-700 mb-8">

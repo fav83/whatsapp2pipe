@@ -28,9 +28,16 @@ public class GetCurrentUserFunction
 
     [Function("GetCurrentUser")]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "user/me")] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "options", Route = "user/me")] HttpRequestData req)
     {
         await httpRequestLogger.LogRequestAsync(req);
+
+        // Handle OPTIONS preflight request (CORS will add headers via middleware)
+        if (req.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
+        {
+            var response = req.CreateResponse(HttpStatusCode.OK);
+            return response;
+        }
 
         logger.LogInformation("GetCurrentUser endpoint called");
 
