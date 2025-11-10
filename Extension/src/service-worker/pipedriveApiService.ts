@@ -12,6 +12,7 @@ import type { UserConfig } from '../types/config'
 import { logError } from '../utils/errorLogger'
 import { logBreadcrumb } from '../utils/breadcrumbs'
 import { sentryScope } from './sentry'
+import logger from '../utils/logger'
 
 class PipedriveApiService {
   private readonly baseUrl = AUTH_CONFIG.backendUrl
@@ -159,7 +160,7 @@ class PipedriveApiService {
    * Returns single person or null if not found
    */
   async lookupByPhone(phone: string): Promise<Person | null> {
-    console.log('[PipedriveAPI] Looking up person by phone:', phone)
+    logger.log('[PipedriveAPI] Looking up person by phone:', phone)
 
     const persons = await this.makeRequest<Person[]>(
       `/api/pipedrive/persons/search?term=${encodeURIComponent(phone)}&fields=phone`
@@ -174,7 +175,7 @@ class PipedriveApiService {
    * Returns array of matching persons (can be empty)
    */
   async searchByName(name: string): Promise<Person[]> {
-    console.log('[PipedriveAPI] Searching persons by name:', name)
+    logger.log('[PipedriveAPI] Searching persons by name:', name)
 
     const persons = await this.makeRequest<Person[]>(
       `/api/pipedrive/persons/search?term=${encodeURIComponent(name)}&fields=name`
@@ -187,14 +188,14 @@ class PipedriveApiService {
    * Create new person with WhatsApp phone
    */
   async createPerson(data: CreatePersonData): Promise<Person> {
-    console.log('[PipedriveAPI] Creating person:', data.name)
+    logger.log('[PipedriveAPI] Creating person:', data.name)
 
     const person = await this.makeRequest<Person>('/api/pipedrive/persons', {
       method: 'POST',
       body: JSON.stringify(data),
     })
 
-    console.log('[PipedriveAPI] Person created with ID:', person.id)
+    logger.log('[PipedriveAPI] Person created with ID:', person.id)
     return person
   }
 
@@ -202,7 +203,7 @@ class PipedriveApiService {
    * Attach WhatsApp phone to existing person
    */
   async attachPhone(data: AttachPhoneData): Promise<Person> {
-    console.log('[PipedriveAPI] Attaching phone to person:', data.personId)
+    logger.log('[PipedriveAPI] Attaching phone to person:', data.personId)
 
     const person = await this.makeRequest<Person>(
       `/api/pipedrive/persons/${data.personId}/attach-phone`,
@@ -212,7 +213,7 @@ class PipedriveApiService {
       }
     )
 
-    console.log('[PipedriveAPI] Phone attached successfully')
+    logger.log('[PipedriveAPI] Phone attached successfully')
     return person
   }
 
@@ -220,7 +221,7 @@ class PipedriveApiService {
    * Submit user feedback
    */
   async submitFeedback(message: string): Promise<void> {
-    console.log('[PipedriveAPI] Submitting feedback')
+    logger.log('[PipedriveAPI] Submitting feedback')
 
     const extensionVersion = chrome.runtime.getManifest().version
 
@@ -232,7 +233,7 @@ class PipedriveApiService {
       }),
     })
 
-    console.log('[PipedriveAPI] Feedback submitted successfully')
+    logger.log('[PipedriveAPI] Feedback submitted successfully')
   }
 
   /**

@@ -40,12 +40,14 @@ export function injectInspectorIntoPage(): void {
   script.onload = () => {
     URL.revokeObjectURL(blobUrl) // Clean up blob URL
     script.remove() // Remove script tag
+    // Note: Can't use logger here as this runs in page context without access to logger
     console.log('[Content Script] Inspector successfully injected into page context')
   }
 
   script.onerror = () => {
     URL.revokeObjectURL(blobUrl)
     script.remove()
+    // Note: Can't use logger here as this runs in page context without access to logger
     console.error('[Content Script] Failed to inject inspector into page context')
   }
   ;(document.head || document.documentElement).appendChild(script)

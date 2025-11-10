@@ -6,6 +6,7 @@
  */
 
 import { palettes, type ColorPalette } from './colors'
+import logger from '../utils/logger'
 
 export type ThemeName = keyof typeof palettes
 
@@ -332,9 +333,9 @@ class ThemeManager {
       }
       this.applyTheme(this.currentTheme)
       this.initialized = true
-      console.log('[ThemeManager] Initialized with theme:', this.currentTheme)
+      logger.log('[ThemeManager] Initialized with theme:', this.currentTheme)
     } catch (error) {
-      console.error('[ThemeManager] Failed to initialize:', error)
+      logger.error('[ThemeManager] Failed to initialize:', error)
       // Fall back to default theme
       this.applyTheme(this.currentTheme)
       this.initialized = true
@@ -353,7 +354,7 @@ class ThemeManager {
    */
   async setTheme(themeName: ThemeName): Promise<void> {
     if (!palettes[themeName]) {
-      console.error('[ThemeManager] Invalid theme:', themeName)
+      logger.error('[ThemeManager] Invalid theme:', themeName)
       return
     }
 
@@ -364,9 +365,9 @@ class ThemeManager {
     // Persist to storage
     try {
       await chrome.storage.local.set({ theme: themeName })
-      console.log('[ThemeManager] Theme saved:', themeName)
+      logger.log('[ThemeManager] Theme saved:', themeName)
     } catch (error) {
-      console.error('[ThemeManager] Failed to save theme:', error)
+      logger.error('[ThemeManager] Failed to save theme:', error)
     }
   }
 
@@ -378,7 +379,7 @@ class ThemeManager {
     if (!palette) return
 
     this.applyCSSVariables(palette)
-    console.log('[ThemeManager] Applied theme:', themeName)
+    logger.log('[ThemeManager] Applied theme:', themeName)
   }
 
   /**
@@ -387,7 +388,7 @@ class ThemeManager {
   private applyCSSVariables(palette: ColorPalette): void {
     const sidebar = document.getElementById('pipedrive-whatsapp-sidebar')
     if (!sidebar) {
-      console.warn('[ThemeManager] Sidebar not found, retrying in 100ms...')
+      logger.warn('[ThemeManager] Sidebar not found, retrying in 100ms...')
       setTimeout(() => this.applyCSSVariables(palette), 100)
       return
     }
@@ -475,7 +476,7 @@ class ThemeManager {
       try {
         callback(this.currentTheme)
       } catch (error) {
-        console.error('[ThemeManager] Listener error:', error)
+        logger.error('[ThemeManager] Listener error:', error)
       }
     })
   }

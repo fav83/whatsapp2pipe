@@ -9,12 +9,13 @@ import { waitForWhatsAppLoad } from './whatsapp-loader'
 import { logError } from '../utils/errorLogger'
 import { sentryScope } from './sentry'
 import { themeManager } from '../styles/ThemeManager'
+import logger from '../utils/logger'
 import '../styles/content-script.css'
 import { injectMomoTrustDisplay } from '../styles/loadBrandFont'
 
-console.log('[Content Script] Loading on WhatsApp Web')
-console.log('[Content Script] Development mode:', import.meta.env.DEV)
-console.log('[Content Script] Mode:', import.meta.env.MODE)
+logger.log('[Content Script] Loading on WhatsApp Web')
+logger.log('[Content Script] Development mode:', import.meta.env.DEV)
+logger.log('[Content Script] Mode:', import.meta.env.MODE)
 
 // Global error handler for uncaught errors
 window.addEventListener('error', (event: ErrorEvent) => {
@@ -81,24 +82,24 @@ interface WindowWithSentryTest extends Window {
 ;(window as WindowWithSentryTest).__testSentry = (message?: string) => {
   const testError = new Error(message || `Manual Sentry test at ${new Date().toISOString()}`)
   logError('Manual Sentry test', testError, { triggered_from: 'console' }, sentryScope)
-  console.log('✓ Sentry test error logged:', testError.message)
+  logger.log('✓ Sentry test error logged:', testError.message)
 }
 
 // Initialize sidebar after WhatsApp is fully loaded
 async function init() {
   try {
-    console.log('[Content Script] Waiting for WhatsApp Web to load...')
+    logger.log('[Content Script] Waiting for WhatsApp Web to load...')
 
     // Wait for WhatsApp to be ready
     await waitForWhatsAppLoad()
 
-    console.log('[Content Script] Initializing sidebar injection')
+    logger.log('[Content Script] Initializing sidebar injection')
 
     // Adjust WhatsApp Web layout to make room for sidebar
     const whatsappContainer = document.querySelector('#app > div > div') as HTMLElement
     if (whatsappContainer) {
       whatsappContainer.style.marginRight = '350px'
-      console.log('[Content Script] WhatsApp container adjusted for sidebar')
+      logger.log('[Content Script] WhatsApp container adjusted for sidebar')
     }
 
     // Inject brand font (self-hosted) before rendering
@@ -120,11 +121,11 @@ async function init() {
 
     // Append to body
     document.body.appendChild(sidebarContainer)
-    console.log('[Content Script] Sidebar container injected')
+    logger.log('[Content Script] Sidebar container injected')
 
     // Initialize theme before rendering React to prevent flicker
     await themeManager.initialize()
-    console.log('[Content Script] Theme initialized')
+    logger.log('[Content Script] Theme initialized')
 
     // Render React app into sidebar
     const root = ReactDOM.createRoot(sidebarContainer)
@@ -136,7 +137,7 @@ async function init() {
       </React.StrictMode>
     )
 
-    console.log('[Content Script] React app rendered')
+    logger.log('[Content Script] React app rendered')
 
     // Test message passing to service worker (development mode)
     if (import.meta.env.DEV) {
@@ -158,12 +159,12 @@ async function init() {
 function testServiceWorkerConnection() {
   chrome.runtime.sendMessage({ type: 'PING' }, (response) => {
     if (chrome.runtime.lastError) {
-      console.error(
+      logger.error(
         '[Content Script] Failed to reach service worker:',
         chrome.runtime.lastError.message
       )
     } else {
-      console.log('[Content Script] Service worker responded:', response)
+      logger.log('[Content Script] Service worker responded:', response)
     }
   })
 }
@@ -172,5 +173,5 @@ function testServiceWorkerConnection() {
 if (window.location.href.includes('web.whatsapp.com')) {
   init()
 } else {
-  console.warn('[Content Script] Not on WhatsApp Web, exiting')
+  logger.warn('[Content Script] Not on WhatsApp Web, exiting')
 }

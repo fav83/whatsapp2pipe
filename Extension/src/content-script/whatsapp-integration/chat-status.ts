@@ -10,6 +10,7 @@
 
 import type { ChatStatus, ChatStatusCallback } from './types'
 import { getStore } from './store-accessor'
+import logger from '../../utils/logger'
 
 /**
  * WhatsApp Chat Status Monitor
@@ -44,7 +45,7 @@ export class WhatsAppChatStatus {
    * Performance: 5 checks/second = < 0.1% CPU overhead on modern hardware.
    */
   start(): void {
-    console.log('[WhatsApp Chat Status] Starting 200ms polling')
+    logger.log('[WhatsApp Chat Status] Starting 200ms polling')
 
     this.intervalId = window.setInterval(() => {
       const status = this.detectCurrentChat()
@@ -53,7 +54,7 @@ export class WhatsAppChatStatus {
         // Simple change detection - compare to cached values
         // Note: Use != instead of !== to handle null/undefined equivalence
         if (status.name != this.active_name) {
-          console.log('[WhatsApp Chat Status] Chat changed:', status.name || '(none)')
+          logger.log('[WhatsApp Chat Status] Chat changed:', status.name || '(none)')
 
           // Update cache
           this.active_name = status.name
@@ -76,7 +77,7 @@ export class WhatsAppChatStatus {
     if (this.intervalId !== null) {
       clearInterval(this.intervalId)
       this.intervalId = null
-      console.log('[WhatsApp Chat Status] Stopped polling')
+      logger.log('[WhatsApp Chat Status] Stopped polling')
     }
   }
 
@@ -108,22 +109,22 @@ export class WhatsAppChatStatus {
       const store = getStore()
 
       if (!store) {
-        console.log('[WhatsApp Chat Status] Store not available yet')
+        logger.log('[WhatsApp Chat Status] Store not available yet')
         return null
       }
 
       // Get all chats and find the active one
       const chats = store.Chat.getModelsArray()
-      console.log(`[WhatsApp Chat Status] Found ${chats.length} chats`)
+      logger.log(`[WhatsApp Chat Status] Found ${chats.length} chats`)
       const activeChat = chats.find((chat: any) => chat.active === true)
 
       if (!activeChat) {
         // No chat selected - return welcome state
-        console.log('[WhatsApp Chat Status] No active chat found')
+        logger.log('[WhatsApp Chat Status] No active chat found')
         return { phone: null, name: null, is_group: false }
       }
 
-      console.log('[WhatsApp Chat Status] Active chat detected:', {
+      logger.log('[WhatsApp Chat Status] Active chat detected:', {
         id: activeChat.id,
         hasContact: !!activeChat.__x_contact,
         hasGroupMetadata: !!activeChat.__x_groupMetadata,
@@ -170,7 +171,7 @@ export class WhatsAppChatStatus {
         }
       }
     } catch (error) {
-      console.error('[WhatsApp Chat Status] Store method failed:', error)
+      logger.error('[WhatsApp Chat Status] Store method failed:', error)
       return null
     }
   }
@@ -207,7 +208,7 @@ export class WhatsAppChatStatus {
         is_group: isGroupChat,
       }
     } catch (error) {
-      console.error('[WhatsApp Chat Status] DOM method failed:', error)
+      logger.error('[WhatsApp Chat Status] DOM method failed:', error)
       return null
     }
   }

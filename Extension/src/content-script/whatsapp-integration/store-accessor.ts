@@ -10,6 +10,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type { WhatsAppStore } from './types'
+// Logger not available in MAIN world - use console directly with inline isDevelopment check
+
+const isDevelopment = import.meta.env.MODE === 'development'
 
 /**
  * Initialize WhatsApp Store access
@@ -23,7 +26,9 @@ export function initializeStoreAccess(): boolean {
   try {
     // Check if Store is already exposed
     if (window.StoreWhatsApp2Pipe) {
-      console.log('[Store Accessor] Store already exposed')
+      if (isDevelopment) {
+        console.log('[Store Accessor] Store already exposed')
+      }
       return true
     }
 
@@ -31,7 +36,9 @@ export function initializeStoreAccess(): boolean {
     const store = findStoreViaRequire()
     if (store) {
       window.StoreWhatsApp2Pipe = store as WhatsAppStore
-      console.log('[Store Accessor] Store exposed via require()')
+      if (isDevelopment) {
+        console.log('[Store Accessor] Store exposed via require()')
+      }
       return true
     }
 
@@ -39,14 +46,20 @@ export function initializeStoreAccess(): boolean {
     const storeLegacy = findStoreViaWebpack()
     if (storeLegacy) {
       window.StoreWhatsApp2Pipe = storeLegacy as WhatsAppStore
-      console.log('[Store Accessor] Store exposed via webpack chunks')
+      if (isDevelopment) {
+        console.log('[Store Accessor] Store exposed via webpack chunks')
+      }
       return true
     }
 
-    console.warn('[Store Accessor] Could not find WhatsApp Store')
+    if (isDevelopment) {
+      console.warn('[Store Accessor] Could not find WhatsApp Store')
+    }
     return false
   } catch (error) {
-    console.error('[Store Accessor] Error initializing Store access:', error)
+    if (isDevelopment) {
+      console.error('[Store Accessor] Error initializing Store access:', error)
+    }
     return false
   }
 }
@@ -71,14 +84,18 @@ function findStoreViaRequire(): any {
 
       // Look for Chat store with getModelsArray method
       if (moduleExports?.Chat?.getModelsArray) {
-        console.log('[Store Accessor] Found Store via require() in module:', key)
+        if (isDevelopment) {
+          console.log('[Store Accessor] Found Store via require() in module:', key)
+        }
         return moduleExports
       }
     }
 
     return null
   } catch (error) {
-    console.error('[Store Accessor] Error in findStoreViaRequire:', error)
+    if (isDevelopment) {
+      console.error('[Store Accessor] Error in findStoreViaRequire:', error)
+    }
     return null
   }
 }
@@ -177,7 +194,9 @@ export function getStore(): WhatsAppStore | null {
 
     return null
   } catch (error) {
-    console.error('[Store Accessor] Error accessing Store:', error)
+    if (isDevelopment) {
+      console.error('[Store Accessor] Error accessing Store:', error)
+    }
     return null
   }
 }

@@ -17,6 +17,9 @@ import { WhatsAppInspector } from './utils/WhatsAppInspector'
 import { initializeStoreAccess } from './whatsapp-integration/store-accessor'
 import { startChatMonitoring } from './whatsapp-integration/chat-monitor-main'
 
+// Logger not available in MAIN world - use console directly with inline isDevelopment check
+const isDevelopment = import.meta.env.MODE === 'development'
+
 // --- Spec-118: Loading overlay helpers (reliable, sidebar-based trigger) ---
 function waitForSidebarContainer(timeoutMs = 10000): Promise<boolean> {
   const start = Date.now()
@@ -99,7 +102,9 @@ function showOverlayIfNeeded(initDoneRef: () => boolean): void {
   const overlay = createLoadingOverlay()
   document.body.appendChild(overlay)
   try {
-    console.log('[Main World] Loading overlay displayed (sidebar detected)')
+    if (isDevelopment) {
+      console.log('[Main World] Loading overlay displayed (sidebar detected)')
+    }
   } catch {
     // Ignore errors during logging
   }
@@ -150,7 +155,9 @@ const win = window as any
 if (!win.__whatsappInspectorInitialized) {
   win.__whatsappInspectorInitialized = true
 
-  console.log('[Main World] WhatsApp Inspector initializing...')
+  if (isDevelopment) {
+    console.log('[Main World] WhatsApp Inspector initializing...')
+  }
 
   // Create inspector instance
   const inspector = new WhatsAppInspector()
@@ -158,8 +165,10 @@ if (!win.__whatsappInspectorInitialized) {
   // Expose inspector globally
   win.__whatsappInspector = inspector
 
-  console.log('[Main World] WhatsApp Inspector loaded')
-  console.log('[Main World] Waiting for webpack chunks...')
+  if (isDevelopment) {
+    console.log('[Main World] WhatsApp Inspector loaded')
+    console.log('[Main World] Waiting for webpack chunks...')
+  }
 
   // Track completion so overlay logic is race-safe
   let initializationCompleted = false
@@ -194,28 +203,40 @@ if (!win.__whatsappInspectorInitialized) {
       moduleRaidInitialized = true
 
       try {
-        console.log(
-          `[Main World] Webpack chunk found after ${webpackCheckCount * 50}ms, initializing module raid...`
-        )
+        if (isDevelopment) {
+          console.log(
+            `[Main World] Webpack chunk found after ${webpackCheckCount * 50}ms, initializing module raid...`
+          )
+        }
         inspector.initializeModuleRaidEarly()
-        console.log(
-          '[Main World] Module raid initialization complete. Try: __whatsappInspector.inspectAll()'
-        )
+        if (isDevelopment) {
+          console.log(
+            '[Main World] Module raid initialization complete. Try: __whatsappInspector.inspectAll()'
+          )
+        }
 
         // Also initialize Store access for production chat detection
-        console.log('[Main World] Initializing WhatsApp Store access...')
+        if (isDevelopment) {
+          console.log('[Main World] Initializing WhatsApp Store access...')
+        }
         const storeInitialized = initializeStoreAccess()
-        if (storeInitialized) {
-          console.log('[Main World] Store access initialized successfully')
-        } else {
-          console.warn('[Main World] Store access initialization failed')
+        if (isDevelopment) {
+          if (storeInitialized) {
+            console.log('[Main World] Store access initialized successfully')
+          } else {
+            console.warn('[Main World] Store access initialization failed')
+          }
         }
 
         // Start chat monitoring in MAIN world
-        console.log('[Main World] Starting chat monitoring...')
+        if (isDevelopment) {
+          console.log('[Main World] Starting chat monitoring...')
+        }
         startChatMonitoring()
       } catch (err) {
-        console.error('[Main World] Module raid error:', err)
+        if (isDevelopment) {
+          console.error('[Main World] Module raid error:', err)
+        }
         reportModuleRaidError({
           phase: 'module-raid',
           reason: err instanceof Error ? err.message : 'unknown',
@@ -228,7 +249,9 @@ if (!win.__whatsappInspectorInitialized) {
     } else if (webpackCheckCount >= maxChecks && !timeoutReported) {
       clearInterval(checkForWebpack)
       timeoutReported = true
-      console.log('[Main World] ⚠️  Webpack chunks not found after 60 seconds')
+      if (isDevelopment) {
+        console.log('[Main World] ⚠️  Webpack chunks not found after 60 seconds')
+      }
       reportModuleRaidError({ phase: 'webpack-detection', reason: 'timeout', timeoutMs: 60000 })
       // Timeout case: still let the rest of the app work, but remove overlay after 1s
       initializationCompleted = true
@@ -236,5 +259,7 @@ if (!win.__whatsappInspectorInitialized) {
     }
   }, 50)
 } else {
-  console.log('[Main World] WhatsApp Inspector already initialized, skipping')
+  if (isDevelopment) {
+    console.log('[Main World] WhatsApp Inspector already initialized, skipping')
+  }
 }

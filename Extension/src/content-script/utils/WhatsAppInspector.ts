@@ -15,6 +15,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
+// Logger not available in MAIN world - use console directly with inline isDevelopment check
+const isDevelopment = import.meta.env.MODE === 'development'
+
 // TypeScript declarations for WhatsApp's internal objects (reverse-engineered)
 interface WhatsAppWindow extends Window {
   webpackChunkbuild?: unknown[]
@@ -62,10 +65,12 @@ export class WhatsAppInspector {
    * Test all available methods and display results
    */
   public async inspectAll(): Promise<void> {
-    console.log('='.repeat(80))
-    console.log('WhatsApp Inspector - Testing Webpack Module Interception')
-    console.log('='.repeat(80))
-    console.log('')
+    if (isDevelopment) {
+      console.log('='.repeat(80))
+      console.log('WhatsApp Inspector - Testing Webpack Module Interception')
+      console.log('='.repeat(80))
+      console.log('')
+    }
 
     this.results = []
 
@@ -84,8 +89,10 @@ export class WhatsAppInspector {
    * Method 1: Webpack Module Raid (Intercept Internal Modules)
    */
   private testWebpackModuleRaid(): void {
-    console.log('📦 Method 1: Webpack Module Raid (Intercept Internal Modules)')
-    console.log('-'.repeat(40))
+    if (isDevelopment) {
+      console.log('📦 Method 1: Webpack Module Raid (Intercept Internal Modules)')
+      console.log('-'.repeat(40))
+    }
 
     try {
       // Check if webpack chunks exist
@@ -103,7 +110,9 @@ export class WhatsAppInspector {
         return
       }
 
-      console.log('✓ Webpack chunk found')
+      if (isDevelopment) {
+        console.log('✓ Webpack chunk found')
+      }
 
       // Initialize module raid if not already done
       if (!this.moduleRaid) {
@@ -122,14 +131,18 @@ export class WhatsAppInspector {
         return
       }
 
-      console.log('✓ Module raid initialized')
-      console.log(`  Captured ${Object.keys(this.moduleRaid.mObj).length} modules`)
+      if (isDevelopment) {
+        console.log('✓ Module raid initialized')
+        console.log(`  Captured ${Object.keys(this.moduleRaid.mObj).length} modules`)
+      }
 
       // Detect WhatsApp version (Comet vs Legacy)
       const version = win.Debug?.VERSION
       const isComet = version ? parseInt(version.split('.')?.[1]) >= 3000 : false
 
-      console.log(`✓ WhatsApp version: ${version || 'unknown'} (${isComet ? 'Comet' : 'Legacy'})`)
+      if (isDevelopment) {
+        console.log(`✓ WhatsApp version: ${version || 'unknown'} (${isComet ? 'Comet' : 'Legacy'})`)
+      }
 
       // Find Chat module
       let ChatModule: any = null
@@ -166,7 +179,9 @@ export class WhatsAppInspector {
         return
       }
 
-      console.log('✓ Chat module found')
+      if (isDevelopment) {
+        console.log('✓ Chat module found')
+      }
 
       // Get active chat
       const chats = ChatModule.Chat.getModelsArray ? ChatModule.Chat.getModelsArray() : []
@@ -184,7 +199,9 @@ export class WhatsAppInspector {
         return
       }
 
-      console.log('✓ Active chat found')
+      if (isDevelopment) {
+        console.log('✓ Active chat found')
+      }
 
       // Extract chat information using private properties
       const contact = activeChat.__x_contact || activeChat.contact
@@ -218,15 +235,17 @@ export class WhatsAppInspector {
       // Add '+' prefix for E.164 international format
       const phone = '+' + (jid.includes('@') ? jid.split('@')[0] : jid)
 
-      console.log('✓ Chat data extracted:')
-      console.log('  JID:', formattedJid)
-      console.log('  Phone:', phone)
-      console.log('  Name:', name || 'Unknown')
-      console.log('  Type:', isGroup ? 'group' : 'individual')
+      if (isDevelopment) {
+        console.log('✓ Chat data extracted:')
+        console.log('  JID:', formattedJid)
+        console.log('  Phone:', phone)
+        console.log('  Name:', name || 'Unknown')
+        console.log('  Type:', isGroup ? 'group' : 'individual')
 
-      if (isGroup && groupMetadata?.participants) {
-        const participants = Object.values(groupMetadata.participants._index || {})
-        console.log(`  Participants: ${participants.length}`)
+        if (isGroup && groupMetadata?.participants) {
+          const participants = Object.values(groupMetadata.participants._index || {})
+          console.log(`  Participants: ${participants.length}`)
+        }
       }
 
       this.logResult({
@@ -262,7 +281,9 @@ export class WhatsAppInspector {
         error: error instanceof Error ? error.message : String(error),
       })
     }
-    console.log('')
+    if (isDevelopment) {
+      console.log('')
+    }
   }
 
   /**
@@ -407,18 +428,24 @@ export class WhatsAppInspector {
       const version = win.Debug?.VERSION
       const isComet = version ? parseInt(version.split('.')?.[1]) >= 3000 : false
 
-      console.log(`[Module Raid] WhatsApp version: ${version}, isComet: ${isComet}`)
+      if (isDevelopment) {
+        console.log(`[Module Raid] WhatsApp version: ${version}, isComet: ${isComet}`)
+      }
 
       if (isComet) {
         // Comet version (2.3000+): Use require('__debug').modulesMap
-        console.log('[Module Raid] Using Comet module loading method')
+        if (isDevelopment) {
+          console.log('[Module Raid] Using Comet module loading method')
+        }
 
         if (typeof win.require === 'function') {
           try {
             const debugModule = win.require('__debug')
             if (debugModule && debugModule.modulesMap) {
               const moduleKeys = Object.keys(debugModule.modulesMap)
-              console.log(`[Module Raid] Found ${moduleKeys.length} module keys`)
+              if (isDevelopment) {
+                console.log(`[Module Raid] Found ${moduleKeys.length} module keys`)
+              }
 
               // Store module keys and require function for lazy loading
               // We DON'T call require() on all modules upfront - that causes errors
@@ -426,19 +453,29 @@ export class WhatsAppInspector {
               this.moduleRaid.moduleKeys = moduleKeys
               this.moduleRaid.requireFn = win.require
 
-              console.log(`✓ Module raid ready (lazy loading mode)`)
+              if (isDevelopment) {
+                console.log(`✓ Module raid ready (lazy loading mode)`)
+              }
             } else {
-              console.warn('[Module Raid] __debug.modulesMap not found')
+              if (isDevelopment) {
+                console.warn('[Module Raid] __debug.modulesMap not found')
+              }
             }
           } catch (error) {
-            console.error('[Module Raid] Comet module loading failed:', error)
+            if (isDevelopment) {
+              console.error('[Module Raid] Comet module loading failed:', error)
+            }
           }
         } else {
-          console.warn('[Module Raid] window.require function not available')
+          if (isDevelopment) {
+            console.warn('[Module Raid] window.require function not available')
+          }
         }
       } else {
         // Legacy version: Use webpack chunk push method
-        console.log('[Module Raid] Using Legacy webpack push method')
+        if (isDevelopment) {
+          console.log('[Module Raid] Using Legacy webpack push method')
+        }
 
         webpackChunk.push([
           [this.moduleRaid.mID],
@@ -454,10 +491,14 @@ export class WhatsAppInspector {
           },
         ])
 
-        console.log('✓ Webpack interceptor injected')
+        if (isDevelopment) {
+          console.log('✓ Webpack interceptor injected')
+        }
       }
     } catch (error) {
-      console.error('✗ Failed to initialize module raid:', error)
+      if (isDevelopment) {
+        console.error('✗ Failed to initialize module raid:', error)
+      }
       this.moduleRaid = null
     }
   }
@@ -471,11 +512,15 @@ export class WhatsAppInspector {
     const webpackChunk = win.webpackChunkbuild || win.webpackChunkwhatsapp_web_client
 
     if (webpackChunk && !this.moduleRaid) {
-      console.log('[Module Raid] Initializing module raid...')
+      if (isDevelopment) {
+        console.log('[Module Raid] Initializing module raid...')
+      }
       this.initializeModuleRaid(webpackChunk)
-      console.log(
-        `[Module Raid] Captured ${Object.keys(this.moduleRaid?.mObj || {}).length} modules`
-      )
+      if (isDevelopment) {
+        console.log(
+          `[Module Raid] Captured ${Object.keys(this.moduleRaid?.mObj || {}).length} modules`
+        )
+      }
     }
   }
 
@@ -507,9 +552,11 @@ export class WhatsAppInspector {
       if (element.textContent && phoneRegex.test(element.textContent)) {
         const match = element.textContent.match(phoneRegex)
         if (match) {
-          console.log(
-            `  [Debug] Phone found at depth ${depth}, checked ${elementsChecked} elements`
-          )
+          if (isDevelopment) {
+            console.log(
+              `  [Debug] Phone found at depth ${depth}, checked ${elementsChecked} elements`
+            )
+          }
           return match[0]
         }
       }
@@ -526,22 +573,26 @@ export class WhatsAppInspector {
     const result = searchElement(rootElement)
 
     // Log search summary
-    console.log(`  [Debug] Searched ${elementsChecked} elements`)
-    if (textSamples.length > 0) {
-      console.log('  [Debug] Text samples found:')
-      textSamples.forEach((sample, i) => {
-        console.log(`    ${i + 1}. "${sample}${sample.length >= 50 ? '...' : ''}"`)
-      })
-    } else {
-      console.log('  [Debug] No text content found in section')
+    if (isDevelopment) {
+      console.log(`  [Debug] Searched ${elementsChecked} elements`)
+      if (textSamples.length > 0) {
+        console.log('  [Debug] Text samples found:')
+        textSamples.forEach((sample, i) => {
+          console.log(`    ${i + 1}. "${sample}${sample.length >= 50 ? '...' : ''}"`)
+        })
+      } else {
+        console.log('  [Debug] No text content found in section')
+      }
     }
 
     return result
   }
 
   private async testDOMParsing(): Promise<void> {
-    console.log('🌳 Method 2: DOM Parsing (Fallback)')
-    console.log('-'.repeat(40))
+    if (isDevelopment) {
+      console.log('🌳 Method 2: DOM Parsing (Fallback)')
+      console.log('-'.repeat(40))
+    }
 
     try {
       // Try to find chat header in main panel
@@ -559,7 +610,9 @@ export class WhatsAppInspector {
         return
       }
 
-      console.log('✓ Chat header found')
+      if (isDevelopment) {
+        console.log('✓ Chat header found')
+      }
 
       // Extract contact name from header
       const nameSpan = headerElement.querySelector('span[dir="auto"]')
@@ -575,7 +628,9 @@ export class WhatsAppInspector {
         contactName = titleSpan?.getAttribute('title') || null
       }
 
-      console.log('  Contact name:', contactName || 'Not found')
+      if (isDevelopment) {
+        console.log('  Contact name:', contactName || 'Not found')
+      }
 
       // Extract phone number by opening contact info panel
       let phone: string | null = null
@@ -588,7 +643,9 @@ export class WhatsAppInspector {
         await new Promise((resolve) => setTimeout(resolve, 100))
 
         headerButton.click()
-        console.log('  → Clicked header to open contact info panel')
+        if (isDevelopment) {
+          console.log('  → Clicked header to open contact info panel')
+        }
 
         // Note: WhatsApp may log a non-fatal React i18n error about "Block {contact_name}"
         // This is a WhatsApp internal issue with programmatic clicks and is automatically suppressed
@@ -601,7 +658,9 @@ export class WhatsAppInspector {
           document.querySelector('[data-animate-drawer-right]') ||
           document.querySelector('[data-animate-drawer]') ||
           document.querySelector('div[role="dialog"]')
-        console.log('  [Debug] Drawer/Panel element:', drawerElement ? 'Found' : 'Not found')
+        if (isDevelopment) {
+          console.log('  [Debug] Drawer/Panel element:', drawerElement ? 'Found' : 'Not found')
+        }
 
         // Expose drawer content to global for debugging (bypasses console flooding)
         if (drawerElement) {
@@ -616,8 +675,10 @@ export class WhatsAppInspector {
                 ? 'data-animate-drawer'
                 : 'role=dialog',
           }
-          console.log('  [Debug] Drawer content exposed to window.__debugDrawer')
-          console.log('  [Debug] Drawer text preview:', drawerText.substring(0, 100))
+          if (isDevelopment) {
+            console.log('  [Debug] Drawer content exposed to window.__debugDrawer')
+            console.log('  [Debug] Drawer text preview:', drawerText.substring(0, 100))
+          }
 
           // Validate this is the contact info drawer (not image viewer or other panel)
           const isContactInfo =
@@ -629,12 +690,18 @@ export class WhatsAppInspector {
           const isImageViewer =
             drawerText.includes('ic-download') || drawerText.toLowerCase().includes('image')
 
-          console.log('  [Debug] Drawer validation:')
-          console.log(`    - Is Contact Info: ${isContactInfo}`)
-          console.log(`    - Is Image Viewer: ${isImageViewer}`)
+          if (isDevelopment) {
+            console.log('  [Debug] Drawer validation:')
+            console.log(`    - Is Contact Info: ${isContactInfo}`)
+            console.log(`    - Is Image Viewer: ${isImageViewer}`)
+          }
 
           if (isImageViewer && !isContactInfo) {
-            console.log('  [Warning] Wrong drawer detected (image viewer), closing and retrying...')
+            if (isDevelopment) {
+              console.log(
+                '  [Warning] Wrong drawer detected (image viewer), closing and retrying...'
+              )
+            }
             // Close wrong drawer
             const closeBtn =
               (drawerElement.querySelector('span[data-icon="x"]') as HTMLElement) ||
@@ -661,28 +728,38 @@ export class WhatsAppInspector {
 
         // First: Try searching within drawer element if found
         if (currentDrawer) {
-          console.log('  [1] Searching for phone within drawer element')
+          if (isDevelopment) {
+            console.log('  [1] Searching for phone within drawer element')
+          }
           phone = this.findElementWithPhoneNumber(currentDrawer)
         }
 
         // Second: If not found in drawer, search entire document
         if (!phone) {
-          console.log('  [2] Searching for phone in entire document')
+          if (isDevelopment) {
+            console.log('  [2] Searching for phone in entire document')
+          }
           phone = this.findElementWithPhoneNumber(document)
         }
 
         if (phone) {
-          console.log('  ✓ Phone found:', phone)
-          console.log('  Type: individual')
+          if (isDevelopment) {
+            console.log('  ✓ Phone found:', phone)
+            console.log('  Type: individual')
+          }
           isGroup = false
         } else {
-          console.log('  ✗ Phone: Not found')
-          console.log('  [Debug] This may be a group chat, or phone is not visible in UI')
+          if (isDevelopment) {
+            console.log('  ✗ Phone: Not found')
+            console.log('  [Debug] This may be a group chat, or phone is not visible in UI')
+          }
 
           // Check if group indicators exist
           const bodyText = document.body.textContent?.toLowerCase() || ''
           if (bodyText.includes('group info') || bodyText.includes('participants')) {
-            console.log('  Type: Likely a group chat')
+            if (isDevelopment) {
+              console.log('  Type: Likely a group chat')
+            }
             isGroup = true
           }
         }
@@ -720,21 +797,30 @@ export class WhatsAppInspector {
 
           if (clickableButton) {
             ;(clickableButton as HTMLElement).click()
-            console.log('  → Closed contact info panel')
+            if (isDevelopment) {
+              console.log('  → Closed contact info panel')
+            }
           }
         } else {
-          console.log('  [Debug] Close button not found, panel may stay open')
-          // Log available icons for debugging
-          if (currentDrawer) {
-            const icons = Array.from(currentDrawer.querySelectorAll('span[data-icon]'))
-            const iconNames = icons.map((el) => el.getAttribute('data-icon')).filter(Boolean)
-            if (iconNames.length > 0) {
-              console.log('  [Debug] Available icons in drawer:', iconNames.slice(0, 5).join(', '))
+          if (isDevelopment) {
+            console.log('  [Debug] Close button not found, panel may stay open')
+            // Log available icons for debugging
+            if (currentDrawer) {
+              const icons = Array.from(currentDrawer.querySelectorAll('span[data-icon]'))
+              const iconNames = icons.map((el) => el.getAttribute('data-icon')).filter(Boolean)
+              if (iconNames.length > 0) {
+                console.log(
+                  '  [Debug] Available icons in drawer:',
+                  iconNames.slice(0, 5).join(', ')
+                )
+              }
             }
           }
         }
       } else {
-        console.log('  Phone: Header button not found')
+        if (isDevelopment) {
+          console.log('  Phone: Header button not found')
+        }
       }
 
       this.logResult({
@@ -756,21 +842,27 @@ export class WhatsAppInspector {
         error: error instanceof Error ? error.message : String(error),
       })
     }
-    console.log('')
+    if (isDevelopment) {
+      console.log('')
+    }
   }
 
   /**
    * Get current chat using the best available method
    */
   public getCurrentChat(): any {
-    console.log('🔍 Attempting to get current chat...')
+    if (isDevelopment) {
+      console.log('🔍 Attempting to get current chat...')
+    }
 
     try {
       const win = window as any
       const webpackChunk = win.webpackChunkbuild || win.webpackChunkwhatsapp_web_client
 
       if (!webpackChunk) {
-        console.log('✗ Webpack chunks not available')
+        if (isDevelopment) {
+          console.log('✗ Webpack chunks not available')
+        }
         return null
       }
 
@@ -780,7 +872,9 @@ export class WhatsAppInspector {
       }
 
       if (!this.moduleRaid) {
-        console.log('✗ Module raid failed to initialize')
+        if (isDevelopment) {
+          console.log('✗ Module raid failed to initialize')
+        }
         return null
       }
 
@@ -802,7 +896,9 @@ export class WhatsAppInspector {
       }
 
       if (!ChatModule?.Chat) {
-        console.log('✗ Chat module not found')
+        if (isDevelopment) {
+          console.log('✗ Chat module not found')
+        }
         return null
       }
 
@@ -811,14 +907,20 @@ export class WhatsAppInspector {
       const activeChat = chats.find((chat: any) => chat.active === true)
 
       if (!activeChat) {
-        console.log('✗ No active chat found')
+        if (isDevelopment) {
+          console.log('✗ No active chat found')
+        }
         return null
       }
 
-      console.log('✓ Chat retrieved:', activeChat)
+      if (isDevelopment) {
+        console.log('✓ Chat retrieved:', activeChat)
+      }
       return activeChat
     } catch (error) {
-      console.log('✗ Error getting current chat:', error)
+      if (isDevelopment) {
+        console.log('✗ Error getting current chat:', error)
+      }
       return null
     }
   }
@@ -829,10 +931,12 @@ export class WhatsAppInspector {
   private logResult(result: InspectionResult): void {
     this.results.push(result)
 
-    if (result.success) {
-      console.log('✅ SUCCESS')
-    } else {
-      console.log('❌ FAILED:', result.error)
+    if (isDevelopment) {
+      if (result.success) {
+        console.log('✅ SUCCESS')
+      } else {
+        console.log('❌ FAILED:', result.error)
+      }
     }
   }
 
@@ -840,55 +944,57 @@ export class WhatsAppInspector {
    * Display summary of all results
    */
   private displaySummary(): void {
-    console.log('='.repeat(80))
-    console.log('Summary')
-    console.log('='.repeat(80))
-    console.log('')
+    if (isDevelopment) {
+      console.log('='.repeat(80))
+      console.log('Summary')
+      console.log('='.repeat(80))
+      console.log('')
 
-    const successful = this.results.filter((r) => r.success)
-    const failed = this.results.filter((r) => !r.success)
+      const successful = this.results.filter((r) => r.success)
+      const failed = this.results.filter((r) => !r.success)
 
-    console.log('Results:')
-    this.results.forEach((result) => {
-      const status = result.success ? '✅' : '❌'
-      console.log(`  ${status} ${result.method}`)
-      if (result.success) {
-        if (result.jid) {
-          console.log(`      JID: ${result.jid}`)
+      console.log('Results:')
+      this.results.forEach((result) => {
+        const status = result.success ? '✅' : '❌'
+        console.log(`  ${status} ${result.method}`)
+        if (result.success) {
+          if (result.jid) {
+            console.log(`      JID: ${result.jid}`)
+          }
+          if (result.contactName) {
+            console.log(`      Name: ${result.contactName}`)
+          }
+          if (result.details?.phone) {
+            console.log(`      Phone: ${result.details.phone}`)
+          }
+          if (result.chatType) {
+            console.log(`      Type: ${result.chatType}`)
+          }
         }
-        if (result.contactName) {
-          console.log(`      Name: ${result.contactName}`)
+      })
+      console.log('')
+
+      if (successful.length > 0) {
+        console.log('✅ Recommended approach:')
+        console.log(`   Primary: ${successful[0].method}`)
+        if (successful.length > 1) {
+          console.log(
+            `   Fallback: ${successful
+              .slice(1)
+              .map((r) => r.method)
+              .join(', ')}`
+          )
         }
-        if (result.details?.phone) {
-          console.log(`      Phone: ${result.details.phone}`)
-        }
-        if (result.chatType) {
-          console.log(`      Type: ${result.chatType}`)
-        }
+      } else {
+        console.log('⚠️  No working methods found!')
+        console.log('   Please ensure:')
+        console.log('   1. You are on web.whatsapp.com')
+        console.log('   2. WhatsApp is fully loaded')
+        console.log('   3. You have a chat open')
       }
-    })
-    console.log('')
-
-    if (successful.length > 0) {
-      console.log('✅ Recommended approach:')
-      console.log(`   Primary: ${successful[0].method}`)
-      if (successful.length > 1) {
-        console.log(
-          `   Fallback: ${successful
-            .slice(1)
-            .map((r) => r.method)
-            .join(', ')}`
-        )
-      }
-    } else {
-      console.log('⚠️  No working methods found!')
-      console.log('   Please ensure:')
-      console.log('   1. You are on web.whatsapp.com')
-      console.log('   2. WhatsApp is fully loaded')
-      console.log('   3. You have a chat open')
+      console.log('')
+      console.log('='.repeat(80))
     }
-    console.log('')
-    console.log('='.repeat(80))
   }
 
   /**

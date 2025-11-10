@@ -569,7 +569,9 @@ namespace Whatsapp2Pipe.Functions.Services
 
 ### 8.2 Logging Strategy
 
-**Log with Application Insights:**
+**Comprehensive Logging:** All HTTP requests/responses are automatically logged via the `HttpRequestLogger` service. See [Spec-127-Comprehensive-Backend-Logging.md](Spec-127-Comprehensive-Backend-Logging.md) for complete logging architecture.
+
+**OAuth-Specific Events to Log:**
 - ✅ OAuth flow start (state generated)
 - ✅ OAuth callback received (code, state)
 - ✅ State validation result
@@ -583,6 +585,33 @@ namespace Whatsapp2Pipe.Functions.Services
 - Warning: User denial, invalid state, expired code
 - Error: Token exchange failures, API timeouts, storage errors
 - Critical: Missing configuration, unhandled exceptions
+
+**Function Pattern:**
+```csharp
+[Function("AuthCallback")]
+public async Task<HttpResponseData> Run(
+    [HttpTrigger] HttpRequestData req,
+    HttpRequestLogger httpRequestLogger)
+{
+    // Request logging (automatic)
+    await httpRequestLogger.LogRequestAsync(req);
+
+    // OAuth logic...
+    var result = await processOAuthCallback(code, state);
+
+    // Response logging (required)
+    var response = req.CreateResponse(HttpStatusCode.OK);
+    httpRequestLogger.LogResponse("AuthCallback", 200, result);
+
+    return response;
+}
+```
+
+**What's Logged:**
+- All HTTP requests → Application Insights `customEvents` table
+- All HTTP responses → Application Insights `traces` table
+- No sampling - 100% of traffic captured
+- Correlation IDs for distributed tracing
 
 ---
 

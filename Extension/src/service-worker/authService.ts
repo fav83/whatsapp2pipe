@@ -12,6 +12,7 @@
  */
 
 import { OAuthErrorCode } from '../types/errors'
+import logger from '../utils/logger'
 
 class ServiceWorkerAuthService {
   /**
@@ -25,45 +26,45 @@ class ServiceWorkerAuthService {
     try {
       // Store state for validation (session storage - cleared when browser closes)
       await chrome.storage.session.set({ oauth_state: state })
-      console.log('[SW AuthService] Stored OAuth state for validation')
+      logger.log('[SW AuthService] Stored OAuth state for validation')
 
       // Launch OAuth popup (chrome.identity available in service worker)
-      console.log('[SW AuthService] Launching OAuth popup with URL:', authUrl)
+      logger.log('[SW AuthService] Launching OAuth popup with URL:', authUrl)
       const redirectUrl = await chrome.identity.launchWebAuthFlow({
         url: authUrl,
         interactive: true,
       })
 
-      console.log('[SW AuthService] OAuth popup completed, redirect URL received')
+      logger.log('[SW AuthService] OAuth popup completed, redirect URL received')
 
       // Validate state (CSRF protection) - optional but recommended
       const isStateValid = await this.validateState(redirectUrl)
       if (!isStateValid) {
-        console.error('[SW AuthService] State validation failed - possible CSRF attack')
+        logger.error('[SW AuthService] State validation failed - possible CSRF attack')
         throw new Error('Security validation failed')
       }
 
-      console.log('[SW AuthService] State validation successful')
+      logger.log('[SW AuthService] State validation successful')
 
       // Extract verification_code from redirect URL
       const verificationCode = this.extractVerificationCode(redirectUrl)
       if (!verificationCode) {
-        console.error('[SW AuthService] No verification code in redirect URL:', redirectUrl)
+        logger.error('[SW AuthService] No verification code in redirect URL:', redirectUrl)
         throw new Error('No verification code received')
       }
 
-      console.log('[SW AuthService] Verification code extracted successfully')
+      logger.log('[SW AuthService] Verification code extracted successfully')
 
       // Extract userName from redirect URL
       const userName = this.extractUserName(redirectUrl)
-      console.log('[SW AuthService] User name extracted:', userName || 'Not provided')
+      logger.log('[SW AuthService] User name extracted:', userName || 'Not provided')
 
       // Store verification_code and userName
       await chrome.storage.local.set({
         verification_code: verificationCode,
         userName: userName || 'User', // Fallback to 'User' if not provided
       })
-      console.log('[SW AuthService] Verification code and userName stored in chrome.storage.local')
+      logger.log('[SW AuthService] Verification code and userName stored in chrome.storage.local')
 
       // Clean up stored state
       await chrome.storage.session.remove('oauth_state')
@@ -75,7 +76,7 @@ class ServiceWorkerAuthService {
 
       // Handle specific OAuth errors
       if (error instanceof Error) {
-        console.error('[SW AuthService] Authentication error:', error)
+        logger.error('[SW AuthService] Authentication error:', error)
 
         // Beta access required - rethrow as-is
         if (error.message === OAuthErrorCode.BETA_ACCESS_REQUIRED) {
@@ -112,7 +113,7 @@ class ServiceWorkerAuthService {
       // Check for error parameter first (e.g., beta_access_required)
       const error = url.searchParams.get('error')
       if (error) {
-        console.log('[SW AuthService] Backend returned error:', error)
+        logger.log('[SW AuthService] Backend returned error:', error)
         // Throw specific error for beta access
         if (error === OAuthErrorCode.BETA_ACCESS_REQUIRED) {
           throw new Error(OAuthErrorCode.BETA_ACCESS_REQUIRED)
@@ -130,14 +131,14 @@ class ServiceWorkerAuthService {
       const hasSuccess = url.searchParams.get('success') === 'true'
 
       if (hasVerificationCode && hasSuccess) {
-        console.log('[SW AuthService] Backend validated state successfully')
+        logger.log('[SW AuthService] Backend validated state successfully')
         return true
       }
 
-      console.warn('[SW AuthService] Callback URL missing expected parameters')
+      logger.warn('[SW AuthService] Callback URL missing expected parameters')
       return false
     } catch (error) {
-      console.error('[SW AuthService] State validation error:', error)
+      logger.error('[SW AuthService] State validation error:', error)
       // Re-throw beta_access_required errors to be caught by signIn
       if (error instanceof Error && error.message === OAuthErrorCode.BETA_ACCESS_REQUIRED) {
         throw error
@@ -155,7 +156,7 @@ class ServiceWorkerAuthService {
       const url = new URL(redirectUrl)
       return url.searchParams.get('verification_code')
     } catch (error) {
-      console.error('[SW AuthService] Failed to parse redirect URL:', error)
+      logger.error('[SW AuthService] Failed to parse redirect URL:', error)
       return null
     }
   }
@@ -169,7 +170,7 @@ class ServiceWorkerAuthService {
       const url = new URL(redirectUrl)
       return url.searchParams.get('userName')
     } catch (error) {
-      console.error('[SW AuthService] Failed to parse userName from redirect URL:', error)
+      logger.error('[SW AuthService] Failed to parse userName from redirect URL:', error)
       return null
     }
   }

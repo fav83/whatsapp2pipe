@@ -30,6 +30,7 @@ import { FeedbackModal } from './components/FeedbackModal'
 import { ConfigMessageBanner } from './components/ConfigMessageBanner'
 import { exposePipedriveTestHelpers } from './testPipedriveApi'
 import type { Person } from '../types/person'
+import logger from '../utils/logger'
 
 interface ChatStatus {
   phone: string | null
@@ -76,7 +77,7 @@ export default function App() {
 
   // Listen for chat status events from MAIN world
   useEffect(() => {
-    console.log('[App] Setting up chat status event listener')
+    logger.log('[App] Setting up chat status event listener')
 
     const handleChatStatus = (event: Event) => {
       const customEvent = event as CustomEvent<ChatStatus>
@@ -98,16 +99,14 @@ export default function App() {
     if (import.meta.env.MODE === 'development') {
       // @ts-expect-error - Development only, adding to window for testing
       window.__setSidebarState = setState
-      console.log('[Sidebar] Development mode: Use window.__setSidebarState() to test states')
-      console.log('[Sidebar] Examples:')
-      console.log(
-        '  __setSidebarState({ type: "contact", name: "John Doe", phone: "+1234567890" })'
-      )
-      console.log(
+      logger.log('[Sidebar] Development mode: Use window.__setSidebarState() to test states')
+      logger.log('[Sidebar] Examples:')
+      logger.log('  __setSidebarState({ type: "contact", name: "John Doe", phone: "+1234567890" })')
+      logger.log(
         '  __setSidebarState({ type: "contact-warning", name: "Jane Doe", warning: "Test warning" })'
       )
-      console.log('  __setSidebarState({ type: "group-chat" })')
-      console.log('  __setSidebarState({ type: "welcome" })')
+      logger.log('  __setSidebarState({ type: "group-chat" })')
+      logger.log('  __setSidebarState({ type: "welcome" })')
 
       // Expose Pipedrive API test helpers
       exposePipedriveTestHelpers()
@@ -137,7 +136,7 @@ export default function App() {
       // Silent failure - error logged to Sentry by service worker
     } catch (error) {
       // Silent failure - log to console and Sentry only
-      console.error('[App] Failed to fetch config:', error)
+      logger.error('[App] Failed to fetch config:', error)
       if (window.Sentry) {
         window.Sentry.captureException(error, {
           tags: { context: 'config_fetch' },
@@ -225,7 +224,7 @@ function handleChatStatusChange(
   status: ChatStatus,
   setState: React.Dispatch<React.SetStateAction<SidebarState>>
 ) {
-  console.log('[App] Chat status changed:', status)
+  logger.log('[App] Chat status changed:', status)
 
   // No chat selected
   if (!status.name) {

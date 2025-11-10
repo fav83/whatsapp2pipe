@@ -277,6 +277,194 @@ Component re-renders with new data
 - Optional telemetry mentioned in BRD Section 6
 - User-facing error messages never expose sensitive data
 
+### 4.4 Logging Architecture
+
+The extension uses a dual-logger approach with clear separation between development and production environments.
+
+#### Development Logger (`Extension/src/utils/logger.ts`)
+
+**Purpose:** Development-only console logging (automatically disabled in production)
+
+**Features:**
+- All methods are no-ops in production (zero runtime overhead)
+- Supports all console methods: `log`, `warn`, `error`, `debug`, `info`, `group`, `groupEnd`, `table`
+- Environment-aware: checks `import.meta.env.MODE === 'development'`
+- No Sentry integration (local debugging only)
+
+**Usage Pattern:**
+```typescript
+import * as logger from '@/utils/logger'
+
+// Component initialization
+logger.log('[PersonCard] Rendering with:', person)
+
+// API calls
+logger.group('Pipedrive API Request')
+logger.log('Endpoint:', endpoint)
+logger.log('Payload:', payload)
+logger.groupEnd()
+
+// State changes
+logger.debug('Store state updated:', newState)
+
+// Performance tracking
+logger.table(performanceMetrics)
+```
+
+**When to Use:**
+- Debugging component lifecycle
+- Tracing data flow and state changes
+- Local development troubleshooting
+- Performance monitoring during development
+- Any logging that should NOT appear in production
+
+#### Error Logger (`Extension/src/utils/errorLogger.ts`)
+
+**Purpose:** Production error tracking with Sentry integration
+
+**Features:**
+- Structured error format: `[chat2deal-pipe][timestamp][version] context: errorMessage`
+- Development: Logs to console with full details
+- Production: Only sends to Sentry (no console output)
+- Smart filtering: Skips expected errors (404, validation, user cancellations)
+- Isolated Sentry scopes: Each error uses cloned scope to prevent conflicts
+- Automatic context enrichment: timestamp, version, custom dimensions
+
+**Usage Pattern:**
+```typescript
+import { logError } from '@/utils/errorLogger'
+import * as Sentry from '@sentry/browser'
+
+try {
+  const person = await createPerson(data)
+} catch (error) {
+  logError(
+    'Failed to create person in Pipedrive',
+    error,
+    {
+      userId: user.id,
+      statusCode: error.response?.status,
+      endpoint: '/api/pipedrive/persons'
+    },
+    Sentry.getCurrentScope()
+  )
+  // Handle error in UI
+}
+```
+
+**When to Use:**
+- API failures that users encounter
+- Unexpected errors that break functionality
+- Integration failures (Pipedrive API, authentication)
+- Data processing errors
+- Any error that needs production visibility
+
+**When NOT to Use:**
+- Expected errors (404 not found, validation failures)
+- User-initiated cancellations
+- Development debugging (use `logger.ts` instead)
+
+#### Error Filtering Logic
+
+The `errorLogger` automatically skips Sentry capture for:
+
+1. **404 Not Found** - Expected when person doesn't exist in Pipedrive
+2. **Validation Errors** - User input issues (handled in UI)
+3. **User Cancellations** - Intentional user actions
+
+Example:
+```typescript
+const skipSentry =
+  additionalContext?.statusCode === 404 ||
+  context.includes('Form validation') ||
+  context.includes('User cancelled')
+```
+
+#### Logging Strategy Decision Tree
+
+```
+Is this a production error that needs tracking?
+├─ YES → Use errorLogger.logError() with Sentry scope
+│   └─ Appears in Sentry dashboard with full context
+│
+└─ NO → Use logger.* methods
+    └─ Appears in console during development only
+```
+
+**Examples:**
+
+| Scenario | Logger to Use | Rationale |
+|----------|---------------|-----------|
+| API call fails with 500 | `errorLogger.logError()` | Production error needs tracking |
+| Component renders | `logger.log()` | Development debugging only |
+| Person not found (404) | `errorLogger.logError()` but filtered | Logged locally, skipped in Sentry |
+| User clicks button | `logger.debug()` | Development tracing only |
+| Auth token expired | `errorLogger.logError()` | Production issue needs tracking |
+| State updated | `logger.log()` | Development debugging only |
+| Pipedrive API timeout | `errorLogger.logError()` | Production error needs tracking |
+| Form validation fails | UI error message only | Expected user error, no logging needed |
+
+#### Helper Functions
+
+**Extract Error Messages:**
+```typescript
+import { getErrorMessage } from '@/utils/errorLogger'
+
+// Safely extract message from any error type
+const message = getErrorMessage(error, 'Failed to complete operation')
+```
+
+Handles:
+- `Error` instances → `error.message`
+- Objects with `message` property → `String(error.message)`
+- Unknown types → fallback message
+
+#### Source Maps and Debug Workflow
+
+**Build Process:**
+1. `npm run build` - Creates production build with inline source maps
+2. `npm run upload-sourcemaps` - Injects Debug IDs and uploads to Sentry
+3. **CRITICAL:** Reload extension in Chrome after upload
+4. Without reload: "Missing source file with a matching Debug ID" errors
+
+**Debug IDs:**
+- Injected during source map upload (not during build)
+- Link minified code to original TypeScript source
+- Enable accurate stack traces in Sentry
+- Must reload extension for changes to take effect
+
+**Verification:**
+```typescript
+// Dev mode components for testing
+<DevModeIndicator />  // Shows dev banner with Sentry test button
+<SentryTest />        // Manual Sentry integration testing
+```
+
+Both components are automatically hidden in production builds.
+
+#### Best Practices
+
+1. **Never use `console.log()` directly** - Always use `logger.*` or `errorLogger.*`
+2. **Provide clear context** - Include operation description, not just generic "error occurred"
+3. **Add relevant IDs** - Include userId, personId, etc. for debugging
+4. **Include status codes** - Helps diagnose API failures
+5. **Use structured data** - Pass objects for additional context, not concatenated strings
+6. **Consider production impact** - Only use `errorLogger` for issues users would report
+7. **Test locally first** - Verify logging works with `logger.*` before adding `errorLogger`
+
+#### Performance Considerations
+
+**Development Logger:**
+- Zero overhead in production (all methods are no-ops)
+- Conditional compilation removes dead code during build
+- No runtime performance impact in production builds
+
+**Error Logger:**
+- Minimal overhead: ~1-2ms per error log
+- Sentry capture is asynchronous (doesn't block UI)
+- Console logging only in development
+- Smart filtering reduces Sentry noise
+
 ---
 
 ## 5. API Integration & Communication

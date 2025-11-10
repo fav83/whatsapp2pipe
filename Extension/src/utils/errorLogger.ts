@@ -1,5 +1,7 @@
 import type { Scope } from '@sentry/browser'
 
+const isDevelopment = import.meta.env.MODE === 'development'
+
 interface ErrorContext {
   [key: string]: unknown
   statusCode?: number
@@ -27,12 +29,14 @@ export function logError(
   const errorMessage = error instanceof Error ? error.message : String(error)
   const stackTrace = error instanceof Error ? error.stack : undefined
 
-  // Always log to console (development debugging)
-  console.error(
-    `[chat2deal-pipe][${timestamp}][${version}] ${context}: ${errorMessage}`,
-    stackTrace || '',
-    additionalContext || {}
-  )
+  // Log to console in development only
+  if (isDevelopment) {
+    console.error(
+      `[chat2deal-pipe][${timestamp}][${version}] ${context}: ${errorMessage}`,
+      stackTrace || '',
+      additionalContext || {}
+    )
+  }
 
   // Also send to Sentry if enabled and scope provided
   if (scope && import.meta.env.VITE_SENTRY_ENABLED === 'true') {
@@ -43,7 +47,9 @@ export function logError(
       context.includes('User cancelled') // User actions
 
     if (!skipSentry) {
-      console.log('[errorLogger] Capturing to Sentry:', context)
+      if (isDevelopment) {
+        console.log('[errorLogger] Capturing to Sentry:', context)
+      }
 
       // Clone scope to avoid conflicts with concurrent captures
       const isolatedScope = scope.clone()
@@ -62,11 +68,13 @@ export function logError(
         } else {
           client.captureMessage(`${context}: ${String(error)}`, 'error', {}, isolatedScope)
         }
-        console.log('[errorLogger] Sentry capture completed')
-      } else {
+        if (isDevelopment) {
+          console.log('[errorLogger] Sentry capture completed')
+        }
+      } else if (isDevelopment) {
         console.warn('[errorLogger] No Sentry client available')
       }
-    } else {
+    } else if (isDevelopment) {
       console.log('[errorLogger] Skipping Sentry (expected error):', context)
     }
   }

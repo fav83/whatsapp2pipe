@@ -6,6 +6,7 @@ import { pipedriveApiService } from './pipedriveApiService'
 import { logError, getErrorMessage } from '../utils/errorLogger'
 import { sentryScope } from './sentry'
 import { AUTH_CONFIG } from '../config'
+import logger from '../utils/logger'
 import type {
   ExtensionMessage,
   AuthFetchUrlSuccess,
@@ -21,7 +22,7 @@ import type {
 } from '../types/messages'
 import type { AuthUrlResponse } from '../types/auth'
 
-console.log('[Service Worker] Loaded')
+logger.log('[Service Worker] Loaded')
 
 // Global error handler for uncaught errors
 self.addEventListener('error', (event: ErrorEvent) => {
@@ -62,7 +63,7 @@ async function registerInspectorScript() {
 
     if (inspectorScript) {
       await chrome.scripting.unregisterContentScripts({ ids: ['inspector-main'] })
-      console.log('[Service Worker] Unregistered existing inspector-main script')
+      logger.log('[Service Worker] Unregistered existing inspector-main script')
     }
 
     // Register the inspector-main.js script with MAIN world execution
@@ -75,23 +76,23 @@ async function registerInspectorScript() {
         world: 'MAIN',
       },
     ])
-    console.log('[Service Worker] Successfully registered inspector-main script in MAIN world')
+    logger.log('[Service Worker] Successfully registered inspector-main script in MAIN world')
   } catch (error) {
-    console.error('[Service Worker] Failed to register inspector-main script:', error)
+    logger.error('[Service Worker] Failed to register inspector-main script:', error)
     logError('Failed to register inspector-main script', error, {}, sentryScope)
   }
 }
 
 // Listen for extension installation
 chrome.runtime.onInstalled.addListener((details) => {
-  console.log('[Service Worker] Extension installed:', details.reason)
+  logger.log('[Service Worker] Extension installed:', details.reason)
 
   if (details.reason === 'install') {
     // First-time installation
-    console.log('[Service Worker] First install - version', chrome.runtime.getManifest().version)
+    logger.log('[Service Worker] First install - version', chrome.runtime.getManifest().version)
   } else if (details.reason === 'update') {
     // Extension updated
-    console.log(
+    logger.log(
       '[Service Worker] Updated from',
       details.previousVersion,
       'to',
@@ -105,7 +106,7 @@ chrome.runtime.onInstalled.addListener((details) => {
 
 // Listen for messages from content script or popup
 chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendResponse) => {
-  console.log(
+  logger.log(
     '[Service Worker] Received message:',
     message,
     'from',
@@ -119,11 +120,11 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
 
   // Handle OAuth URL fetch requests (bypasses CORS)
   if (message.type === 'AUTH_FETCH_URL') {
-    console.log('[Service Worker] Handling AUTH_FETCH_URL request')
+    logger.log('[Service Worker] Handling AUTH_FETCH_URL request')
 
     // Validate state exists
     if (!message.state || typeof message.state !== 'string') {
-      console.error('[Service Worker] Invalid or missing state in message')
+      logger.error('[Service Worker] Invalid or missing state in message')
       const response: AuthFetchUrlError = {
         type: 'AUTH_FETCH_URL_ERROR',
         error: 'Invalid request: missing OAuth state',
@@ -137,7 +138,7 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
     fetch(url)
       .then(async (response) => {
         if (!response.ok) {
-          console.error(
+          logger.error(
             '[Service Worker] Failed to fetch OAuth URL:',
             response.status,
             response.statusText
@@ -147,7 +148,7 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
         return response.json() as Promise<AuthUrlResponse>
       })
       .then((data) => {
-        console.log('[Service Worker] Successfully fetched OAuth URL')
+        logger.log('[Service Worker] Successfully fetched OAuth URL')
         const response: AuthFetchUrlSuccess = {
           type: 'AUTH_FETCH_URL_SUCCESS',
           authUrl: data.AuthorizationUrl,
@@ -155,7 +156,7 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
         sendResponse(response)
       })
       .catch((error) => {
-        console.error('[Service Worker] Failed to fetch OAuth URL:', error)
+        logger.error('[Service Worker] Failed to fetch OAuth URL:', error)
         const errorMessage = error instanceof Error ? error.message : 'Failed to fetch OAuth URL'
         const response: AuthFetchUrlError = {
           type: 'AUTH_FETCH_URL_ERROR',
@@ -169,13 +170,13 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
 
   // Handle OAuth sign-in requests
   if (message.type === 'AUTH_SIGN_IN') {
-    console.log('[Service Worker] Handling AUTH_SIGN_IN request')
-    console.log('[Service Worker] Message authUrl:', message.authUrl)
-    console.log('[Service Worker] Full message:', JSON.stringify(message))
+    logger.log('[Service Worker] Handling AUTH_SIGN_IN request')
+    logger.log('[Service Worker] Message authUrl:', message.authUrl)
+    logger.log('[Service Worker] Full message:', JSON.stringify(message))
 
     // Validate authUrl exists
     if (!message.authUrl || typeof message.authUrl !== 'string') {
-      console.error('[Service Worker] Invalid or missing authUrl in message')
+      logger.error('[Service Worker] Invalid or missing authUrl in message')
       const response: AuthSignInError = {
         type: 'AUTH_SIGN_IN_ERROR',
         error: 'Invalid authentication request: missing OAuth URL',
@@ -186,7 +187,7 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
 
     // Validate state exists
     if (!message.state || typeof message.state !== 'string') {
-      console.error('[Service Worker] Invalid or missing state in message')
+      logger.error('[Service Worker] Invalid or missing state in message')
       const response: AuthSignInError = {
         type: 'AUTH_SIGN_IN_ERROR',
         error: 'Invalid authentication request: missing OAuth state',
@@ -199,7 +200,7 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
     serviceWorkerAuthService
       .signIn(message.authUrl, message.state)
       .then((verificationCode) => {
-        console.log('[Service Worker] Sign-in successful, sending response')
+        logger.log('[Service Worker] Sign-in successful, sending response')
         const response: AuthSignInSuccess = {
           type: 'AUTH_SIGN_IN_SUCCESS',
           verificationCode,
@@ -207,7 +208,7 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
         sendResponse(response)
       })
       .catch((error) => {
-        console.error('[Service Worker] Sign-in failed:', error)
+        logger.error('[Service Worker] Sign-in failed:', error)
 
         // Log to Sentry (skip expected errors like user cancellation and beta access)
         const errorMessage = error instanceof Error ? error.message : 'Authentication failed'
@@ -450,11 +451,11 @@ async function handleConfigGet(
 
 // Service worker lifecycle events
 self.addEventListener('activate', () => {
-  console.log('[Service Worker] Activated')
+  logger.log('[Service Worker] Activated')
 })
 
 self.addEventListener('suspend', () => {
-  console.log('[Service Worker] Suspending (Manifest V3 idle timeout)')
+  logger.log('[Service Worker] Suspending (Manifest V3 idle timeout)')
 })
 
-console.log('[Service Worker] Ready')
+logger.log('[Service Worker] Ready')

@@ -14,6 +14,7 @@ import type {
   AuthSignInRequest,
   AuthSignInResponse,
 } from '../../types/messages'
+import logger from '../../utils/logger'
 
 interface OAuthState {
   extensionId: string
@@ -56,41 +57,41 @@ class AuthService {
     try {
       // Step 1: Generate OAuth state with extension ID
       const state = this.generateOAuthState()
-      console.log('[AuthService] Generated OAuth state with extension ID:', chrome.runtime.id)
+      logger.log('[AuthService] Generated OAuth state with extension ID:', chrome.runtime.id)
 
       // Step 2: Ask service worker to fetch OAuth URL from backend (bypasses CORS)
-      console.log('[AuthService] Requesting service worker to fetch OAuth URL...')
+      logger.log('[AuthService] Requesting service worker to fetch OAuth URL...')
       const fetchMessage: AuthFetchUrlRequest = { type: 'AUTH_FETCH_URL', state }
       const fetchResponse = (await chrome.runtime.sendMessage(fetchMessage)) as AuthFetchUrlResponse
 
       if (fetchResponse.type === 'AUTH_FETCH_URL_ERROR') {
-        console.error('[AuthService] Failed to fetch OAuth URL:', fetchResponse.error)
+        logger.error('[AuthService] Failed to fetch OAuth URL:', fetchResponse.error)
         throw new Error(fetchResponse.error)
       }
 
       const authUrl = fetchResponse.authUrl
-      console.log('[AuthService] Received OAuth URL from service worker')
+      logger.log('[AuthService] Received OAuth URL from service worker')
 
       // Step 3: Send OAuth URL and state to service worker to launch chrome.identity
-      console.log('[AuthService] Sending AUTH_SIGN_IN message to service worker...')
+      logger.log('[AuthService] Sending AUTH_SIGN_IN message to service worker...')
       const signInMessage: AuthSignInRequest = { type: 'AUTH_SIGN_IN', authUrl, state }
 
       // Send message to service worker and wait for response
       const signInResponse = (await chrome.runtime.sendMessage(signInMessage)) as AuthSignInResponse
 
-      console.log('[AuthService] Received response from service worker:', signInResponse.type)
+      logger.log('[AuthService] Received response from service worker:', signInResponse.type)
 
       if (signInResponse.type === 'AUTH_SIGN_IN_SUCCESS') {
-        console.log('[AuthService] Sign-in successful')
+        logger.log('[AuthService] Sign-in successful')
         return signInResponse.verificationCode
       } else if (signInResponse.type === 'AUTH_SIGN_IN_ERROR') {
-        console.error('[AuthService] Sign-in failed:', signInResponse.error)
+        logger.error('[AuthService] Sign-in failed:', signInResponse.error)
         throw new Error(signInResponse.error)
       } else {
         throw new Error('Unexpected response from service worker')
       }
     } catch (error) {
-      console.error('[AuthService] Authentication error:', error)
+      logger.error('[AuthService] Authentication error:', error)
 
       // Handle specific errors
       if (error instanceof Error) {
@@ -130,7 +131,7 @@ class AuthService {
    */
   async signOut(): Promise<void> {
     await chrome.storage.local.remove(['verification_code', 'userName'])
-    console.log('[AuthService] User signed out, verification code and userName removed')
+    logger.log('[AuthService] User signed out, verification code and userName removed')
   }
 
   /**

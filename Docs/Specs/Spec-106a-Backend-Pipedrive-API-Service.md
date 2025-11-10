@@ -1373,12 +1373,35 @@ var url = $"{pipedriveConfig.BaseUrl}/v1/persons/search";
 
 ### 11.4 Logging
 
+**Comprehensive Logging:** All HTTP requests/responses and Pipedrive API calls are automatically logged via the `HttpRequestLogger` service. See [Spec-127-Comprehensive-Backend-Logging.md](Spec-127-Comprehensive-Backend-Logging.md) for complete logging architecture.
+
+**Function Pattern:**
 ```csharp
-// Use ILogger for debugging
-logger.LogInformation($"Searching persons with term: {term}");
-logger.LogWarning($"Person not found: {personId}");
-logger.LogError($"Pipedrive API error: {exception.Message}");
+[Function("PipedrivePersonsSearch")]
+public async Task<HttpResponseData> Run(
+    [HttpTrigger] HttpRequestData req,
+    HttpRequestLogger httpRequestLogger)
+{
+    // Request logging (automatic)
+    await httpRequestLogger.LogRequestAsync(req);
+
+    // Function logic...
+    var results = await searchPersons(term);
+
+    // Response logging (required)
+    var response = req.CreateResponse(HttpStatusCode.OK);
+    await response.WriteAsJsonAsync(results);
+    httpRequestLogger.LogResponse("PipedrivePersonsSearch", 200, results);
+
+    return response;
+}
 ```
+
+**What's Logged:**
+- All HTTP requests → Application Insights `customEvents` table
+- All HTTP responses → Application Insights `traces` table
+- All Pipedrive API calls → Application Insights `traces` table (via `PipedriveApiLogger`)
+- No sampling - 100% of traffic captured
 
 ---
 

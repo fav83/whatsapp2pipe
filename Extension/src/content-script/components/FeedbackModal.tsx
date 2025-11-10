@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Spinner } from './Spinner'
 import type { FeedbackResponse } from '../../types/messages'
+import logger from '../../utils/logger'
 
 interface FeedbackModalProps {
   isOpen: boolean
@@ -108,7 +109,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose })
         setErrorMessage(response.error || 'Failed to submit feedback. Please try again.')
       }
     } catch (error) {
-      console.error('Failed to submit feedback:', error)
+      logger.error('Failed to submit feedback:', error)
       setState('error')
       setErrorMessage('Failed to submit feedback. Please try again.')
     }

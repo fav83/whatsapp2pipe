@@ -26,17 +26,6 @@ export function Footer() {
               Terms of Service
             </Link>
           </div>
-
-          {/* Right - Sign in */}
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-slate-600">Already have beta access?</span>
-            <a
-              href={import.meta.env.VITE_APP_URL}
-              className="font-medium text-slate-700 hover:text-slate-600 transition-colors duration-200"
-            >
-              Sign in
-            </a>
-          </div>
         </div>
       </div>
     </footer>

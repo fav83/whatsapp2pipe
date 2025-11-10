@@ -1,3 +1,5 @@
+import logger from '../utils/logger'
+
 export function injectMomoTrustDisplay() {
   try {
     // Avoid duplicate injection
@@ -28,6 +30,6 @@ export function injectMomoTrustDisplay() {
     document.head.appendChild(style)
   } catch (err) {
     // Non-fatal if fonts fail; falls back to Inter
-    console.warn('[chat2deal] Failed to inject brand fonts', err)
+    logger.warn('[chat2deal] Failed to inject brand fonts', err)
   }
 }

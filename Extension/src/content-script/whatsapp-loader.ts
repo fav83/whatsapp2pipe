@@ -5,6 +5,8 @@
  * This ensures the extension doesn't interfere with WhatsApp's initialization.
  */
 
+import logger from '../utils/logger'
+
 /**
  * Polls for WhatsApp Web to be fully loaded.
  * Checks for both chat list grid and search textbox.
@@ -21,7 +23,7 @@ export function waitForWhatsAppLoad(): Promise<void> {
 
       if (isLoaded) {
         clearInterval(intervalId)
-        console.log('[WhatsApp Loader] WhatsApp Web fully loaded')
+        logger.log('[WhatsApp Loader] WhatsApp Web fully loaded')
         resolve()
       }
     }, checkInterval)

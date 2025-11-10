@@ -7,6 +7,7 @@
 import { sentryClient, sentryScope } from '../sentry'
 import { logError } from '../../utils/errorLogger'
 import { logBreadcrumb } from '../../utils/breadcrumbs'
+import logger from '../../utils/logger'
 
 interface SentryTestProps {
   isExpanded: boolean
@@ -27,7 +28,7 @@ export function SentryTest({ isExpanded }: SentryTestProps) {
       Environment: import.meta.env.VITE_ENV,
       Mode: import.meta.env.MODE,
     }
-    console.log('[Sentry Config]', config)
+    logger.log('[Sentry Config]', config)
     alert(JSON.stringify(config, null, 2))
   }
 
@@ -36,7 +37,7 @@ export function SentryTest({ isExpanded }: SentryTestProps) {
   }
 
   const testLoggedError = () => {
-    console.log('[Sentry Test] Calling logError with sentryScope...')
+    logger.log('[Sentry Test] Calling logError with sentryScope...')
     const timestamp = new Date().toISOString()
     logError(
       'TEST: Manual error log',
@@ -44,7 +45,7 @@ export function SentryTest({ isExpanded }: SentryTestProps) {
       { testData: 'sample context', timestamp },
       sentryScope
     )
-    console.log('[Sentry Test] logError called')
+    logger.log('[Sentry Test] logError called')
     alert('Error logged! Check console and Sentry dashboard in ~30 seconds')
   }
 
@@ -73,18 +74,18 @@ export function SentryTest({ isExpanded }: SentryTestProps) {
         data: { phone: '+999999999999' }, // Invalid phone that will likely 404
       },
       (response) => {
-        console.log('Response:', response)
+        logger.log('Response:', response)
         alert('API call made. Check console and Sentry for results.')
       }
     )
   }
 
   const testDirectSentry = () => {
-    console.log('[Sentry Test] Testing direct Sentry capture...')
+    logger.log('[Sentry Test] Testing direct Sentry capture...')
     const timestamp = new Date().toISOString()
     const testError = new Error(`Direct Sentry test error at ${timestamp}`)
     sentryClient.captureException(testError, {}, sentryScope)
-    console.log('[Sentry Test] Sent exception directly to Sentry')
+    logger.log('[Sentry Test] Sent exception directly to Sentry')
     alert('Direct exception sent! Check console for network requests to sentry.io')
   }
 
@@ -98,8 +99,8 @@ export function SentryTest({ isExpanded }: SentryTestProps) {
     const fromStack = ids[stack]
     const first = Object.values(ids)[0] as string | undefined
     const guess = fromStack || first || 'unknown'
-    console.log('[Sentry Test] _sentryDebugIds map:', ids)
-    console.log('[Sentry Test] Stack used for lookup:', stack)
+    logger.log('[Sentry Test] _sentryDebugIds map:', ids)
+    logger.log('[Sentry Test] Stack used for lookup:', stack)
     alert(`content-script Debug ID: ${guess}`)
   }
 

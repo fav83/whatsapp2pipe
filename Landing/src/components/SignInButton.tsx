@@ -1,8 +1,9 @@
 interface SignInButtonProps {
   variant?: 'hero' | 'cta';
+  label?: string;
 }
 
-export function SignInButton({ variant = 'hero' }: SignInButtonProps) {
+export function SignInButton({ variant = 'hero', label = 'Sign in with Pipedrive' }: SignInButtonProps) {
   const handleSignIn = () => {
     // Generate OAuth state for website
     const state = {
@@ -37,7 +38,7 @@ export function SignInButton({ variant = 'hero' }: SignInButtonProps) {
       onClick={handleSignIn}
       className={`${baseClasses} ${sizeClasses} ${colorClasses}`}
     >
-      Sign in with Pipedrive
+      {label}
     </button>
   );
 }

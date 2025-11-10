@@ -60,6 +60,7 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 - [Spec-120b-Extension-Beta-Access.md](Docs/Specs/Spec-120b-Extension-Beta-Access.md) - Extension beta access control (⚠️ PARTIALLY SUPERSEDED - Backend Allows Open Access, Extension UI Not Implemented)
 - [Spec-123-Landing-Legal-Pages.md](Docs/Specs/Spec-123-Landing-Legal-Pages.md) - Landing page legal pages with SEO system (✅ Complete)
 - [Spec-123-Implementation-Summary.md](Docs/Specs/Spec-123-Implementation-Summary.md) - Complete implementation summary with SEO enhancements
+- [Spec-127-Comprehensive-Backend-Logging.md](Docs/Specs/Spec-127-Comprehensive-Backend-Logging.md) - Comprehensive backend logging with HTTP response tracking (✅ Complete)
 
 ### External Documentation
 - [Pipedrive/](Docs/External/Pipedrive/) - Pipedrive API documentation and development resources
@@ -253,6 +254,245 @@ The extension uses Sentry for error tracking and performance monitoring with PII
 - Both components are automatically hidden in production builds
 
 **Documentation:** See [DEPLOYMENT.md](Extension/DEPLOYMENT.md#debug-ids-and-reload-workflow) for complete Sentry workflow.
+
+## Logging Strategy
+
+The project uses a comprehensive logging approach with clear separation between development and production environments.
+
+### Extension Logging
+
+**IMPORTANT:** Always use the provided logging utilities instead of direct `console.log()` calls.
+
+#### Development Logging (`Extension/src/utils/logger.ts`)
+
+For development-only console output (automatically disabled in production):
+
+```typescript
+import * as logger from '@/utils/logger'
+
+// General information logging
+logger.log('User clicked button', { userId: 123 })
+
+// Warnings
+logger.warn('API response took longer than expected')
+
+// Debug information
+logger.debug('Component state:', componentState)
+
+// Grouped logging for related messages
+logger.group('API Request Details')
+logger.log('URL:', apiUrl)
+logger.log('Headers:', headers)
+logger.groupEnd()
+
+// Table logging for structured data
+logger.table(userData)
+```
+
+**Key Features:**
+- All methods are no-ops in production (zero runtime overhead)
+- Supports all console methods: `log`, `warn`, `error`, `debug`, `info`, `group`, `groupEnd`, `table`
+- Use for debugging, development tracing, and local troubleshooting
+- Automatically stripped from production builds
+
+#### Error Logging (`Extension/src/utils/errorLogger.ts`)
+
+For errors that should be tracked in production with Sentry integration:
+
+```typescript
+import { logError } from '@/utils/errorLogger'
+import * as Sentry from '@sentry/browser'
+
+try {
+  await riskyOperation()
+} catch (error) {
+  logError(
+    'Failed to create person',           // Context description
+    error,                                 // Error object
+    {                                      // Additional context (optional)
+      userId: user.id,
+      statusCode: response.status
+    },
+    Sentry.getCurrentScope()              // Sentry scope (optional)
+  )
+}
+```
+
+**Key Features:**
+- **Format**: `[chat2deal-pipe][timestamp][version] context: errorMessage`
+- **Development**: Logs to console with full error details
+- **Production**: Only logs to Sentry (no console output)
+- **Sentry Integration**: Automatically captures errors with structured context
+- **Smart Filtering**: Skips expected errors (404, validation, user cancellations)
+- **Isolated Scopes**: Each error uses cloned Sentry scope to prevent conflicts
+
+**When to Use:**
+- API failures that users encounter
+- Unexpected errors that break functionality
+- Integration failures (Pipedrive API, authentication)
+- Data processing errors
+
+**When NOT to Use:**
+- Expected errors (404 not found, validation failures)
+- User-initiated cancellations
+- Development debugging (use `logger.ts` instead)
+
+### Backend Logging
+
+**IMPORTANT:** Backend logging is always enabled in all environments with no sampling.
+
+#### HTTP Request/Response Logging
+
+All HTTP traffic is automatically logged via `HttpRequestLogger` service:
+
+```csharp
+[Function("MyFunction")]
+public async Task<HttpResponseData> Run(
+    [HttpTrigger] HttpRequestData req,
+    HttpRequestLogger httpRequestLogger)
+{
+    // Log incoming request (automatic via middleware)
+    await httpRequestLogger.LogRequestAsync(req);
+
+    // ... function logic ...
+
+    // Log outgoing response (required in each function)
+    var response = req.CreateResponse(HttpStatusCode.OK);
+    httpRequestLogger.LogResponse("MyFunction", 200);
+    return response;
+}
+```
+
+**Response Logging Overloads:**
+
+```csharp
+// Simple status code only
+httpRequestLogger.LogResponse("MyFunction", 200);
+
+// With JSON object body
+httpRequestLogger.LogResponse("MyFunction", 200, responseData);
+
+// With pre-serialized string body
+httpRequestLogger.LogResponse("MyFunction", 200, jsonString);
+
+// With full details (headers + body)
+httpRequestLogger.LogResponse("MyFunction", 200, headers, responseData);
+```
+
+**What's Logged:**
+- **Requests** → Application Insights `customEvents` table
+  - Method, URL, headers (JSON), body, timestamp, correlation ID
+- **Responses** → Application Insights `traces` table
+  - Function name, status code, headers (optional), body, correlation ID
+- **Pipedrive API** → Application Insights `traces` table
+  - All API requests/responses with full details
+
+#### Configuration
+
+**Backend/WhatsApp2Pipe.Api/host.json:**
+```json
+{
+  "logging": {
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": false  // ⚠️ CRITICAL: Disabled for complete log capture
+      }
+    },
+    "logLevel": {
+      "WhatsApp2Pipe.Api": "Information",
+      "WhatsApp2Pipe.Api.Functions": "Information",
+      "WhatsApp2Pipe.Api.Services": "Information"
+    }
+  }
+}
+```
+
+**Backend/WhatsApp2Pipe.Api/Program.cs:**
+```csharp
+// Configure logging to ensure all ILogger output reaches Application Insights
+services.Configure<LoggerFilterOptions>(options =>
+{
+    // Remove default filter that might suppress logs
+    var defaultRule = options.Rules.FirstOrDefault(rule =>
+        rule.ProviderName == "Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider");
+    if (defaultRule != null)
+    {
+        options.Rules.Remove(defaultRule);
+    }
+});
+```
+
+#### Querying Logs in Application Insights
+
+**View all HTTP responses:**
+```kql
+traces
+| where message startswith "[HTTP Response]"
+| project
+    timestamp,
+    operation_Id,
+    FunctionName = customDimensions.FunctionName,
+    StatusCode = customDimensions.StatusCode,
+    Body = customDimensions.Body
+| order by timestamp desc
+```
+
+**View all Pipedrive API calls:**
+```kql
+traces
+| where message contains "Pipedrive API"
+| project
+    timestamp,
+    operation_Id,
+    Method = customDimensions.Method,
+    Url = customDimensions.Url,
+    StatusCode = customDimensions.StatusCode
+| order by timestamp desc
+```
+
+**Correlate request → response:**
+```kql
+let operationId = "<operation-id>";
+union
+    (customEvents | where name == "HttpRequest" and operation_Id == operationId),
+    (traces | where message startswith "[HTTP Response]" and operation_Id == operationId)
+| project timestamp, type = itemType, details = customDimensions
+| order by timestamp asc
+```
+
+### Logging Best Practices
+
+1. **Extension Development:**
+   - Use `logger.*` for all development debugging
+   - Use `logError()` only for production-critical errors
+   - Never use `console.log()` directly
+
+2. **Extension Production:**
+   - All `logger.*` calls are no-ops (zero overhead)
+   - Only critical errors reach Sentry via `logError()`
+   - PII is filtered before sending to Sentry
+
+3. **Backend:**
+   - Always call `httpRequestLogger.LogResponse()` before returning responses
+   - Use appropriate overload based on response type
+   - Logging failures are caught and don't impact function execution
+
+4. **Error Context:**
+   - Provide clear context descriptions
+   - Include relevant IDs (userId, personId, etc.)
+   - Add status codes when available
+   - Use structured data (objects) for additional context
+
+5. **Security:**
+   - Backend logs contain ALL data (tokens, PII) - use RBAC to restrict access
+   - Extension logs filter PII before sending to Sentry
+   - Configure Application Insights retention policies (recommend 90 days)
+
+### Documentation References
+
+- [Spec-127-Comprehensive-Backend-Logging.md](Docs/Specs/Spec-127-Comprehensive-Backend-Logging.md) - Complete backend logging specification (✅ Complete)
+- [Chrome-Extension-Architecture.md](Docs/Architecture/Chrome-Extension-Architecture.md) - Extension logging architecture
+- [DEPLOYMENT.md](Extension/DEPLOYMENT.md) - Deployment workflow with logging verification
 
 ### WhatsApp Web Integration
 

@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react'
 import { authService } from '../services/authService'
 import type { AuthState } from '../../types/auth'
 import { OAuthErrorCode } from '../../types/errors'
+import logger from '../../utils/logger'
 
 export function useAuth() {
   // Start in 'authenticating' to avoid flashing unauthenticated UI before the first check completes
@@ -20,7 +21,7 @@ export function useAuth() {
   // Check authentication status on mount
   useEffect(() => {
     const checkAuth = async () => {
-      console.log('[useAuth] Checking authentication status...')
+      logger.log('[useAuth] Checking authentication status...')
       const isAuth = await authService.isAuthenticated()
       if (isAuth) {
         const code = await authService.getVerificationCode()
@@ -28,12 +29,12 @@ export function useAuth() {
         setVerificationCode(code)
         setUserName(storedUserName || null)
         setAuthState('authenticated')
-        console.log('[useAuth] User is authenticated, userName:', storedUserName || 'Not set')
+        logger.log('[useAuth] User is authenticated, userName:', storedUserName || 'Not set')
       } else {
         setVerificationCode(null)
         setUserName(null)
         setAuthState('unauthenticated')
-        console.log('[useAuth] User is not authenticated')
+        logger.log('[useAuth] User is not authenticated')
       }
     }
     checkAuth()
@@ -49,7 +50,7 @@ export function useAuth() {
         // Handle verification_code changes
         if (changes.verification_code) {
           const newValue = changes.verification_code.newValue
-          console.log(
+          logger.log(
             '[useAuth] Storage change detected:',
             newValue ? 'authenticated' : 'unauthenticated'
           )
@@ -66,7 +67,7 @@ export function useAuth() {
         // Handle userName changes
         if (changes.userName) {
           const newUserName = changes.userName.newValue
-          console.log('[useAuth] userName change detected:', newUserName || 'Cleared')
+          logger.log('[useAuth] userName change detected:', newUserName || 'Cleared')
           setUserName(newUserName || null)
         }
       }
@@ -77,7 +78,7 @@ export function useAuth() {
   }, [])
 
   const signIn = async () => {
-    console.log('[useAuth] Starting sign-in flow...')
+    logger.log('[useAuth] Starting sign-in flow...')
     setAuthState('authenticating')
     setError(null)
 
@@ -85,14 +86,14 @@ export function useAuth() {
       const code = await authService.signIn()
       setVerificationCode(code)
       setAuthState('authenticated')
-      console.log('[useAuth] Sign-in successful')
+      logger.log('[useAuth] Sign-in successful')
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Authentication failed'
-      console.error('[useAuth] Sign-in failed:', errorMessage)
+      logger.error('[useAuth] Sign-in failed:', errorMessage)
 
       // Check if error is beta access required
       if (errorMessage === OAuthErrorCode.BETA_ACCESS_REQUIRED) {
-        console.log('[useAuth] Beta access required - user not in database')
+        logger.log('[useAuth] Beta access required - user not in database')
         setAuthState('beta_required')
       } else {
         setError(errorMessage)
@@ -102,7 +103,7 @@ export function useAuth() {
   }
 
   const signOut = async () => {
-    console.log('[useAuth] Signing out...')
+    logger.log('[useAuth] Signing out...')
     await authService.signOut()
     setVerificationCode(null)
     setUserName(null)

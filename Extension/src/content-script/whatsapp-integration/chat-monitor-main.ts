@@ -8,6 +8,9 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+// Logger not available in MAIN world - use console directly with inline isDevelopment check
+const isDevelopment = import.meta.env.MODE === 'development'
+
 interface ChatStatusEvent {
   phone: string | null
   name: string | null
@@ -21,7 +24,9 @@ interface ChatStatusEvent {
  * Dispatches 'whatsapp-chat-status' custom events to communicate with ISOLATED world
  */
 export function startChatMonitoring() {
-  console.log('[Chat Monitor MAIN] Starting chat monitoring in MAIN world')
+  if (isDevelopment) {
+    console.log('[Chat Monitor MAIN] Starting chat monitoring in MAIN world')
+  }
 
   let lastChatName: string | null | undefined = undefined
 
@@ -33,7 +38,9 @@ export function startChatMonitoring() {
       // Only dispatch if chat changed
       if (status && status.name != lastChatName) {
         lastChatName = status.name
-        console.log('[Chat Monitor MAIN] Chat changed:', status.name || '(none)')
+        if (isDevelopment) {
+          console.log('[Chat Monitor MAIN] Chat changed:', status.name || '(none)')
+        }
 
         // Dispatch custom event to ISOLATED world
         window.dispatchEvent(
@@ -43,7 +50,9 @@ export function startChatMonitoring() {
         )
       }
     } catch (error) {
-      console.error('[Chat Monitor MAIN] Error in polling:', error)
+      if (isDevelopment) {
+        console.error('[Chat Monitor MAIN] Error in polling:', error)
+      }
     }
   }, 200)
 }
@@ -56,7 +65,9 @@ function detectCurrentChat(): ChatStatusEvent | null {
     // Access Store directly via require
     const debugModule = (window as any).require?.('__debug')
     if (!debugModule?.modulesMap) {
-      console.log('[Chat Monitor MAIN] Store not available yet')
+      if (isDevelopment) {
+        console.log('[Chat Monitor MAIN] Store not available yet')
+      }
       return null
     }
 
@@ -127,7 +138,9 @@ function detectCurrentChat(): ChatStatusEvent | null {
       }
     }
   } catch (error) {
-    console.error('[Chat Monitor MAIN] Error detecting chat:', error)
+    if (isDevelopment) {
+      console.error('[Chat Monitor MAIN] Error detecting chat:', error)
+    }
     return null
   }
 }
