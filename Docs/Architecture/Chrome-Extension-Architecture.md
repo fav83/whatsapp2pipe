@@ -1081,20 +1081,22 @@ async setTheme(themeName: ThemeName): Promise<void> {
 
 **Vite Setup:**
 
-The build system uses three separate Vite configurations to ensure proper source maps for Sentry:
+The build system uses four separate Vite configurations to ensure proper source maps for Sentry:
 
-1. **vite.content.config.ts** - Content script with `inlineDynamicImports: true`
-2. **vite.inspector.config.ts** - Inspector script with `inlineDynamicImports: true`
-3. **vite.config.ts** - Service worker, popup, and source map separation
+1. **vite.content.config.ts** - Content script with IIFE format and `inlineDynamicImports: true`
+2. **vite.inspector.config.ts** - Inspector script with IIFE format and `inlineDynamicImports: true`
+3. **vite.dashboard-bridge.config.ts** - Dashboard bridge with IIFE format and `inlineDynamicImports: true`
+4. **vite.config.ts** - Service worker, popup, and source map separation
 
 **Build Command:**
 ```bash
-# Three-pass build for accurate source maps
+# Four-pass build for accurate source maps
 npm run build
 # Executes:
 # 1. vite build --config vite.content.config.ts --mode production
 # 2. vite build --config vite.inspector.config.ts --mode production
-# 3. vite build --mode production
+# 3. vite build --config vite.dashboard-bridge.config.ts --mode production
+# 4. vite build --mode production
 ```
 
 **Main Vite Configuration:**
@@ -1154,7 +1156,7 @@ import{j as e,r as i,c as a,R as c}from"./chunks/client.Ds7D3P6J.js"
 
 **Solution - Separate Build Configuration:**
 
-Content script and inspector are built using separate Vite configs with `inlineDynamicImports: true`:
+Content scripts and bridges are built using separate Vite configs with IIFE format and `inlineDynamicImports: true`:
 
 ```typescript
 // Extension/vite.content.config.ts
@@ -1165,12 +1167,16 @@ export default defineConfig({
     emptyOutDir: true, // First build, wipe dist
     sourcemap: true,
     rollupOptions: {
-      input: {
-        'content-script': resolve(__dirname, 'src/content-script/index.tsx'),
-      },
+      input: resolve(__dirname, 'src/content-script/index.tsx'),
       output: {
-        entryFileNames: '[name].js',
-        assetFileNames: 'assets/[name].[ext]', // CSS goes to assets/content-script.css
+        entryFileNames: 'content-script.js',
+        format: 'iife', // Prevent global scope pollution with WhatsApp Web
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name === 'content-script.css') {
+            return 'assets/content-script.css'
+          }
+          return 'assets/[name].[hash].[ext]'
+        },
         inlineDynamicImports: true, // Bundle as single file
       }
     }
@@ -1182,34 +1188,42 @@ export default defineConfig({
 **How It Works:**
 
 1. **First Build Pass** (vite.content.config.ts):
-   - Builds content-script.js as single file with `inlineDynamicImports: true`
+   - Builds content-script.js as single IIFE file with `inlineDynamicImports: true`
    - All React dependencies bundled inline (~142KB)
-   - CSS output: `assets/content-script.css` (stable path)
+   - CSS is inlined into content-script.js and injected via `<style>` tag at runtime
+   - No separate CSS file in dist/ (CSS handling changed from stable path to inline)
    - Source map: `content-script.js.map` (later moved to `sourcemaps/`)
 
 2. **Second Build Pass** (vite.inspector.config.ts):
-   - Builds inspector-main.js as single file with `inlineDynamicImports: true`
+   - Builds inspector-main.js as single IIFE file with `inlineDynamicImports: true`
    - `emptyOutDir: false` preserves content-script.js from first pass
    - Source map: `inspector-main.js.map` (later moved to `sourcemaps/`)
 
-3. **Third Build Pass** (vite.config.ts):
+3. **Third Build Pass** (vite.dashboard-bridge.config.ts):
+   - Builds dashboard-bridge.js as single IIFE file with `inlineDynamicImports: true`
+   - `emptyOutDir: false` preserves previous outputs
+   - Source map: `dashboard-bridge.js.map` (later moved to `sourcemaps/`)
+
+4. **Fourth Build Pass** (vite.config.ts):
    - Builds service-worker.js and popup.html
-   - `emptyOutDir: false` preserves content-script.js and inspector-main.js
+   - `emptyOutDir: false` preserves all content scripts from previous passes
    - Runs `separate-sourcemaps` plugin to move all `.map` files to `sourcemaps/`
 
 **Build Output:**
-- content-script.js: ~142KB (React + app code bundled as single file)
-- inspector-main.js: Single file (no imports)
+- content-script.js: ~142KB (React + app code + CSS bundled as single IIFE file)
+- inspector-main.js: Single IIFE file (no imports)
+- dashboard-bridge.js: Single IIFE file (no imports)
 - service-worker.js: Separate bundle
-- assets/content-script.css: Stable CSS path referenced by manifest.json
+- No separate CSS files (CSS inlined into JavaScript)
 - No import/export statements in content scripts
 - All source maps moved to `sourcemaps/` directory
 
 **Why This Approach:**
-- Ensures accurate source maps for each entry point
-- Avoids code-splitting issues in content scripts
-- Single-file bundles work in Chrome extension context
-- Source maps separated for security (never shipped to users)
+- **IIFE format:** Prevents global scope pollution with WhatsApp Web's own JavaScript
+- **Single-file bundles:** Work reliably in Chrome Manifest V3 content script context
+- **Accurate source maps:** Separate builds ensure each entry point has correct source maps for Sentry
+- **Inlined CSS:** Eliminates need for stable CSS path in manifest.json, simplifies deployment
+- **Security:** Source maps separated and never shipped to users
 
 ### 9.2 CSS in Content Scripts
 

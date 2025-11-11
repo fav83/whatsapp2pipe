@@ -45,12 +45,14 @@ npm run build                # Just build (for local testing)
 ### Build Pipeline Notes (Sentry + Single-File Content Script)
 
 - The build now runs in 3 passes to produce accurate source maps:
-  1. Build `content-script.js` as a single file (`inlineDynamicImports: true`).
-  2. Build `inspector-main.js` as a single file.
-  3. Build service worker + popup and move all `.map` files to `sourcemaps/`.
-- The content script CSS is emitted to `assets/content-script.css` (stable path referenced by `manifest.json`).
-- Debug IDs are injected by `sentry-cli` during `npm run upload-sourcemaps` (not during build) to avoid mismatches.
-- After building and uploading, reload the extension in `chrome://extensions` and hard‑reload WhatsApp before testing.
+  1. Build `content-script.js` as a single file (IIFE format, `inlineDynamicImports: true`)
+  2. Build `inspector-main.js` as a single file (IIFE format, `inlineDynamicImports: true`)
+  3. Build `dashboard-bridge.js` as a single file (IIFE format, `inlineDynamicImports: true`)
+  4. Build service worker + popup and move all `.map` files to `sourcemaps/`
+- **CSS Handling:** Content script CSS is inlined into `content-script.js` and injected at runtime via a `<style>` tag. No separate `assets/content-script.css` file is emitted or referenced by `manifest.json`.
+- **Module Format:** Content scripts use IIFE format to prevent global scope pollution with WhatsApp Web
+- Debug IDs are injected by `sentry-cli` during `npm run upload-sourcemaps` (not during build) to avoid mismatches
+- After building and uploading, reload the extension in `chrome://extensions` and hard‑reload WhatsApp before testing
 
 ### 3. Upload Source Maps to Sentry
 

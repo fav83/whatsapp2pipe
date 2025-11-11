@@ -11,14 +11,10 @@ export default defineConfig({
     emptyOutDir: true, // First pass cleans dist
     sourcemap: true,
     rollupOptions: {
-      input: {
-        'content-script': resolve(__dirname, 'src/content-script/index.tsx'),
-      },
-      // Inline all dynamic imports to produce a single file
-      inlineDynamicImports: true,
+      input: resolve(__dirname, 'src/content-script/index.tsx'),
       output: {
-        entryFileNames: () => 'content-script.js',
-        format: 'es',
+        entryFileNames: 'content-script.js',
+        format: 'iife', // Use IIFE to prevent global scope pollution with WhatsApp Web
         // Ensure Chrome manifest can load a stable CSS path
         assetFileNames: (assetInfo) => {
           if (assetInfo.name === 'content-script.css') {
@@ -26,8 +22,8 @@ export default defineConfig({
           }
           return 'assets/[name].[hash].[ext]'
         },
+        inlineDynamicImports: true, // Inline all imports into single file
       },
-      preserveEntrySignatures: 'strict',
     },
     chunkSizeWarningLimit: 1000,
   },

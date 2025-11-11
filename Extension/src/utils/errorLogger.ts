@@ -1,6 +1,8 @@
 import type { Scope } from '@sentry/browser'
 
 const isDevelopment = import.meta.env.MODE === 'development'
+const consoleLoggingEnabled = import.meta.env.VITE_CONSOLE_LOGGING_ENABLED === 'true'
+const isLoggingEnabled = isDevelopment || consoleLoggingEnabled
 
 interface ErrorContext {
   [key: string]: unknown
@@ -29,8 +31,8 @@ export function logError(
   const errorMessage = error instanceof Error ? error.message : String(error)
   const stackTrace = error instanceof Error ? error.stack : undefined
 
-  // Log to console in development only
-  if (isDevelopment) {
+  // Log to console if logging is enabled
+  if (isLoggingEnabled) {
     console.error(
       `[chat2deal-pipe][${timestamp}][${version}] ${context}: ${errorMessage}`,
       stackTrace || '',
@@ -47,7 +49,7 @@ export function logError(
       context.includes('User cancelled') // User actions
 
     if (!skipSentry) {
-      if (isDevelopment) {
+      if (isLoggingEnabled) {
         console.log('[errorLogger] Capturing to Sentry:', context)
       }
 
@@ -68,13 +70,13 @@ export function logError(
         } else {
           client.captureMessage(`${context}: ${String(error)}`, 'error', {}, isolatedScope)
         }
-        if (isDevelopment) {
+        if (isLoggingEnabled) {
           console.log('[errorLogger] Sentry capture completed')
         }
-      } else if (isDevelopment) {
+      } else if (isLoggingEnabled) {
         console.warn('[errorLogger] No Sentry client available')
       }
-    } else if (isDevelopment) {
+    } else if (isLoggingEnabled) {
       console.log('[errorLogger] Skipping Sentry (expected error):', context)
     }
   }

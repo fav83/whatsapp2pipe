@@ -62,6 +62,8 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 - [Spec-123-Implementation-Summary.md](Docs/Specs/Spec-123-Implementation-Summary.md) - Complete implementation summary with SEO enhancements
 - [Spec-127-Comprehensive-Backend-Logging.md](Docs/Specs/Spec-127-Comprehensive-Backend-Logging.md) - Comprehensive backend logging with HTTP response tracking (✅ Complete)
 - [Spec-128-Landing-Pricing-Section.md](Docs/Specs/Spec-128-Landing-Pricing-Section.md) - Landing page pricing section (✅ Complete)
+- [Spec-130a-Backend-Notes-API.md](Docs/Specs/Spec-130a-Backend-Notes-API.md) - Backend Notes API for creating Pipedrive notes (✅ Complete)
+- [Spec-130b-Extension-Create-Note-From-Chat.md](Docs/Specs/Spec-130b-Extension-Create-Note-From-Chat.md) - Extension UI for creating notes from WhatsApp chats (✅ Complete)
 
 ### Testing Documentation
 - [Testing/Manual/](Docs/Testing/Manual/) - Manual testing checklists for Extension, Landing, and Website
@@ -223,6 +225,7 @@ VITE_LANDING_WEBSITE_URL=http://localhost:3000
 ```
 VITE_BACKEND_URL=https://api.chat2deal.com
 VITE_LANDING_WEBSITE_URL=https://chat2deal.com
+VITE_CONSOLE_LOGGING_ENABLED=false
 ```
 
 **Key Variables:**
@@ -231,6 +234,7 @@ VITE_LANDING_WEBSITE_URL=https://chat2deal.com
 - `VITE_SENTRY_ENABLED` - Enable/disable Sentry error tracking
 - `VITE_ENV` - Environment (development/production)
 - `VITE_SHOW_DEV_INDICATOR` - Show dev mode indicator banner
+- `VITE_CONSOLE_LOGGING_ENABLED` - Enable console logging in production (default: false)
 
 ### Sentry Error Tracking
 
@@ -269,7 +273,7 @@ The project uses a comprehensive logging approach with clear separation between 
 
 #### Development Logging (`Extension/src/utils/logger.ts`)
 
-For development-only console output (automatically disabled in production):
+For console output during development and optionally in production:
 
 ```typescript
 import * as logger from '@/utils/logger'
@@ -294,10 +298,14 @@ logger.table(userData)
 ```
 
 **Key Features:**
-- All methods are no-ops in production (zero runtime overhead)
+- **Development mode:** All logging methods output to console
+- **Production mode:** Logging is disabled by default (zero runtime overhead)
+- **Production debugging:** Enable via `VITE_CONSOLE_LOGGING_ENABLED=true` in `.env.production`
 - Supports all console methods: `log`, `warn`, `error`, `debug`, `info`, `group`, `groupEnd`, `table`
 - Use for debugging, development tracing, and local troubleshooting
-- Automatically stripped from production builds
+
+**Enabling Production Console Logging:**
+Set `VITE_CONSOLE_LOGGING_ENABLED=true` in `Extension/.env.production` to enable console logging in production builds for debugging. This is disabled by default to reduce noise in production.
 
 #### Error Logging (`Extension/src/utils/errorLogger.ts`)
 

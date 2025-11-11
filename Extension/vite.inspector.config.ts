@@ -10,15 +10,12 @@ export default defineConfig({
     emptyOutDir: false, // Do not wipe content-script output
     sourcemap: true,
     rollupOptions: {
-      input: {
-        'inspector-main': resolve(__dirname, 'src/content-script/inspector-main.ts'),
-      },
-      inlineDynamicImports: true,
+      input: resolve(__dirname, 'src/content-script/inspector-main.ts'),
       output: {
-        entryFileNames: () => 'inspector-main.js',
-        format: 'es',
+        entryFileNames: 'inspector-main.js',
+        format: 'iife', // Use IIFE to prevent global scope pollution
+        inlineDynamicImports: true,
       },
-      preserveEntrySignatures: 'strict',
     },
     chunkSizeWarningLimit: 1000,
   },

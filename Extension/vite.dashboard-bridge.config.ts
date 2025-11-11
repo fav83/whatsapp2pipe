@@ -6,11 +6,9 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: false, // Don't clear dist/ (other builds use it)
     rollupOptions: {
-      input: {
-        'dashboard-bridge': resolve(__dirname, 'src/dashboard-bridge.ts'),
-      },
+      input: resolve(__dirname, 'src/dashboard-bridge.ts'),
       output: {
-        entryFileNames: '[name].js',
+        entryFileNames: 'dashboard-bridge.js',
         format: 'iife', // Self-contained bundle
         inlineDynamicImports: true, // Single file (no chunks)
       },
