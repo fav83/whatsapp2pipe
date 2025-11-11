@@ -5,6 +5,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { ToastProvider } from './context/ToastContext'
 import { waitForWhatsAppLoad } from './whatsapp-loader'
 import { logError } from '../utils/errorLogger'
 import { sentryScope } from './sentry'
@@ -132,7 +133,9 @@ async function init() {
     root.render(
       <React.StrictMode>
         <ErrorBoundary>
-          <App />
+          <ToastProvider>
+            <App />
+          </ToastProvider>
         </ErrorBoundary>
       </React.StrictMode>
     )

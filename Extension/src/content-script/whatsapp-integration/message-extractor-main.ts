@@ -147,16 +147,15 @@ function extractMessagesFromStore(contactName: string, userName: string): Extrac
   // Filter and transform messages
   const extracted: ExtractedMessage[] = messages
     .filter((msg: any) => {
-      // Include only text messages (type 'chat')
-      if (msg.type !== 'chat') return false
-
       // Exclude system notifications
       if (msg.isNotification) return false
 
-      // Exclude messages without text
-      if (!msg.body || msg.body.trim().length === 0) return false
+      // Include messages with text OR specific media types we handle
+      const hasText = msg.body && msg.body.trim().length > 0
+      const isHandledMedia =
+        msg.type && ['image', 'video', 'audio', 'ptt', 'document'].includes(msg.type)
 
-      return true
+      return hasText || isHandledMedia
     })
     .map((msg: any) => {
       // Debug logging - show ALL properties
@@ -172,18 +171,42 @@ function extractMessagesFromStore(contactName: string, userName: string): Extrac
       // Try to find timestamp in various possible properties
       const timestamp = msg.t || msg.timestamp || msg.__x_t || Date.now() / 1000
 
+      // Determine text content with media indicators
+      let text = ''
+
+      // For media messages, check for caption in separate properties
+      // and completely ignore msg.body to avoid base64 data
+      // Use square brackets to avoid HTML interpretation by Pipedrive
+      if (msg.type === 'image') {
+        const caption = msg.caption || ''
+        text = caption ? `${caption} [img redacted]` : '[img redacted]'
+      } else if (msg.type === 'video') {
+        const caption = msg.caption || ''
+        text = caption ? `${caption} [video redacted]` : '[video redacted]'
+      } else if (msg.type === 'audio' || msg.type === 'ptt') {
+        const caption = msg.caption || ''
+        text = caption ? `${caption} [audio redacted]` : '[audio redacted]'
+      } else if (msg.type === 'document') {
+        const caption = msg.caption || ''
+        text = caption ? `${caption} [document redacted]` : '[document redacted]'
+      } else {
+        // For regular text messages, use body
+        text = msg.body || ''
+      }
+
       if (isDevelopment) {
         console.log('[Message Extractor MAIN] Extracted data:', {
           id: idString,
           fromMe,
           timestamp,
-          textPreview: msg.body?.substring(0, 50),
+          type: msg.type,
+          textPreview: text.substring(0, 50),
         })
       }
 
       return {
         id: msg.id._serialized,
-        text: msg.body,
+        text,
         timestamp,
         fromMe,
         senderName: fromMe ? userName : contactName,

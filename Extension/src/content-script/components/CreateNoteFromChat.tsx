@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { usePipedrive } from '../hooks/usePipedrive'
+import { useToast } from '../context/ToastContext'
 import { extractMessagesFromWhatsApp, type ExtractedMessage } from '../services/message-extractor'
 import { formatMessagesAsNote } from '../utils/note-formatter'
 
@@ -14,15 +15,14 @@ export function CreateNoteFromChat({ personId, contactName, userName }: CreateNo
   const [messages, setMessages] = useState<ExtractedMessage[]>([])
   const [selectedMessageIds, setSelectedMessageIds] = useState<Set<string>>(new Set())
   const [extractionError, setExtractionError] = useState<string | null>(null)
-  const [showSuccess, setShowSuccess] = useState(false)
 
   const { createNote, isCreatingNote, createNoteError } = usePipedrive()
+  const { showToast } = useToast()
 
   // Extract messages and expand section
   const handleExpand = async () => {
     setIsExpanded(true)
     setExtractionError(null)
-    setShowSuccess(false)
 
     try {
       const extracted = await extractMessagesFromWhatsApp(contactName, userName)
@@ -85,14 +85,13 @@ export function CreateNoteFromChat({ personId, contactName, userName }: CreateNo
     const success = await createNote(personId, content)
 
     if (success) {
-      setShowSuccess(true)
-      // Auto-collapse after 2 seconds
-      setTimeout(() => {
-        setIsExpanded(false)
-        setShowSuccess(false)
-        setMessages([])
-        setSelectedMessageIds(new Set())
-      }, 2000)
+      // Immediately collapse and reset state
+      setIsExpanded(false)
+      setMessages([])
+      setSelectedMessageIds(new Set())
+
+      // Show success toast
+      showToast('Note created successfully')
     }
   }
 
@@ -262,24 +261,8 @@ export function CreateNoteFromChat({ personId, contactName, userName }: CreateNo
             )}
           </button>
 
-          {/* Success Message */}
-          {showSuccess && (
-            <div className="mt-3 flex items-center gap-2 text-sm text-green-600">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              Note created successfully
-            </div>
-          )}
-
           {/* Error Message */}
-          {createNoteError && !showSuccess && (
-            <div className="mt-3 text-sm text-red-600">{createNoteError}</div>
-          )}
+          {createNoteError && <div className="mt-3 text-sm text-red-600">{createNoteError}</div>}
         </>
       )}
     </div>
