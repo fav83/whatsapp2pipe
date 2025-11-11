@@ -62,7 +62,8 @@
       "Bash(start /B npm run preview)",
       "Bash(del /q distassets*.map)",
       "Bash(xargs:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(git merge:*)"
     ],
     "deny": [],
     "ask": [
