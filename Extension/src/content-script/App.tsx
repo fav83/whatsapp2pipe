@@ -386,6 +386,7 @@ function SidebarContent({ state, setState }: SidebarContentProps) {
           name={state.person.name}
           phone={state.phone}
           pipedriveUrl={getPipedriveUrl(state.person.id)}
+          personId={state.person.id}
         />
       )
     case 'person-no-match':

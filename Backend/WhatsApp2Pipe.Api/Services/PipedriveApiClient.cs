@@ -318,6 +318,79 @@ public class PipedriveApiClient : IPipedriveApiClient
     }
 
     /// <summary>
+    /// Create a note in Pipedrive attached to a person (with automatic token refresh)
+    /// </summary>
+    public async Task<PipedriveNoteResponse> CreateNoteAsync(Session session, int personId, string content)
+    {
+        return await ExecuteWithRefreshAsync(
+            session,
+            (accessToken) => CreateNoteInternalAsync(accessToken, session.ApiDomain, personId, content),
+            "CreateNote");
+    }
+
+    private async Task<PipedriveNoteResponse> CreateNoteInternalAsync(string accessToken, string apiDomain, int personId, string content)
+    {
+        var url = $"{apiDomain}/api/v1/notes";
+        logger.LogInformation("Creating note: personId={PersonId}, contentLength={Length}", personId, content.Length);
+
+        var request = new PipedriveCreateNoteRequest
+        {
+            Content = content,
+            PersonId = personId
+        };
+
+        var httpRequest = new HttpRequestMessage(HttpMethod.Post, url);
+        httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        var json = JsonSerializer.Serialize(request, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        });
+        httpRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        // Log request (sanitize access token)
+        var headers = new Dictionary<string, string>
+        {
+            { "Authorization", "Bearer [REDACTED]" },
+            { "Content-Type", "application/json" }
+        };
+        apiLogger.LogRequest("POST", url, headers, json);
+
+        var response = await httpClient.SendAsync(httpRequest);
+        var responseContent = await response.Content.ReadAsStringAsync();
+
+        // Log response
+        apiLogger.LogResponse("POST", url, (int)response.StatusCode, responseContent);
+
+        if (response.StatusCode == (HttpStatusCode)429)
+        {
+            logger.LogWarning("Pipedrive rate limit exceeded - Status: 429");
+            throw new PipedriveRateLimitException("Pipedrive rate limit exceeded");
+        }
+
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogWarning($"Pipedrive create note failed: {response.StatusCode}");
+            await HandleErrorResponse(response, responseContent);
+        }
+
+        var result = JsonSerializer.Deserialize<PipedriveNoteResponse>(responseContent, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        if (result == null || !result.Success)
+        {
+            logger.LogError("Failed to create note in Pipedrive - Success: false");
+            throw new PipedriveApiException("Failed to create note in Pipedrive");
+        }
+
+        logger.LogInformation("Note created successfully: id={NoteId}", result.Data?.Id);
+
+        return result;
+    }
+
+    /// <summary>
     /// Handle error responses from Pipedrive API
     /// </summary>
     private Task HandleErrorResponse(HttpResponseMessage response, string content)

@@ -132,3 +132,51 @@ public class PipedriveUpdatePersonRequest
     [JsonPropertyName("phone")]
     public List<PipedrivePhoneInput>? Phone { get; set; }
 }
+
+/// <summary>
+/// Pipedrive note object (from API response)
+/// </summary>
+public class PipedriveNote
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("content")]
+    public string Content { get; set; } = string.Empty;
+
+    [JsonPropertyName("person_id")]
+    public int? PersonId { get; set; }
+
+    [JsonPropertyName("add_time")]
+    public string? AddTime { get; set; }
+
+    [JsonPropertyName("update_time")]
+    public string? UpdateTime { get; set; }
+
+    [JsonPropertyName("active_flag")]
+    public bool ActiveFlag { get; set; }
+}
+
+/// <summary>
+/// Request to create a note via Pipedrive API
+/// </summary>
+public class PipedriveCreateNoteRequest
+{
+    [JsonPropertyName("content")]
+    public string Content { get; set; } = string.Empty;
+
+    [JsonPropertyName("person_id")]
+    public int PersonId { get; set; }
+}
+
+/// <summary>
+/// Response from Pipedrive note creation API
+/// </summary>
+public class PipedriveNoteResponse
+{
+    [JsonPropertyName("success")]
+    public bool Success { get; set; }
+
+    [JsonPropertyName("data")]
+    public PipedriveNote? Data { get; set; }
+}
