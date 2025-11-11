@@ -170,28 +170,67 @@ export function isStoreAvailable(): boolean {
 export function getStore(): WhatsAppStore | null {
   // Try cached Store first (MAIN world only)
   if (window.StoreWhatsApp2Pipe) {
+    if (isDevelopment) {
+      console.log('[Store Accessor] Returning cached Store from window.StoreWhatsApp2Pipe')
+    }
     return window.StoreWhatsApp2Pipe
+  }
+
+  if (isDevelopment) {
+    console.log(
+      '[Store Accessor] window.StoreWhatsApp2Pipe not available, trying direct require access'
+    )
   }
 
   // Direct access via require (works from ISOLATED world)
   try {
-    const debugModule = (window as any).require?.('__debug')
+    const windowRequire = (window as any).require
+    if (isDevelopment) {
+      console.log('[Store Accessor] window.require available?', !!windowRequire)
+    }
+
+    if (!windowRequire) {
+      if (isDevelopment) {
+        console.log('[Store Accessor] window.require is not available')
+      }
+      return null
+    }
+
+    const debugModule = windowRequire('__debug')
+    if (isDevelopment) {
+      console.log('[Store Accessor] __debug module loaded?', !!debugModule)
+      console.log('[Store Accessor] __debug.modulesMap available?', !!debugModule?.modulesMap)
+    }
+
     if (!debugModule?.modulesMap) {
+      if (isDevelopment) {
+        console.log('[Store Accessor] __debug.modulesMap not available')
+      }
       return null
     }
 
     // Search for Store module
     const moduleKeys = Object.keys(debugModule.modulesMap)
+    if (isDevelopment) {
+      console.log('[Store Accessor] Searching', moduleKeys.length, 'modules for Store')
+    }
+
     for (const key of moduleKeys) {
       const module = debugModule.modulesMap[key]
       const moduleExports = module?.defaultExport
 
       // Look for Chat store with getModelsArray method
       if (moduleExports?.Chat?.getModelsArray) {
+        if (isDevelopment) {
+          console.log('[Store Accessor] Found Store in module:', key)
+        }
         return moduleExports as WhatsAppStore
       }
     }
 
+    if (isDevelopment) {
+      console.log('[Store Accessor] Store not found in any module')
+    }
     return null
   } catch (error) {
     if (isDevelopment) {

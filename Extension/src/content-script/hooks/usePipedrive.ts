@@ -19,8 +19,10 @@ export function usePipedrive() {
   const [error, setError] = useState<PipedriveError | null>(null)
   const [isSearching, setIsSearching] = useState(false)
   const [isAttaching, setIsAttaching] = useState(false)
+  const [isCreatingNote, setIsCreatingNote] = useState(false)
   const [searchError, setSearchError] = useState<PipedriveError | null>(null)
   const [attachError, setAttachError] = useState<PipedriveError | null>(null)
+  const [createNoteError, setCreateNoteError] = useState<string | null>(null)
 
   /**
    * Sends message to service worker and waits for response
@@ -167,6 +169,39 @@ export function usePipedrive() {
   }
 
   /**
+   * Create a note in Pipedrive attached to a person
+   */
+  const createNote = async (personId: number, content: string): Promise<boolean> => {
+    setIsCreatingNote(true)
+    setCreateNoteError(null)
+
+    try {
+      const response = await sendMessage<PipedriveResponse>({
+        type: 'PIPEDRIVE_CREATE_NOTE',
+        personId,
+        content,
+      })
+
+      if (response.type === 'PIPEDRIVE_CREATE_NOTE_SUCCESS') {
+        return true
+      } else if (response.type === 'PIPEDRIVE_CREATE_NOTE_ERROR') {
+        setCreateNoteError(response.error)
+        return false
+      }
+
+      // Unexpected response type
+      setCreateNoteError('Unexpected error occurred')
+      return false
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create note'
+      setCreateNoteError(errorMessage)
+      return false
+    } finally {
+      setIsCreatingNote(false)
+    }
+  }
+
+  /**
    * Clear error state
    */
   const clearError = () => setError(null)
@@ -178,12 +213,15 @@ export function usePipedrive() {
     error,
     isSearching,
     isAttaching,
+    isCreatingNote,
     searchError,
     attachError,
+    createNoteError,
     lookupByPhone,
     searchByName,
     createPerson,
     attachPhone,
+    createNote,
     clearError,
     clearSearchError,
     clearAttachError,

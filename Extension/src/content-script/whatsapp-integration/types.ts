@@ -32,6 +32,11 @@ export type ChatStatusCallback = (status: ChatStatus) => void
 export interface WhatsAppStore {
   Chat: {
     getModelsArray(): WhatsAppChat[]
+    get(chatId: string): WhatsAppChat
+  }
+  Msg: {
+    get(messageId: string): WhatsAppMessage
+    getMessagesById(ids: string[]): WhatsAppMessage[]
   }
   // Add other Store modules as needed
 }
@@ -43,6 +48,26 @@ export interface WhatsAppChat {
   active: boolean
   __x_contact: WhatsAppContact
   __x_groupMetadata?: WhatsAppGroupMetadata
+  msgs: {
+    getModelsArray(): WhatsAppMessage[]
+  }
+}
+
+/**
+ * WhatsApp Message model (reverse-engineered)
+ */
+export interface WhatsAppMessage {
+  id: {
+    _serialized: string
+  }
+  body: string
+  type: string // 'chat', 'image', 'video', etc.
+  timestamp: number // Unix timestamp
+  fromMe: boolean
+  isNotification: boolean
+  isGroupMsg: boolean
+  quotedMsg?: WhatsAppMessage
+  isForwarded: boolean
 }
 
 /**

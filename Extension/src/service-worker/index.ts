@@ -254,6 +254,11 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
     return true
   }
 
+  if (message.type === 'PIPEDRIVE_CREATE_NOTE') {
+    handlePipedriveCreateNote(message, sendResponse)
+    return true
+  }
+
   // Handle feedback submission
   if (message.type === 'FEEDBACK_SUBMIT') {
     handleFeedbackSubmit(message, sendResponse)
@@ -394,6 +399,30 @@ async function handlePipedriveAttach(
       type: 'PIPEDRIVE_ERROR',
       error: errorMessage,
       statusCode,
+    })
+  }
+}
+
+/**
+ * Handle create note
+ */
+async function handlePipedriveCreateNote(
+  message: PipedriveRequest,
+  sendResponse: (response: PipedriveResponse) => void
+) {
+  try {
+    if (message.type !== 'PIPEDRIVE_CREATE_NOTE') return
+
+    await pipedriveApiService.createNote(message.personId, message.content)
+
+    sendResponse({
+      type: 'PIPEDRIVE_CREATE_NOTE_SUCCESS',
+    })
+  } catch (error) {
+    const errorMessage = getErrorMessage(error, 'Failed to create note')
+    sendResponse({
+      type: 'PIPEDRIVE_CREATE_NOTE_ERROR',
+      error: errorMessage,
     })
   }
 }

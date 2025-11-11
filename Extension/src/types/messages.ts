@@ -135,6 +135,15 @@ export interface PipedriveAttachPhoneRequest {
 }
 
 /**
+ * Create a note in Pipedrive attached to a person
+ */
+export interface PipedriveCreateNoteRequest {
+  type: 'PIPEDRIVE_CREATE_NOTE'
+  personId: number
+  content: string
+}
+
+/**
  * Union of all Pipedrive request messages
  */
 export type PipedriveRequest =
@@ -142,6 +151,7 @@ export type PipedriveRequest =
   | PipedriveSearchByNameRequest
   | PipedriveCreatePersonRequest
   | PipedriveAttachPhoneRequest
+  | PipedriveCreateNoteRequest
 
 // Response Messages (Service Worker → Content Script)
 
@@ -180,6 +190,21 @@ export interface PipedriveAttachSuccess {
 }
 
 /**
+ * Successfully created note
+ */
+export interface PipedriveCreateNoteSuccess {
+  type: 'PIPEDRIVE_CREATE_NOTE_SUCCESS'
+}
+
+/**
+ * Failed to create note
+ */
+export interface PipedriveCreateNoteError {
+  type: 'PIPEDRIVE_CREATE_NOTE_ERROR'
+  error: string
+}
+
+/**
  * Pipedrive API error
  * Includes HTTP status code and user-friendly message
  */
@@ -199,6 +224,8 @@ export type PipedriveResponse =
   | PipedriveSearchSuccess
   | PipedriveCreateSuccess
   | PipedriveAttachSuccess
+  | PipedriveCreateNoteSuccess
+  | PipedriveCreateNoteError
   | PipedriveError
 
 // ============================================================================

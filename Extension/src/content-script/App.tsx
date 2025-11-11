@@ -13,6 +13,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from './hooks/useAuth'
 import { usePipedrive } from './hooks/usePipedrive'
+import { useToast, ToastNotification } from './context/ToastContext'
 import { WelcomeState } from './components/WelcomeState'
 import { AuthenticatingState } from './components/AuthenticatingState'
 import { BetaAccessRequiredState } from './components/BetaAccessRequiredState'
@@ -67,6 +68,7 @@ type SidebarState =
  */
 export default function App() {
   const { authState, userName, verificationCode, signIn, signOut, error } = useAuth()
+  const { toast, hideToast } = useToast()
   const [state, setState] = useState<SidebarState>({ type: 'welcome' })
   const [sentryTestExpanded, setSentryTestExpanded] = useState(false)
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false)
@@ -189,6 +191,13 @@ export default function App() {
         {/* Authenticated: Show chat-based content */}
         {authState === 'authenticated' && <SidebarContent state={state} setState={setState} />}
       </main>
+
+      {/* Toast Notification - Positioned at bottom, above feedback button */}
+      {toast.visible && (
+        <div className="flex-shrink-0 bg-background-main border-t border-border-secondary">
+          <ToastNotification message={toast.message} type={toast.type} onClose={hideToast} />
+        </div>
+      )}
 
       {/* Feedback Button - Fixed at bottom, only visible when authenticated */}
       {authState === 'authenticated' && (
@@ -386,6 +395,7 @@ function SidebarContent({ state, setState }: SidebarContentProps) {
           name={state.person.name}
           phone={state.phone}
           pipedriveUrl={getPipedriveUrl(state.person.id)}
+          personId={state.person.id}
         />
       )
     case 'person-no-match':

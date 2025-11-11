@@ -48,4 +48,15 @@ public interface IPipedriveApiClient
     /// <param name="session">Session containing access token (may be updated if token is refreshed)</param>
     /// <returns>Current user data including company information</returns>
     Task<PipedriveUserResponse> GetCurrentUserAsync(Session session);
+
+    /// <summary>
+    /// Create a note in Pipedrive attached to a person
+    /// </summary>
+    /// <param name="session">User session with access token</param>
+    /// <param name="personId">Pipedrive person ID to attach note to</param>
+    /// <param name="content">Note content (plain text or HTML)</param>
+    /// <returns>Created note object</returns>
+    /// <exception cref="PipedriveUnauthorizedException">Thrown when refresh token is expired</exception>
+    /// <exception cref="PipedriveRateLimitException">Thrown when rate limit exceeded</exception>
+    Task<PipedriveNoteResponse> CreateNoteAsync(Session session, int personId, string content);
 }

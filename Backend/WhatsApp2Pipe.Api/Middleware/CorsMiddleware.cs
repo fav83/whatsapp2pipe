@@ -48,7 +48,10 @@ public class CorsMiddleware : IFunctionsWorkerMiddleware
                 : null;
 
             var isOptionsRequest = httpRequestData.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase);
-            var isOriginAllowed = !string.IsNullOrEmpty(origin) && allowedOrigins.Contains(origin);
+
+            // Allow chrome-extension:// origins for local development
+            var isChromeExtension = !string.IsNullOrEmpty(origin) && origin.StartsWith("chrome-extension://");
+            var isOriginAllowed = !string.IsNullOrEmpty(origin) && (allowedOrigins.Contains(origin) || isChromeExtension);
 
             // Execute the function (may fail for OPTIONS if function doesn't handle it)
             await next(context);

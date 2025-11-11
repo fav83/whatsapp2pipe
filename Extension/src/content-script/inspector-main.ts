@@ -16,6 +16,7 @@
 import { WhatsAppInspector } from './utils/WhatsAppInspector'
 import { initializeStoreAccess } from './whatsapp-integration/store-accessor'
 import { startChatMonitoring } from './whatsapp-integration/chat-monitor-main'
+import { initializeMessageExtractor } from './whatsapp-integration/message-extractor-main'
 
 // Logger not available in MAIN world - use console directly with inline isDevelopment check
 const isDevelopment = import.meta.env.MODE === 'development'
@@ -233,6 +234,22 @@ if (!win.__whatsappInspectorInitialized) {
           console.log('[Main World] Starting chat monitoring...')
         }
         startChatMonitoring()
+
+        // Initialize message extractor in MAIN world
+        if (isDevelopment) {
+          console.log('[Main World] Initializing message extractor...')
+        }
+        try {
+          initializeMessageExtractor()
+          if (isDevelopment) {
+            console.log('[Main World] Message extractor initialized successfully')
+          }
+        } catch (extractorErr) {
+          if (isDevelopment) {
+            console.error('[Main World] Message extractor initialization failed:', extractorErr)
+          }
+          // Don't throw - let the rest of the app work even if message extraction fails
+        }
       } catch (err) {
         if (isDevelopment) {
           console.error('[Main World] Module raid error:', err)
