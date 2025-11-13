@@ -2,10 +2,10 @@
   "manifest_version": 3,
   "name": "Chat2Deal: Sync your WhatsApp to Pipedrive",
   "short_name": "Chat2Deal",
-  "version": "1.0.225",
+  "version": "1.0.229",
   "description": "Find, create, and link Pipedrive contacts directly from WhatsApp Web conversations.",
   "author": "chat2deal.com",
-  "permissions": ["storage", "tabs", "identity", "scripting"],
+  "permissions": ["storage", "identity", "scripting"],
   "host_permissions": ["*://web.whatsapp.com/*", "https://api.chat2deal.com/*"],
   "background": {
     "service_worker": "service-worker.js",
