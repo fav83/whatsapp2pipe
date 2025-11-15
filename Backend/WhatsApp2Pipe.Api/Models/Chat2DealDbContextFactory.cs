@@ -14,7 +14,11 @@ public class Chat2DealDbContextFactory : IDesignTimeDbContextFactory<Chat2DealDb
 
         // Use connection string from local.settings.json or default for design-time
         optionsBuilder.UseSqlServer(
-            "Server=localhost;Database=chat2deal-dev;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True");
+            "Server=localhost;Database=chat2deal-dev;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True",
+            sqlOptions => sqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(30),
+                errorNumbersToAdd: null));
 
         return new Chat2DealDbContext(optionsBuilder.Options);
     }

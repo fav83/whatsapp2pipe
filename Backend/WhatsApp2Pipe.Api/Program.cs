@@ -41,10 +41,18 @@ var host = new HostBuilder()
         var connectionString = context.Configuration.GetConnectionString("Chat2DealDb");
 
         services.AddDbContextFactory<Chat2DealDbContext>(options =>
-            options.UseSqlServer(connectionString));
+            options.UseSqlServer(connectionString, sqlOptions =>
+                sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(30),
+                    errorNumbersToAdd: null)));
 
         services.AddDbContext<Chat2DealDbContext>(options =>
-            options.UseSqlServer(connectionString));
+            options.UseSqlServer(connectionString, sqlOptions =>
+                sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(30),
+                    errorNumbersToAdd: null)));
 
         // Register session service as Singleton (uses DbContextFactory per-call)
         services.AddSingleton<ISessionService, SqlSessionService>();
