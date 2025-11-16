@@ -15,6 +15,7 @@ Automate the creation of release notes for a new version.
    - Read `RELEASE-NOTES.md` in the project root
    - Find the most recent release version (look for `# Release X.X.X` pattern)
    - Print: "Previous release found: X.X.X"
+   - Run: `git fetch origin` to fetch latest branches from remote
    - Look for the corresponding release branch: `releases/X.X.X`
    - Run: `git branch -a | grep releases/` to verify the branch exists
    - If the previous release branch is NOT found:
@@ -22,7 +23,7 @@ Automate the creation of release notes for a new version.
      - Stop the process
 
 3. **Compare Changes:**
-   - Run: `git log releases/[previous_version]..master --oneline`
+   - Run: `git log origin/releases/[previous_version]..master --oneline`
    - Analyze all commits since the previous release
    - Create a concise, user-friendly description of changes
    - Group related changes together

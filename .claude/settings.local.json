@@ -63,7 +63,8 @@
       "Bash(del /q distassets*.map)",
       "Bash(xargs:*)",
       "Bash(git config:*)",
-      "Bash(git merge:*)"
+      "Bash(git merge:*)",
+      "Bash(git fetch:*)"
     ],
     "deny": [],
     "ask": [
