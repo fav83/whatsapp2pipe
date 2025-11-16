@@ -277,64 +277,116 @@ interface SidebarContentProps {
 }
 
 function SidebarContent({ state, setState }: SidebarContentProps) {
-  const { lookupByPhone, error } = usePipedrive()
+  const { lookupByPhone } = usePipedrive()
   // Track the current lookup to prevent race conditions when rapidly switching contacts
   const currentLookupRef = useRef<string | null>(null)
 
   /**
    * Handle person lookup by phone
+   *
+   * NOTE: lookupByPhone returns null for both "not found" and "error" cases.
+   * It only throws for unexpected errors. We don't check the error state from
+   * usePipedrive because it may be stale from a previous lookup.
+   *
+   * RACE CONDITION FIX: Uses setState functional form to check if the current
+   * state still matches the phone we looked up. This prevents stale results
+   * from overwriting newer state when users rapidly switch contacts.
    */
   const handlePersonLookup = useCallback(
     async (phone: string, name: string) => {
-      // Store this phone as the current lookup
-      currentLookupRef.current = phone
+      logger.log('[SidebarContent] handlePersonLookup called for:', phone)
 
       try {
         const person = await lookupByPhone(phone)
 
-        // CRITICAL: Only update state if this is still the current lookup
-        // This prevents race conditions when rapidly switching between contacts
-        if (currentLookupRef.current !== phone) {
-          logger.log('[SidebarContent] Ignoring stale lookup result for:', phone)
-          return
-        }
+        logger.log(
+          '[SidebarContent] Lookup completed for:',
+          phone,
+          'Result:',
+          person ? 'matched' : 'no match'
+        )
 
-        if (error) {
-          setState({
-            type: 'person-error',
-            name,
-            phone,
-            error: error.message,
-          })
-        } else if (person) {
-          setState({
-            type: 'person-matched',
-            person,
-            phone,
+        // CRITICAL: Use functional setState to check current state
+        // This prevents race conditions when rapidly switching contacts
+        if (person) {
+          setState((currentState) => {
+            // Only update if we're still looking at this phone number
+            if (
+              currentState.type === 'person-loading' &&
+              'phone' in currentState &&
+              currentState.phone === phone
+            ) {
+              logger.log('[SidebarContent] Updating state to person-matched for:', phone)
+              return {
+                type: 'person-matched',
+                person,
+                phone,
+              }
+            }
+            logger.log(
+              '[SidebarContent] Ignoring stale person-matched result for:',
+              phone,
+              'Current state:',
+              currentState.type,
+              'phone' in currentState ? currentState.phone : 'N/A'
+            )
+            return currentState // Don't update - user switched contacts
           })
         } else {
-          setState({
-            type: 'person-no-match',
-            name,
-            phone,
+          setState((currentState) => {
+            // Only update if we're still looking at this phone number
+            if (
+              currentState.type === 'person-loading' &&
+              'phone' in currentState &&
+              currentState.phone === phone
+            ) {
+              logger.log('[SidebarContent] Updating state to person-no-match for:', phone)
+              return {
+                type: 'person-no-match',
+                name,
+                phone,
+              }
+            }
+            logger.log(
+              '[SidebarContent] Ignoring stale person-no-match result for:',
+              phone,
+              'Current state:',
+              currentState.type,
+              'phone' in currentState ? currentState.phone : 'N/A'
+            )
+            return currentState // Don't update - user switched contacts
           })
         }
       } catch (err) {
-        // Only update state if this is still the current lookup
-        if (currentLookupRef.current !== phone) {
-          logger.log('[SidebarContent] Ignoring stale error for:', phone)
-          return
-        }
+        logger.log('[SidebarContent] Lookup error for:', phone, err)
 
-        setState({
-          type: 'person-error',
-          name,
-          phone,
-          error: err instanceof Error ? err.message : 'Lookup failed',
+        setState((currentState) => {
+          // Only update if we're still looking at this phone number
+          if (
+            currentState.type === 'person-loading' &&
+            'phone' in currentState &&
+            currentState.phone === phone
+          ) {
+            logger.log('[SidebarContent] Updating state to person-error for:', phone)
+            return {
+              type: 'person-error',
+              name,
+              phone,
+              error: err instanceof Error ? err.message : 'Lookup failed',
+            }
+          }
+          logger.log(
+            '[SidebarContent] Ignoring stale error for:',
+            phone,
+            'Current state:',
+            currentState.type,
+            'phone' in currentState ? currentState.phone : 'N/A'
+          )
+          return currentState // Don't update - user switched contacts
         })
       }
     },
-    [lookupByPhone, error, setState]
+    [lookupByPhone, setState]
   )
 
   // Trigger person lookup when contact state is entered
@@ -342,6 +394,12 @@ function SidebarContent({ state, setState }: SidebarContentProps) {
     if (state.type === 'contact') {
       const contactPhone = state.phone
       const contactName = state.name
+
+      logger.log('[SidebarContent] Contact selected, starting lookup:', contactPhone)
+
+      // CRITICAL: Set the current lookup ref BEFORE any async operations
+      // This ensures we can check it in handlePersonLookup
+      currentLookupRef.current = contactPhone
 
       // Immediately show loading state
       setState({
@@ -365,6 +423,9 @@ function SidebarContent({ state, setState }: SidebarContentProps) {
    * Handle retry button click
    */
   function handleRetry(phone: string, name: string) {
+    logger.log('[SidebarContent] Retry requested for:', phone)
+    // Set as current lookup before retrying
+    currentLookupRef.current = phone
     setState({
       type: 'person-loading',
       name,
