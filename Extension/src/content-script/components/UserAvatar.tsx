@@ -83,7 +83,7 @@ export function UserAvatar({ userName, verificationCode, onSignOut }: UserAvatar
 
   const handleProfileClick = () => {
     // Build dashboard URL with verification code for auto sign-in
-    let dashboardUrl = `${config.landingWebsiteUrl}/dashboard`
+    let dashboardUrl = `${config.dashboardUrl}/dashboard`
     if (verificationCode) {
       dashboardUrl += `?verification_code=${encodeURIComponent(verificationCode)}`
     }

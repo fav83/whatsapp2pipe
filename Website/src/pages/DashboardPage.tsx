@@ -100,10 +100,10 @@ export default function DashboardPage() {
           Dashboard
         </h1>
 
-        {/* Two-column responsive grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Left column */}
-          <div className="space-y-6">
+        {/* Three-column responsive grid: 1 col (left) + 2 cols (right) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Left column - Profile & Extension Status (1/3 width) */}
+          <div className="md:col-span-1 space-y-6">
             {/* User Profile */}
             {user && <UserProfile user={user} onSignOut={signOut} />}
 
@@ -111,8 +111,8 @@ export default function DashboardPage() {
             <ExtensionStatus />
           </div>
 
-          {/* Right column */}
-          <div>
+          {/* Right column - How to Use (2/3 width, twice as wide) */}
+          <div className="md:col-span-2">
             {/* How to use */}
             <HowToUse />
           </div>

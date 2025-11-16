@@ -4,7 +4,7 @@
 Manual test cases for the Chat2Deal dashboard website
 
 **Test Environment:**
-- URL: https://chat2deal.com/dashboard
+- URL: https://app.chat2deal.com/dashboard
 - Browser: Chrome (latest), Firefox (latest), Safari (latest)
 - **Pre-requisite:** Valid Pipedrive account
 
@@ -18,11 +18,11 @@ Manual test cases for the Chat2Deal dashboard website
 ```gherkin
 Given I am an unauthenticated user
 And I have a valid Pipedrive account
-And I am on "https://chat2deal.com"
+And I am on "https://app.chat2deal.com"
 When I click "Sign in with Pipedrive"
 And I am redirected to Pipedrive OAuth page
 And I click "Allow" to authorize Chat2Deal
-Then I should be redirected to "https://chat2deal.com/dashboard"
+Then I should be redirected to "https://app.chat2deal.com/dashboard"
 And I should see my Pipedrive user profile
 And I should see the extension installation status
 ```
@@ -32,11 +32,11 @@ And I should see the extension installation status
 
 ```gherkin
 Given I am a registered user who has previously authorized Chat2Deal
-And I am on "https://chat2deal.com"
+And I am on "https://app.chat2deal.com"
 When I click "Sign in with Pipedrive"
 And I am redirected to Pipedrive OAuth page
 And I click "Allow" to authorize Chat2Deal
-Then I should be redirected to "https://chat2deal.com/dashboard"
+Then I should be redirected to "https://app.chat2deal.com/dashboard"
 And I should see my existing user profile
 And my last login timestamp should be updated
 ```
@@ -48,7 +48,7 @@ And my last login timestamp should be updated
 Given I am an unauthenticated user
 And I am on the Pipedrive OAuth authorization page
 When I click "Deny" or close the authorization window
-Then I should be redirected back to "https://chat2deal.com"
+Then I should be redirected back to "https://app.chat2deal.com"
 And I should see an error message explaining authorization was denied
 And I should remain unauthenticated
 ```

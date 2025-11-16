@@ -4,7 +4,7 @@
  * Displays dedicated error state when new user is rejected during closed beta.
  * Shows explanation, instructions, and CTA to request beta access via website.
  *
- * Configuration: Set VITE_LANDING_WEBSITE_URL in .env.local to customize the beta access URL.
+ * Configuration: Set VITE_DASHBOARD_URL in .env.local to customize the beta access URL.
  */
 
 interface BetaAccessRequiredStateProps {
@@ -12,7 +12,7 @@ interface BetaAccessRequiredStateProps {
 }
 
 export function BetaAccessRequiredState({ onSignIn }: BetaAccessRequiredStateProps) {
-  const WEBSITE_URL = import.meta.env.VITE_LANDING_WEBSITE_URL || 'https://chat2deal.com'
+  const WEBSITE_URL = import.meta.env.VITE_DASHBOARD_URL || 'https://app.chat2deal.com'
 
   return (
     <div className="flex flex-col items-center justify-center h-full px-3 py-4 text-center">

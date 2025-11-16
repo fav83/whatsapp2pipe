@@ -370,7 +370,7 @@ And the menu should contain:
 Given the profile dropdown is open
 When I click "View Dashboard"
 Then a new tab should open
-And the tab should navigate to "https://chat2deal.com/dashboard"
+And the tab should navigate to "https://app.chat2deal.com/dashboard"
 And I should remain signed in
 ```
 

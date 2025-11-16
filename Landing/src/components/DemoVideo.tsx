@@ -23,7 +23,6 @@ export function DemoVideo() {
             playsInline
             preload="metadata"
           >
-            <source src="/demo.webm" type="video/webm" />
             <source src="/demo.mp4" type="video/mp4" />
             <p className="text-white p-8 text-center">
               Your browser doesn't support HTML5 video. Here is a{' '}
