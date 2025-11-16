@@ -10,7 +10,7 @@
  * - WhatsApp chat detection via 200ms polling
  */
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from './hooks/useAuth'
 import { usePipedrive } from './hooks/usePipedrive'
 import { useToast, ToastNotification } from './context/ToastContext'
@@ -278,14 +278,26 @@ interface SidebarContentProps {
 
 function SidebarContent({ state, setState }: SidebarContentProps) {
   const { lookupByPhone, error } = usePipedrive()
+  // Track the current lookup to prevent race conditions when rapidly switching contacts
+  const currentLookupRef = useRef<string | null>(null)
 
   /**
    * Handle person lookup by phone
    */
   const handlePersonLookup = useCallback(
     async (phone: string, name: string) => {
+      // Store this phone as the current lookup
+      currentLookupRef.current = phone
+
       try {
         const person = await lookupByPhone(phone)
+
+        // CRITICAL: Only update state if this is still the current lookup
+        // This prevents race conditions when rapidly switching between contacts
+        if (currentLookupRef.current !== phone) {
+          logger.log('[SidebarContent] Ignoring stale lookup result for:', phone)
+          return
+        }
 
         if (error) {
           setState({
@@ -308,6 +320,12 @@ function SidebarContent({ state, setState }: SidebarContentProps) {
           })
         }
       } catch (err) {
+        // Only update state if this is still the current lookup
+        if (currentLookupRef.current !== phone) {
+          logger.log('[SidebarContent] Ignoring stale error for:', phone)
+          return
+        }
+
         setState({
           type: 'person-error',
           name,

@@ -7,6 +7,10 @@
 **Implementation Commits:** 1368e3c, 2f24914, cc5b645
 **Dependencies:** Pipedrive Developer Hub app registration, Azure subscription
 
+**📝 Implementation Note:** This specification originally described Azure Table Storage for session management. The implementation was later migrated to Azure SQL Database with Entity Framework Core (see SqlSessionService). Recent enhancements (2025-11-15):
+- **Retry Logic:** Added `EnableRetryOnFailure()` for Azure SQL transient failure handling (commit 80132d9)
+- **Transaction Handling:** Updated to use `ExecuteInTransactionAsync()` for compatibility with retry strategy (commit b5aad28)
+
 ---
 
 ## Implementation Split

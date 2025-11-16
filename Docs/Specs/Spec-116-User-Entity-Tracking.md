@@ -308,10 +308,22 @@ var host = new HostBuilder()
     {
         // Existing services...
 
-        // Add DbContext with SQL Server
+        // Add DbContext with SQL Server and retry logic for transient failures
         var connectionString = context.Configuration.GetConnectionString("Chat2DealDb");
         services.AddDbContext<Chat2DealDbContext>(options =>
-            options.UseSqlServer(connectionString));
+            options.UseSqlServer(connectionString, sqlOptions =>
+                sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(30),
+                    errorNumbersToAdd: null)));
+
+        // Also add DbContextFactory for services that need per-call instances
+        services.AddDbContextFactory<Chat2DealDbContext>(options =>
+            options.UseSqlServer(connectionString, sqlOptions =>
+                sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(30),
+                    errorNumbersToAdd: null)));
 
         // Register UserService
         services.AddScoped<IUserService, UserService>();
@@ -928,6 +940,68 @@ ERROR: Pipedrive /users/me failed with status 403: {"error":"insufficient_scope"
 - Next OAuth attempt will reuse existing Company
 - User sees error, can retry OAuth flow
 
+### 9.4 Azure SQL Retry Strategy
+
+**Purpose:** Automatically handle transient failures when connecting to Azure SQL Database.
+
+**Implementation:** EF Core's `EnableRetryOnFailure()` provides built-in retry logic for common Azure SQL transient errors.
+
+**Configuration:**
+```csharp
+services.AddDbContext<Chat2DealDbContext>(options =>
+    options.UseSqlServer(connectionString, sqlOptions =>
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorNumbersToAdd: null)));
+```
+
+**Retry Parameters:**
+- **maxRetryCount:** 5 attempts (initial attempt + 4 retries)
+- **maxRetryDelay:** 30 seconds maximum between retries
+- **errorNumbersToAdd:** null (use default transient error codes)
+
+**Default Transient Errors (handled automatically):**
+- Network connectivity failures
+- Connection timeouts
+- Database unavailable errors
+- Deadlock errors
+- Throttling errors (Azure SQL resource limits)
+
+**Retry Behavior:**
+- Exponential backoff between retries (1s, 2s, 4s, 8s, 16s, max 30s)
+- Automatic retry for transient failures
+- Permanent errors fail immediately without retries
+- Retries are transparent to calling code
+
+**Transaction Compatibility:**
+When using retry strategy with transactions, use `ExecuteInTransactionAsync()` instead of `BeginTransactionAsync()`:
+
+```csharp
+// ❌ INCORRECT - Conflicts with retry strategy
+using var transaction = await dbContext.Database.BeginTransactionAsync();
+// ... operations ...
+await transaction.CommitAsync();
+
+// ✅ CORRECT - Compatible with retry strategy
+var strategy = dbContext.Database.CreateExecutionStrategy();
+return await strategy.ExecuteInTransactionAsync<bool>(
+    operation: async (cancellationToken) =>
+    {
+        // ... database operations ...
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return true;
+    },
+    verifySucceeded: null!
+);
+```
+
+**Why This Matters:**
+- Azure SQL Database occasionally experiences transient failures (network blips, resource throttling, maintenance)
+- Without retry logic, these failures would surface as user-facing errors
+- Automatic retries provide better UX and reduce support burden
+- Recommended best practice for all Azure SQL applications
+
 ---
 
 ## 10. Testing Strategy
@@ -1237,6 +1311,15 @@ public class OAuthFlowE2ETests
 - ✅ Integration tests for database schema
 - ✅ Error handling for all scenarios
 - ✅ XML documentation comments on public APIs
+
+### 11.7 Resilience and Error Handling
+
+- ✅ Azure SQL retry logic configured with EnableRetryOnFailure()
+- ✅ Automatic retry for transient database failures (5 attempts, 30s max delay)
+- ✅ Exponential backoff between retry attempts
+- ✅ Transaction handling compatible with retry strategy (ExecuteInTransactionAsync)
+- ✅ Permanent errors fail immediately without retries
+- ✅ Retry logic transparent to calling code
 
 ---
 

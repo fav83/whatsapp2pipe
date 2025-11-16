@@ -857,7 +857,7 @@ After Spec-105b completion:
    - Added AUTH_FETCH_URL message type for service worker fetch requests
    - Improved backend CORS middleware to handle OPTIONS preflight correctly
    - Backend now returns proper preflight responses instead of 404 errors
-   - Environment variable updates: VITE_LANDING_WEBSITE_URL for beta access redirects
+   - Environment variable updates: VITE_DASHBOARD_URL for dashboard and beta access redirects
 
 ### Key Achievements
 ✅ Hybrid OAuth architecture implemented and refined
@@ -877,7 +877,7 @@ After Spec-105b completion:
 - ✅ `service-worker/authService.ts` - chrome.identity integration, state validation
 - ✅ `service-worker/index.ts` - Message handlers for AUTH_FETCH_URL and AUTH_SIGN_IN
 - ✅ `types/messages.ts` - Message types with AUTH_FETCH_URL, AUTH_SIGN_IN, and state parameter
-- ✅ `config.ts` - Backend OAuth configuration (VITE_BACKEND_URL, VITE_LANDING_WEBSITE_URL)
+- ✅ `config.ts` - Backend OAuth configuration (VITE_BACKEND_URL, VITE_DASHBOARD_URL)
 - ✅ Updated tests for state parameter validation and message passing
 - ✅ Backend CORS middleware updated to handle OPTIONS preflight
 
