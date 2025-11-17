@@ -51,7 +51,8 @@ public class DealTransformService
                     Id = pipeline.Id,
                     Name = pipeline.Name
                 },
-                Status = pdDeal.Status
+                Status = pdDeal.Status,
+                UpdateTime = pdDeal.UpdateTime
             });
         }
 
@@ -98,7 +99,7 @@ public class DealTransformService
     }
 
     /// <summary>
-    /// Sort deals by status (open → won → lost) then by update time
+    /// Sort deals by status (open → won → lost) then by update time (most recent first)
     /// </summary>
     private List<Deal> SortDeals(List<Deal> deals)
     {
@@ -111,6 +112,17 @@ public class DealTransformService
 
         return deals
             .OrderBy(d => statusOrder.ContainsKey(d.Status) ? statusOrder[d.Status] : 999)
+            .ThenByDescending(d =>
+            {
+                // Parse UpdateTime as DateTime for proper sorting
+                // Pipedrive uses ISO 8601 format: "2024-01-20 15:30:00"
+                if (DateTime.TryParse(d.UpdateTime, out var updateTime))
+                {
+                    return updateTime;
+                }
+                // If parsing fails, use DateTime.MinValue to sort to end
+                return DateTime.MinValue;
+            })
             .ToList();
     }
 }

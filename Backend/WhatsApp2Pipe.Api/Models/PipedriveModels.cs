@@ -203,6 +203,9 @@ public class Deal
 
     [JsonPropertyName("status")]
     public string Status { get; set; } = string.Empty; // "open", "won", "lost"
+
+    [JsonPropertyName("updateTime")]
+    public string? UpdateTime { get; set; }
 }
 
 public class DealStage
