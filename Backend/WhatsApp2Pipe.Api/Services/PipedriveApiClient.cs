@@ -391,6 +391,162 @@ public class PipedriveApiClient : IPipedriveApiClient
     }
 
     /// <summary>
+    /// Get all deals for a person (with automatic token refresh)
+    /// </summary>
+    public async Task<PipedriveDealsResponse> GetPersonDealsAsync(Session session, int personId)
+    {
+        return await ExecuteWithRefreshAsync(
+            session,
+            (accessToken) => GetPersonDealsInternalAsync(accessToken, session.ApiDomain, personId),
+            "GetPersonDeals");
+    }
+
+    private async Task<PipedriveDealsResponse> GetPersonDealsInternalAsync(string accessToken, string apiDomain, int personId)
+    {
+        var url = $"{apiDomain}/api/v2/deals?person_id={personId}&status=open,won,lost";
+        logger.LogInformation("Getting deals for person: id={PersonId}", personId);
+
+        var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        // Log request (sanitize access token)
+        var headers = new Dictionary<string, string>
+        {
+            { "Authorization", "Bearer [REDACTED]" }
+        };
+        apiLogger.LogRequest("GET", url, headers, null);
+
+        var response = await httpClient.SendAsync(request);
+        var content = await response.Content.ReadAsStringAsync();
+
+        // Log response
+        apiLogger.LogResponse("GET", url, (int)response.StatusCode, content);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogWarning($"Pipedrive get deals failed: {response.StatusCode}");
+            await HandleErrorResponse(response, content);
+        }
+
+        var result = JsonSerializer.Deserialize<PipedriveDealsResponse>(content, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        if (result == null)
+        {
+            logger.LogError("Failed to deserialize Pipedrive deals response");
+            throw new PipedriveApiException("Invalid response from Pipedrive API - deserialization failed");
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Get all stages (with automatic token refresh)
+    /// </summary>
+    public async Task<PipedriveStagesResponse> GetStagesAsync(Session session)
+    {
+        return await ExecuteWithRefreshAsync(
+            session,
+            (accessToken) => GetStagesInternalAsync(accessToken, session.ApiDomain),
+            "GetStages");
+    }
+
+    private async Task<PipedriveStagesResponse> GetStagesInternalAsync(string accessToken, string apiDomain)
+    {
+        var url = $"{apiDomain}/api/v1/stages";
+        logger.LogInformation("Getting all stages");
+
+        var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        // Log request (sanitize access token)
+        var headers = new Dictionary<string, string>
+        {
+            { "Authorization", "Bearer [REDACTED]" }
+        };
+        apiLogger.LogRequest("GET", url, headers, null);
+
+        var response = await httpClient.SendAsync(request);
+        var content = await response.Content.ReadAsStringAsync();
+
+        // Log response
+        apiLogger.LogResponse("GET", url, (int)response.StatusCode, content);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogWarning($"Pipedrive get stages failed: {response.StatusCode}");
+            await HandleErrorResponse(response, content);
+        }
+
+        var result = JsonSerializer.Deserialize<PipedriveStagesResponse>(content, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        if (result == null)
+        {
+            logger.LogError("Failed to deserialize Pipedrive stages response");
+            throw new PipedriveApiException("Invalid response from Pipedrive API - deserialization failed");
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Get all pipelines (with automatic token refresh)
+    /// </summary>
+    public async Task<PipedrivePipelinesResponse> GetPipelinesAsync(Session session)
+    {
+        return await ExecuteWithRefreshAsync(
+            session,
+            (accessToken) => GetPipelinesInternalAsync(accessToken, session.ApiDomain),
+            "GetPipelines");
+    }
+
+    private async Task<PipedrivePipelinesResponse> GetPipelinesInternalAsync(string accessToken, string apiDomain)
+    {
+        var url = $"{apiDomain}/api/v1/pipelines";
+        logger.LogInformation("Getting all pipelines");
+
+        var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        // Log request (sanitize access token)
+        var headers = new Dictionary<string, string>
+        {
+            { "Authorization", "Bearer [REDACTED]" }
+        };
+        apiLogger.LogRequest("GET", url, headers, null);
+
+        var response = await httpClient.SendAsync(request);
+        var content = await response.Content.ReadAsStringAsync();
+
+        // Log response
+        apiLogger.LogResponse("GET", url, (int)response.StatusCode, content);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogWarning($"Pipedrive get pipelines failed: {response.StatusCode}");
+            await HandleErrorResponse(response, content);
+        }
+
+        var result = JsonSerializer.Deserialize<PipedrivePipelinesResponse>(content, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        if (result == null)
+        {
+            logger.LogError("Failed to deserialize Pipedrive pipelines response");
+            throw new PipedriveApiException("Invalid response from Pipedrive API - deserialization failed");
+        }
+
+        return result;
+    }
+
+    /// <summary>
     /// Handle error responses from Pipedrive API
     /// </summary>
     private Task HandleErrorResponse(HttpResponseMessage response, string content)

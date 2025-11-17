@@ -16,7 +16,7 @@ const mockSendMessage = vi.mocked(chrome.runtime.sendMessage)
 
 describe('Person Lookup Integration', () => {
   describe('usePipedrive Hook Integration', () => {
-    it('lookupByPhone returns person when found', async () => {
+    it('lookupByPhone returns person and deals when found', async () => {
       const mockPerson: Person = {
         id: 123,
         name: 'John Doe',
@@ -27,28 +27,32 @@ describe('Person Lookup Integration', () => {
       mockSendMessage.mockResolvedValueOnce({
         type: 'PIPEDRIVE_LOOKUP_SUCCESS',
         person: mockPerson,
+        deals: [],
       })
 
       const { result } = renderHook(() => usePipedrive())
 
-      const person = await result.current.lookupByPhone('+1234567890')
+      const response = await result.current.lookupByPhone('+1234567890')
 
-      expect(person).toEqual(mockPerson)
+      expect(response.person).toEqual(mockPerson)
+      expect(response.deals).toEqual([])
       expect(result.current.error).toBeNull()
       expect(result.current.isLoading).toBe(false)
     })
 
-    it('lookupByPhone returns null when person not found', async () => {
+    it('lookupByPhone returns null person when not found', async () => {
       mockSendMessage.mockResolvedValueOnce({
         type: 'PIPEDRIVE_LOOKUP_SUCCESS',
         person: null,
+        deals: [],
       })
 
       const { result } = renderHook(() => usePipedrive())
 
-      const person = await result.current.lookupByPhone('+9999999999')
+      const response = await result.current.lookupByPhone('+9999999999')
 
-      expect(person).toBeNull()
+      expect(response.person).toBeNull()
+      expect(response.deals).toEqual([])
       expect(result.current.error).toBeNull()
     })
 
@@ -61,9 +65,10 @@ describe('Person Lookup Integration', () => {
 
       const { result } = renderHook(() => usePipedrive())
 
-      const person = await result.current.lookupByPhone('+1111111111')
+      const response = await result.current.lookupByPhone('+1111111111')
 
-      expect(person).toBeNull()
+      expect(response.person).toBeNull()
+      expect(response.deals).toBeNull()
 
       // Wait for error state to be set
       await waitFor(() => {
@@ -104,6 +109,7 @@ describe('Person Lookup Integration', () => {
       resolvePromise!({
         type: 'PIPEDRIVE_LOOKUP_SUCCESS',
         person: mockPerson,
+        deals: [],
       })
 
       // Wait for lookup to complete

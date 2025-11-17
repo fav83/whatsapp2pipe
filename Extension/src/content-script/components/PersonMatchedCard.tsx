@@ -5,9 +5,6 @@
  * Shown when lookup finds a matching person.
  */
 
-import { useAuth } from '../hooks/useAuth'
-import { CreateNoteFromChat } from './CreateNoteFromChat'
-
 interface PersonMatchedCardProps {
   name: string
   phone: string
@@ -15,12 +12,10 @@ interface PersonMatchedCardProps {
   personId: number
 }
 
-export function PersonMatchedCard({ name, phone, pipedriveUrl, personId }: PersonMatchedCardProps) {
-  const { userName } = useAuth()
-
+export function PersonMatchedCard({ name, phone, pipedriveUrl }: PersonMatchedCardProps) {
   return (
-    <div className="p-3 space-y-3">
-      {/* Section 2: Person Info Card - Name, Phone, Open in Pipedrive Button */}
+    <div className="px-3 pt-3">
+      {/* Person Info Card - Name, Phone, Open in Pipedrive Button */}
       <div className="p-3 bg-white rounded-lg border border-border-secondary shadow-sm">
         <div className="text-base font-semibold text-text-primary mb-1">{name}</div>
         <div className="text-sm text-text-secondary mb-1">{phone}</div>
@@ -43,11 +38,6 @@ export function PersonMatchedCard({ name, phone, pipedriveUrl, personId }: Perso
           </svg>
         </a>
       </div>
-
-      {/* Create Note from Chat Section */}
-      {userName && (
-        <CreateNoteFromChat personId={personId} contactName={name} userName={userName} />
-      )}
     </div>
   )
 }

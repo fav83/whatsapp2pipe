@@ -78,6 +78,7 @@ var host = new HostBuilder()
         // Register Pipedrive services
         services.AddHttpClient<IPipedriveApiClient, PipedriveApiClient>();
         services.AddSingleton<PersonTransformService>();
+        services.AddSingleton<DealTransformService>();
     })
     .Build();
 

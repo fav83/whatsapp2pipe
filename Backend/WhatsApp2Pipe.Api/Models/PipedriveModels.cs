@@ -180,3 +180,141 @@ public class PipedriveNoteResponse
     [JsonPropertyName("data")]
     public PipedriveNote? Data { get; set; }
 }
+
+/// <summary>
+/// Deal object returned to extension
+/// </summary>
+public class Deal
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("title")]
+    public string Title { get; set; } = string.Empty;
+
+    [JsonPropertyName("value")]
+    public string Value { get; set; } = string.Empty; // Formatted: "$50,000.00"
+
+    [JsonPropertyName("stage")]
+    public DealStage Stage { get; set; } = new();
+
+    [JsonPropertyName("pipeline")]
+    public DealPipeline Pipeline { get; set; } = new();
+
+    [JsonPropertyName("status")]
+    public string Status { get; set; } = string.Empty; // "open", "won", "lost"
+}
+
+public class DealStage
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("order")]
+    public int Order { get; set; }
+}
+
+public class DealPipeline
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Pipedrive raw deal response (from GET /v2/deals)
+/// </summary>
+public class PipedriveDeal
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("title")]
+    public string Title { get; set; } = string.Empty;
+
+    [JsonPropertyName("value")]
+    public decimal Value { get; set; }
+
+    [JsonPropertyName("currency")]
+    public string Currency { get; set; } = string.Empty;
+
+    [JsonPropertyName("stage_id")]
+    public int StageId { get; set; }
+
+    [JsonPropertyName("status")]
+    public string Status { get; set; } = string.Empty;
+
+    [JsonPropertyName("update_time")]
+    public string? UpdateTime { get; set; }
+}
+
+/// <summary>
+/// Pipedrive deals list response
+/// </summary>
+public class PipedriveDealsResponse
+{
+    [JsonPropertyName("success")]
+    public bool Success { get; set; }
+
+    [JsonPropertyName("data")]
+    public PipedriveDeal[]? Data { get; set; }
+}
+
+/// <summary>
+/// Pipedrive stage object
+/// </summary>
+public class PipedriveStage
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("order_nr")]
+    public int OrderNr { get; set; }
+
+    [JsonPropertyName("pipeline_id")]
+    public int PipelineId { get; set; }
+}
+
+/// <summary>
+/// Pipedrive stages list response
+/// </summary>
+public class PipedriveStagesResponse
+{
+    [JsonPropertyName("success")]
+    public bool Success { get; set; }
+
+    [JsonPropertyName("data")]
+    public PipedriveStage[]? Data { get; set; }
+}
+
+/// <summary>
+/// Pipedrive pipeline object
+/// </summary>
+public class PipedrivePipeline
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Pipedrive pipelines list response
+/// </summary>
+public class PipedrivePipelinesResponse
+{
+    [JsonPropertyName("success")]
+    public bool Success { get; set; }
+
+    [JsonPropertyName("data")]
+    public PipedrivePipeline[]? Data { get; set; }
+}

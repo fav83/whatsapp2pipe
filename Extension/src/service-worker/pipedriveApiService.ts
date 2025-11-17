@@ -8,6 +8,7 @@
 
 import { AUTH_CONFIG } from '../config'
 import type { Person, CreatePersonData, AttachPhoneData } from '../types/person'
+import type { Deal } from '../types/deal'
 import type { UserConfig } from '../types/config'
 import { logError } from '../utils/errorLogger'
 import { logBreadcrumb } from '../utils/breadcrumbs'
@@ -156,18 +157,39 @@ class PipedriveApiService {
   }
 
   /**
-   * Lookup person by phone number
-   * Returns single person or null if not found
+   * Lookup person by phone number (returns person + deals)
+   * Returns object with person, deals, and optional dealsError
    */
-  async lookupByPhone(phone: string): Promise<Person | null> {
+  async lookupByPhone(phone: string): Promise<{
+    person: Person | null
+    deals: Deal[] | null
+    dealsError?: string
+  }> {
     logger.log('[PipedriveAPI] Looking up person by phone:', phone)
 
-    const persons = await this.makeRequest<Person[]>(
-      `/api/pipedrive/persons/search?term=${encodeURIComponent(phone)}&fields=phone`
-    )
+    try {
+      const response = await this.makeRequest<{
+        person: Person | null
+        deals: Deal[] | null
+        dealsError?: string
+      }>(`/api/pipedrive/persons/lookup?phone=${encodeURIComponent(phone)}`)
 
-    // Return first match or null
-    return persons.length > 0 ? persons[0] : null
+      return response
+    } catch (error) {
+      // Handle 404 as "person not found" (not an error)
+      if (typeof error === 'object' && error !== null && 'statusCode' in error) {
+        const statusError = error as { statusCode: number; message: string }
+        if (statusError.statusCode === 404) {
+          logger.log('[PipedriveAPI] Person not found (404)')
+          return {
+            person: null,
+            deals: [],
+          }
+        }
+      }
+      // Re-throw other errors
+      throw error
+    }
   }
 
   /**

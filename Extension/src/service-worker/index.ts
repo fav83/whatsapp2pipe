@@ -284,7 +284,7 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
 })
 
 /**
- * Handle lookup by phone
+ * Handle lookup by phone (returns person + deals)
  */
 async function handlePipedriveLookup(
   message: PipedriveRequest,
@@ -293,11 +293,13 @@ async function handlePipedriveLookup(
   try {
     if (message.type !== 'PIPEDRIVE_LOOKUP_BY_PHONE') return
 
-    const person = await pipedriveApiService.lookupByPhone(message.phone)
+    const result = await pipedriveApiService.lookupByPhone(message.phone)
 
     sendResponse({
       type: 'PIPEDRIVE_LOOKUP_SUCCESS',
-      person,
+      person: result.person,
+      deals: result.deals,
+      dealsError: result.dealsError,
     })
   } catch (error) {
     const errorMessage = getErrorMessage(error, 'Lookup failed')

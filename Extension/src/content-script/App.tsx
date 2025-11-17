@@ -30,7 +30,11 @@ import { FeedbackButton } from './components/FeedbackButton'
 import { FeedbackModal } from './components/FeedbackModal'
 import { ConfigMessageBanner } from './components/ConfigMessageBanner'
 import { exposePipedriveTestHelpers } from './testPipedriveApi'
+import { DealsSection } from './components/DealsSection'
+import { DealsLoadingSkeleton } from './components/DealsLoadingSkeleton'
+import { CreateNoteFromChat } from './components/CreateNoteFromChat'
 import type { Person } from '../types/person'
+import type { Deal } from '../types/deal'
 import logger from '../utils/logger'
 
 interface ChatStatus {
@@ -46,7 +50,7 @@ interface ChatStatus {
  *
  * Includes person lookup states for Feature 9:
  * - person-loading: Lookup in progress
- * - person-matched: Person found in Pipedrive
+ * - person-matched: Person found in Pipedrive (with deals)
  * - person-no-match: No person found
  * - person-error: Lookup failed
  */
@@ -56,7 +60,13 @@ type SidebarState =
   | { type: 'contact-warning'; name: string; warning: string }
   | { type: 'group-chat' }
   | { type: 'person-loading'; name: string; phone: string }
-  | { type: 'person-matched'; person: Person; phone: string }
+  | {
+      type: 'person-matched'
+      person: Person
+      phone: string
+      deals: Deal[] | null
+      dealsError?: string
+    }
   | { type: 'person-no-match'; name: string; phone: string }
   | { type: 'person-error'; name: string; phone: string; error: string }
 
@@ -189,7 +199,9 @@ export default function App() {
         {authState === 'error' && <WelcomeState onSignIn={signIn} error={error} />}
 
         {/* Authenticated: Show chat-based content */}
-        {authState === 'authenticated' && <SidebarContent state={state} setState={setState} />}
+        {authState === 'authenticated' && (
+          <SidebarContent state={state} setState={setState} userName={userName} />
+        )}
       </main>
 
       {/* Toast Notification - Positioned at bottom, above feedback button */}
@@ -274,9 +286,10 @@ function handleChatStatusChange(
 interface SidebarContentProps {
   state: SidebarState
   setState: React.Dispatch<React.SetStateAction<SidebarState>>
+  userName: string | null
 }
 
-function SidebarContent({ state, setState }: SidebarContentProps) {
+function SidebarContent({ state, setState, userName }: SidebarContentProps) {
   const { lookupByPhone } = usePipedrive()
   // Track the current lookup to prevent race conditions when rapidly switching contacts
   const currentLookupRef = useRef<string | null>(null)
@@ -284,7 +297,7 @@ function SidebarContent({ state, setState }: SidebarContentProps) {
   /**
    * Handle person lookup by phone
    *
-   * NOTE: lookupByPhone returns null for both "not found" and "error" cases.
+   * NOTE: lookupByPhone now returns { person, deals, dealsError }
    * It only throws for unexpected errors. We don't check the error state from
    * usePipedrive because it may be stale from a previous lookup.
    *
@@ -297,49 +310,37 @@ function SidebarContent({ state, setState }: SidebarContentProps) {
       logger.log('[SidebarContent] handlePersonLookup called for:', phone)
 
       try {
-        const person = await lookupByPhone(phone)
+        // Call lookupByPhone which now returns { person, deals, dealsError }
+        const result = await lookupByPhone(phone)
 
         logger.log(
           '[SidebarContent] Lookup completed for:',
           phone,
           'Result:',
-          person ? 'matched' : 'no match'
+          result.person ? 'matched' : 'no match',
+          'Deals:',
+          result.deals?.length ?? 'error'
         )
 
         // CRITICAL: Use functional setState to check current state
         // This prevents race conditions when rapidly switching contacts
-        if (person) {
-          setState((currentState) => {
-            // Only update if we're still looking at this phone number
-            if (
-              currentState.type === 'person-loading' &&
-              'phone' in currentState &&
-              currentState.phone === phone
-            ) {
+        setState((currentState) => {
+          // Only update if we're still looking at this phone number
+          if (
+            currentState.type === 'person-loading' &&
+            'phone' in currentState &&
+            currentState.phone === phone
+          ) {
+            if (result.person) {
               logger.log('[SidebarContent] Updating state to person-matched for:', phone)
               return {
                 type: 'person-matched',
-                person,
+                person: result.person,
                 phone,
+                deals: result.deals,
+                dealsError: result.dealsError,
               }
-            }
-            logger.log(
-              '[SidebarContent] Ignoring stale person-matched result for:',
-              phone,
-              'Current state:',
-              currentState.type,
-              'phone' in currentState ? currentState.phone : 'N/A'
-            )
-            return currentState // Don't update - user switched contacts
-          })
-        } else {
-          setState((currentState) => {
-            // Only update if we're still looking at this phone number
-            if (
-              currentState.type === 'person-loading' &&
-              'phone' in currentState &&
-              currentState.phone === phone
-            ) {
+            } else {
               logger.log('[SidebarContent] Updating state to person-no-match for:', phone)
               return {
                 type: 'person-no-match',
@@ -347,16 +348,10 @@ function SidebarContent({ state, setState }: SidebarContentProps) {
                 phone,
               }
             }
-            logger.log(
-              '[SidebarContent] Ignoring stale person-no-match result for:',
-              phone,
-              'Current state:',
-              currentState.type,
-              'phone' in currentState ? currentState.phone : 'N/A'
-            )
-            return currentState // Don't update - user switched contacts
-          })
-        }
+          }
+          logger.log('[SidebarContent] Ignoring stale result for:', phone)
+          return currentState // Don't update - user switched contacts
+        })
       } catch (err) {
         logger.log('[SidebarContent] Lookup error for:', phone, err)
 
@@ -436,13 +431,14 @@ function SidebarContent({ state, setState }: SidebarContentProps) {
 
   /**
    * Handle person created callback
-   * Transitions to person-matched state
+   * Transitions to person-matched state (with empty deals initially)
    */
   function handlePersonCreated(person: Person, phone: string) {
     setState({
       type: 'person-matched',
       person,
       phone,
+      deals: [], // Empty deals when person is first created
     })
   }
 
@@ -467,15 +463,38 @@ function SidebarContent({ state, setState }: SidebarContentProps) {
     case 'group-chat':
       return <GroupChatState />
     case 'person-loading':
-      return <PersonLookupLoading contactName={state.name} phone={state.phone} />
+      return (
+        <>
+          <PersonLookupLoading contactName={state.name} phone={state.phone} />
+          <DealsLoadingSkeleton />
+        </>
+      )
     case 'person-matched':
       return (
-        <PersonMatchedCard
-          name={state.person.name}
-          phone={state.phone}
-          pipedriveUrl={getPipedriveUrl(state.person.id)}
-          personId={state.person.id}
-        />
+        <>
+          <PersonMatchedCard
+            name={state.person.name}
+            phone={state.phone}
+            pipedriveUrl={getPipedriveUrl(state.person.id)}
+            personId={state.person.id}
+          />
+
+          <DealsSection
+            personId={state.person.id}
+            personName={state.person.name}
+            deals={state.deals}
+            dealsError={state.dealsError}
+            onRetry={() => handleRetry(state.phone, state.person.name)}
+          />
+
+          {userName && (
+            <CreateNoteFromChat
+              personId={state.person.id}
+              contactName={state.person.name}
+              userName={userName}
+            />
+          )}
+        </>
       )
     case 'person-no-match':
       return (

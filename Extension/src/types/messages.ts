@@ -8,6 +8,7 @@
 
 import type { Person, CreatePersonData, AttachPhoneData } from './person'
 import type { UserConfig } from './config'
+import type { Deal } from './deal'
 
 // ============================================================================
 // Auth Messages
@@ -158,10 +159,13 @@ export type PipedriveRequest =
 /**
  * Successful lookup by phone
  * Returns single person or null if not found
+ * Also returns deals array (or null if error) and optional dealsError
  */
 export interface PipedriveLookupSuccess {
   type: 'PIPEDRIVE_LOOKUP_SUCCESS'
   person: Person | null
+  deals: Deal[] | null
+  dealsError?: string
 }
 
 /**

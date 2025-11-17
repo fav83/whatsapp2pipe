@@ -7,6 +7,7 @@
 
 import { useState } from 'react'
 import type { Person, CreatePersonData, AttachPhoneData } from '../../types/person'
+import type { Deal } from '../../types/deal'
 import type { PipedriveRequest, PipedriveResponse } from '../../types/messages'
 
 interface PipedriveError {
@@ -35,10 +36,16 @@ export function usePipedrive() {
   }
 
   /**
-   * Lookup person by phone number
-   * Returns person or null if not found
+   * Lookup person by phone number (returns person + deals)
+   * Returns object with person, deals, and optional dealsError
    */
-  const lookupByPhone = async (phone: string): Promise<Person | null> => {
+  const lookupByPhone = async (
+    phone: string
+  ): Promise<{
+    person: Person | null
+    deals: Deal[] | null
+    dealsError?: string
+  }> => {
     setIsLoading(true)
     setError(null)
 
@@ -49,20 +56,30 @@ export function usePipedrive() {
       })
 
       if (response.type === 'PIPEDRIVE_LOOKUP_SUCCESS') {
-        return response.person
+        return {
+          person: response.person,
+          deals: response.deals,
+          dealsError: response.dealsError,
+        }
       } else if (response.type === 'PIPEDRIVE_ERROR') {
         setError({
           message: response.error,
           statusCode: response.statusCode,
         })
-        return null
+        return {
+          person: null,
+          deals: null,
+        }
       }
 
       throw new Error('Unexpected response type')
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Lookup failed'
       setError({ message: errorMessage, statusCode: 500 })
-      return null
+      return {
+        person: null,
+        deals: null,
+      }
     } finally {
       setIsLoading(false)
     }

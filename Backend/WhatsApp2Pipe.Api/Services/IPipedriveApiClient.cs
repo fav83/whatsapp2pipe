@@ -59,4 +59,19 @@ public interface IPipedriveApiClient
     /// <exception cref="PipedriveUnauthorizedException">Thrown when refresh token is expired</exception>
     /// <exception cref="PipedriveRateLimitException">Thrown when rate limit exceeded</exception>
     Task<PipedriveNoteResponse> CreateNoteAsync(Session session, int personId, string content);
+
+    /// <summary>
+    /// Get all deals for a person (with automatic token refresh on 401)
+    /// </summary>
+    Task<PipedriveDealsResponse> GetPersonDealsAsync(Session session, int personId);
+
+    /// <summary>
+    /// Get all stages (with automatic token refresh on 401)
+    /// </summary>
+    Task<PipedriveStagesResponse> GetStagesAsync(Session session);
+
+    /// <summary>
+    /// Get all pipelines (with automatic token refresh on 401)
+    /// </summary>
+    Task<PipedrivePipelinesResponse> GetPipelinesAsync(Session session);
 }

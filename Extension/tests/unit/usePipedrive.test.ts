@@ -65,35 +65,67 @@ describe('usePipedrive', () => {
       await promise
     })
 
-    it('returns person on success', async () => {
+    it('returns person and deals on success', async () => {
       const mockPerson = { id: 123, name: 'John', phones: [], email: null }
+      const mockDeals = [
+        {
+          id: 1,
+          title: 'Test Deal',
+          value: '$1,000.00',
+          status: 'open' as const,
+          pipeline: { id: 1, name: 'Sales' },
+          stage: { id: 1, name: 'Proposal', order: 1 },
+        },
+      ]
       vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
         type: 'PIPEDRIVE_LOOKUP_SUCCESS',
         person: mockPerson,
+        deals: mockDeals,
       })
 
       const { result } = renderHook(() => usePipedrive())
-      const person = await result.current.lookupByPhone('+48123456789')
+      const response = await result.current.lookupByPhone('+48123456789')
 
-      expect(person).toEqual(mockPerson)
+      expect(response.person).toEqual(mockPerson)
+      expect(response.deals).toEqual(mockDeals)
       expect(result.current.error).toBeNull()
       expect(result.current.isLoading).toBe(false)
     })
 
-    it('returns null when not found', async () => {
+    it('returns null person with empty deals when not found', async () => {
       vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
         type: 'PIPEDRIVE_LOOKUP_SUCCESS',
         person: null,
+        deals: [],
       })
 
       const { result } = renderHook(() => usePipedrive())
-      const person = await result.current.lookupByPhone('+48123456789')
+      const response = await result.current.lookupByPhone('+48123456789')
 
-      expect(person).toBeNull()
+      expect(response.person).toBeNull()
+      expect(response.deals).toEqual([])
       expect(result.current.error).toBeNull()
     })
 
-    it('returns null on error and sets error state', async () => {
+    it('returns person with null deals and dealsError on partial failure', async () => {
+      const mockPerson = { id: 123, name: 'John', phones: [], email: null }
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'PIPEDRIVE_LOOKUP_SUCCESS',
+        person: mockPerson,
+        deals: null,
+        dealsError: 'Failed to fetch deals',
+      })
+
+      const { result } = renderHook(() => usePipedrive())
+      const response = await result.current.lookupByPhone('+48123456789')
+
+      expect(response.person).toEqual(mockPerson)
+      expect(response.deals).toBeNull()
+      expect(response.dealsError).toBe('Failed to fetch deals')
+      expect(result.current.error).toBeNull() // Overall request succeeded
+    })
+
+    it('returns null person and null deals on complete error', async () => {
       vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
         type: 'PIPEDRIVE_ERROR',
         error: 'Not found',
@@ -101,9 +133,10 @@ describe('usePipedrive', () => {
       })
 
       const { result } = renderHook(() => usePipedrive())
-      const person = await result.current.lookupByPhone('+48123456789')
+      const response = await result.current.lookupByPhone('+48123456789')
 
-      expect(person).toBeNull()
+      expect(response.person).toBeNull()
+      expect(response.deals).toBeNull()
       await waitFor(() => {
         expect(result.current.error).toMatchObject({
           message: 'Not found',
@@ -116,6 +149,7 @@ describe('usePipedrive', () => {
       vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
         type: 'PIPEDRIVE_LOOKUP_SUCCESS',
         person: null,
+        deals: [],
       })
 
       const { result } = renderHook(() => usePipedrive())
@@ -131,6 +165,7 @@ describe('usePipedrive', () => {
       vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
         type: 'PIPEDRIVE_LOOKUP_SUCCESS',
         person: null,
+        deals: [],
       })
 
       const { result } = renderHook(() => usePipedrive())
@@ -465,9 +500,10 @@ describe('usePipedrive', () => {
       })
 
       const { result } = renderHook(() => usePipedrive())
-      const person = await result.current.lookupByPhone('+48123456789')
+      const response = await result.current.lookupByPhone('+48123456789')
 
-      expect(person).toBeNull()
+      expect(response.person).toBeNull()
+      expect(response.deals).toBeNull()
       await waitFor(() => {
         expect(result.current.error).toMatchObject({
           message: expect.stringContaining('Unexpected response'),
@@ -482,9 +518,10 @@ describe('usePipedrive', () => {
       )
 
       const { result } = renderHook(() => usePipedrive())
-      const person = await result.current.lookupByPhone('+48123456789')
+      const response = await result.current.lookupByPhone('+48123456789')
 
-      expect(person).toBeNull()
+      expect(response.person).toBeNull()
+      expect(response.deals).toBeNull()
       await waitFor(() => {
         expect(result.current.error).toMatchObject({
           message: 'Service worker not responding',
@@ -514,6 +551,7 @@ describe('usePipedrive', () => {
       vi.mocked(chrome.runtime.sendMessage).mockResolvedValueOnce({
         type: 'PIPEDRIVE_LOOKUP_SUCCESS',
         person: { id: 123, name: 'John', phones: [], email: null },
+        deals: [],
       })
 
       await result.current.lookupByPhone('+48999999999')
