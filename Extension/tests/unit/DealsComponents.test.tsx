@@ -41,21 +41,25 @@ describe('Deals Components', () => {
     it('renders placeholder option when no deal selected', () => {
       const onSelect = vi.fn()
       render(<DealDropdown deals={mockDeals} selectedDealId={null} onSelect={onSelect} />)
-      expect(screen.getByText('Select a deal...')).toBeInTheDocument()
+      expect(screen.getByRole('combobox')).toHaveTextContent('Select a deal...')
     })
 
-    it('renders all deal titles as options', () => {
+    it('renders all deal titles as options', async () => {
       const onSelect = vi.fn()
       render(<DealDropdown deals={mockDeals} selectedDealId={null} onSelect={onSelect} />)
+      const user = userEvent.setup()
+      await user.click(screen.getByRole('combobox'))
       expect(screen.getByText('Website Redesign Project')).toBeInTheDocument()
       expect(screen.getByText('Mobile App Development')).toBeInTheDocument()
       expect(screen.getByText('Legacy System Migration')).toBeInTheDocument()
     })
 
-    it('renders "(Untitled Deal)" for empty title', () => {
+    it('renders "(Untitled Deal)" for empty title', async () => {
       const dealsWithEmptyTitle: Deal[] = [{ ...mockDeals[0], title: '' }]
       const onSelect = vi.fn()
       render(<DealDropdown deals={dealsWithEmptyTitle} selectedDealId={null} onSelect={onSelect} />)
+      const user = userEvent.setup()
+      await user.click(screen.getByRole('combobox'))
       expect(screen.getByText('(Untitled Deal)')).toBeInTheDocument()
     })
 
@@ -64,19 +68,17 @@ describe('Deals Components', () => {
       const onSelect = vi.fn()
       render(<DealDropdown deals={mockDeals} selectedDealId={null} onSelect={onSelect} />)
 
-      const select = screen.getByRole('combobox')
-      await user.selectOptions(select, '2')
+      const button = screen.getByRole('combobox')
+      await user.click(button)
+      await user.click(screen.getByText('Mobile App Development'))
 
       expect(onSelect).toHaveBeenCalledWith(2)
     })
 
     it('displays selected deal ID correctly', () => {
       const onSelect = vi.fn()
-      const { container } = render(
-        <DealDropdown deals={mockDeals} selectedDealId={2} onSelect={onSelect} />
-      )
-      const select = container.querySelector('select') as HTMLSelectElement
-      expect(select.value).toBe('2')
+      render(<DealDropdown deals={mockDeals} selectedDealId={2} onSelect={onSelect} />)
+      expect(screen.getByRole('combobox')).toHaveTextContent('Mobile App Development')
     })
 
     it('has correct styling classes', () => {
@@ -84,11 +86,11 @@ describe('Deals Components', () => {
       const { container } = render(
         <DealDropdown deals={mockDeals} selectedDealId={null} onSelect={onSelect} />
       )
-      const select = container.querySelector('select')
-      expect(select?.className).toContain('w-full')
-      expect(select?.className).toContain('px-3')
-      expect(select?.className).toContain('py-2')
-      expect(select?.className).toContain('rounded-lg')
+      const button = container.querySelector('button')
+      expect(button?.className).toContain('w-full')
+      expect(button?.className).toContain('px-3')
+      expect(button?.className).toContain('py-2')
+      expect(button?.className).toContain('rounded-lg')
     })
   })
 
@@ -237,8 +239,9 @@ describe('Deals Components', () => {
       const user = userEvent.setup()
       render(<DealsSection personId={123} personName="John Doe" deals={mockDeals} />)
 
-      const select = screen.getByRole('combobox')
-      await user.selectOptions(select, '1')
+      const button = screen.getByRole('combobox')
+      await user.click(button)
+      await user.click(screen.getByText('Website Redesign Project'))
 
       // Deal details should now be visible (title only in dropdown, not in details)
       expect(screen.getByText('Website Redesign Project')).toBeInTheDocument()
