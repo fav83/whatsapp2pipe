@@ -14,6 +14,48 @@ import logger from '../utils/logger'
 import '../styles/content-script.css'
 import { injectMomoTrustDisplay } from '../styles/loadBrandFont'
 
+const SIDEBAR_WIDTH_PX = 350
+
+function applyWhatsAppLayoutSpacing() {
+  // Ensure body reserves space for the sidebar without overlapping content
+  const styleId = 'chat2deal-sidebar-layout'
+  let layoutStyle = document.getElementById(styleId) as HTMLStyleElement | null
+
+  if (!layoutStyle) {
+    layoutStyle = document.createElement('style')
+    layoutStyle.id = styleId
+    document.head.appendChild(layoutStyle)
+  }
+
+  layoutStyle.textContent = `
+    :root { --chat2deal-sidebar-width: ${SIDEBAR_WIDTH_PX}px; }
+    body.chat2deal-sidebar-active {
+      box-sizing: border-box;
+      padding-right: var(--chat2deal-sidebar-width);
+      overflow-x: hidden;
+    }
+    body.chat2deal-sidebar-active #app,
+    body.chat2deal-sidebar-active #app > div,
+    body.chat2deal-sidebar-active #app > div > div {
+      box-sizing: border-box;
+      width: 100% !important;
+    }
+  `
+
+  document.body.classList.add('chat2deal-sidebar-active')
+
+  // Fallback inline padding for the primary container (DOM structure can change)
+  const containerSelectors = ['#app > div > div', '#app > div', '#app']
+  for (const selector of containerSelectors) {
+    const el = document.querySelector(selector) as HTMLElement | null
+    if (el) {
+      el.style.boxSizing = 'border-box'
+      el.style.paddingRight = `${SIDEBAR_WIDTH_PX}px`
+      break
+    }
+  }
+}
+
 logger.log('[Content Script] Loading on WhatsApp Web')
 logger.log('[Content Script] Development mode:', import.meta.env.DEV)
 logger.log('[Content Script] Mode:', import.meta.env.MODE)
@@ -97,11 +139,8 @@ async function init() {
     logger.log('[Content Script] Initializing sidebar injection')
 
     // Adjust WhatsApp Web layout to make room for sidebar
-    const whatsappContainer = document.querySelector('#app > div > div') as HTMLElement
-    if (whatsappContainer) {
-      whatsappContainer.style.marginRight = '350px'
-      logger.log('[Content Script] WhatsApp container adjusted for sidebar')
-    }
+    applyWhatsAppLayoutSpacing()
+    logger.log('[Content Script] WhatsApp layout adjusted for sidebar')
 
     // Inject brand font (self-hosted) before rendering
     injectMomoTrustDisplay()
@@ -115,7 +154,7 @@ async function init() {
       position: fixed;
       top: 0;
       right: 0;
-      width: 350px;
+      width: ${SIDEBAR_WIDTH_PX}px;
       height: 100vh;
       z-index: 999999;
     `

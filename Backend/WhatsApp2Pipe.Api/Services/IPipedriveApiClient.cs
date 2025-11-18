@@ -74,4 +74,12 @@ public interface IPipedriveApiClient
     /// Get all pipelines (with automatic token refresh on 401)
     /// </summary>
     Task<PipedrivePipelinesResponse> GetPipelinesAsync(Session session);
+
+    /// <summary>
+    /// Create a new deal in Pipedrive (with automatic token refresh on 401)
+    /// </summary>
+    /// <param name="session">Session containing access token (may be updated if token is refreshed)</param>
+    /// <param name="request">Deal data to create</param>
+    /// <returns>Created deal response</returns>
+    Task<PipedriveDealResponse> CreateDealAsync(Session session, PipedriveCreateDealRequest request);
 }

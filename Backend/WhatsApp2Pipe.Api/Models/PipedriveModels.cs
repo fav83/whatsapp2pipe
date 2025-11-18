@@ -308,6 +308,12 @@ public class PipedrivePipeline
 
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("order_nr")]
+    public int OrderNr { get; set; }
+
+    [JsonPropertyName("active")]
+    public bool Active { get; set; }
 }
 
 /// <summary>
@@ -320,4 +326,64 @@ public class PipedrivePipelinesResponse
 
     [JsonPropertyName("data")]
     public PipedrivePipeline[]? Data { get; set; }
+}
+
+/// <summary>
+/// Request to create a deal (from extension to backend)
+/// </summary>
+public class CreateDealRequest
+{
+    [JsonPropertyName("title")]
+    public string Title { get; set; } = string.Empty;
+
+    [JsonPropertyName("personId")]
+    public int PersonId { get; set; }
+
+    [JsonPropertyName("pipelineId")]
+    public int PipelineId { get; set; }
+
+    [JsonPropertyName("stageId")]
+    public int StageId { get; set; }
+
+    [JsonPropertyName("value")]
+    public decimal? Value { get; set; }
+}
+
+/// <summary>
+/// Request to create a deal via Pipedrive API
+/// </summary>
+public class PipedriveCreateDealRequest
+{
+    [JsonPropertyName("title")]
+    public string Title { get; set; } = string.Empty;
+
+    [JsonPropertyName("person_id")]
+    public int PersonId { get; set; }
+
+    [JsonPropertyName("pipeline_id")]
+    public int PipelineId { get; set; }
+
+    [JsonPropertyName("stage_id")]
+    public int StageId { get; set; }
+
+    [JsonPropertyName("user_id")]
+    public int UserId { get; set; }
+
+    [JsonPropertyName("value")]
+    public decimal? Value { get; set; }
+
+    [JsonPropertyName("status")]
+    public string Status { get; set; } = "open";
+}
+
+/// <summary>
+/// Response from Pipedrive deal creation API
+/// </summary>
+public class PipedriveDealResponse
+{
+    [JsonPropertyName("success")]
+    public bool Success { get; set; }
+
+    [JsonPropertyName("data")]
+    public PipedriveDeal? Data { get; set; }
 }

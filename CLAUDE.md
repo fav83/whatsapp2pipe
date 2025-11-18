@@ -33,6 +33,7 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 
 ### BRDs (Business Requirements Documents)
 - [BRD-001-MVP-Pipedrive-WhatsApp.md](Docs/BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md) - MVP requirements and specifications
+- [BRD-002-Deals-Management.md](Docs/BRDs/BRD-002-Deals-Management.md) - Deals management features (Features 31-38)
 
 ### Plans
 - [Plan-001-MVP-Feature-Breakdown.md](Docs/Plans/Plan-001-MVP-Feature-Breakdown.md) - MVP broken down into implementable features
@@ -64,6 +65,8 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 - [Spec-128-Landing-Pricing-Section.md](Docs/Specs/Spec-128-Landing-Pricing-Section.md) - Landing page pricing section (✅ Complete)
 - [Spec-130a-Backend-Notes-API.md](Docs/Specs/Spec-130a-Backend-Notes-API.md) - Backend Notes API for creating Pipedrive notes (✅ Complete)
 - [Spec-130b-Extension-Create-Note-From-Chat.md](Docs/Specs/Spec-130b-Extension-Create-Note-From-Chat.md) - Extension UI for creating notes from WhatsApp chats (✅ Complete)
+- [Spec-131a-Backend-Deals-API.md](Docs/Specs/Spec-131a-Backend-Deals-API.md) - Backend Deals API Service with enrichment and sorting (✅ Complete)
+- [Spec-131b-Extension-Deals-Display.md](Docs/Specs/Spec-131b-Extension-Deals-Display.md) - Extension UI for displaying and selecting deals (✅ Complete)
 
 ### Testing Documentation
 - [Testing/Manual/](Docs/Testing/Manual/) - Manual testing checklists for Extension, Landing, and Website

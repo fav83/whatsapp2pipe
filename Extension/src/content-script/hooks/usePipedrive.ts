@@ -7,7 +7,7 @@
 
 import { useState } from 'react'
 import type { Person, CreatePersonData, AttachPhoneData } from '../../types/person'
-import type { Deal } from '../../types/deal'
+import type { Deal, CreateDealData } from '../../types/deal'
 import type { PipedriveRequest, PipedriveResponse } from '../../types/messages'
 
 interface PipedriveError {
@@ -21,9 +21,11 @@ export function usePipedrive() {
   const [isSearching, setIsSearching] = useState(false)
   const [isAttaching, setIsAttaching] = useState(false)
   const [isCreatingNote, setIsCreatingNote] = useState(false)
+  const [isCreatingDeal, setIsCreatingDeal] = useState(false)
   const [searchError, setSearchError] = useState<PipedriveError | null>(null)
   const [attachError, setAttachError] = useState<PipedriveError | null>(null)
   const [createNoteError, setCreateNoteError] = useState<string | null>(null)
+  const [createDealError, setCreateDealError] = useState<PipedriveError | null>(null)
 
   /**
    * Sends message to service worker and waits for response
@@ -219,11 +221,45 @@ export function usePipedrive() {
   }
 
   /**
+   * Create a deal in Pipedrive linked to a person
+   */
+  const createDeal = async (data: CreateDealData): Promise<Deal | null> => {
+    setIsCreatingDeal(true)
+    setCreateDealError(null)
+
+    try {
+      const response = await sendMessage<PipedriveResponse>({
+        type: 'PIPEDRIVE_CREATE_DEAL',
+        data,
+      })
+
+      if (response.type === 'PIPEDRIVE_CREATE_DEAL_SUCCESS') {
+        return response.deal
+      } else if (response.type === 'PIPEDRIVE_ERROR') {
+        setCreateDealError({
+          message: response.error,
+          statusCode: response.statusCode,
+        })
+        return null
+      }
+
+      throw new Error('Unexpected response type')
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create deal'
+      setCreateDealError({ message: errorMessage, statusCode: 500 })
+      return null
+    } finally {
+      setIsCreatingDeal(false)
+    }
+  }
+
+  /**
    * Clear error state
    */
   const clearError = () => setError(null)
   const clearSearchError = () => setSearchError(null)
   const clearAttachError = () => setAttachError(null)
+  const clearCreateDealError = () => setCreateDealError(null)
 
   return {
     isLoading,
@@ -231,16 +267,20 @@ export function usePipedrive() {
     isSearching,
     isAttaching,
     isCreatingNote,
+    isCreatingDeal,
     searchError,
     attachError,
     createNoteError,
+    createDealError,
     lookupByPhone,
     searchByName,
     createPerson,
     attachPhone,
     createNote,
+    createDeal,
     clearError,
     clearSearchError,
     clearAttachError,
+    clearCreateDealError,
   }
 }

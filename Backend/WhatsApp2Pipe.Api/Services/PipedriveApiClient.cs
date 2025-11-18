@@ -547,6 +547,75 @@ public class PipedriveApiClient : IPipedriveApiClient
     }
 
     /// <summary>
+    /// Create a new deal in Pipedrive (with automatic token refresh)
+    /// </summary>
+    public async Task<PipedriveDealResponse> CreateDealAsync(Session session, PipedriveCreateDealRequest request)
+    {
+        return await ExecuteWithRefreshAsync(
+            session,
+            (accessToken) => CreateDealInternalAsync(accessToken, session.ApiDomain, request),
+            "CreateDeal");
+    }
+
+    private async Task<PipedriveDealResponse> CreateDealInternalAsync(string accessToken, string apiDomain, PipedriveCreateDealRequest request)
+    {
+        var url = $"{apiDomain}/api/v1/deals";
+        logger.LogInformation("Creating deal: title={Title}, personId={PersonId}, pipelineId={PipelineId}, stageId={StageId}",
+            request.Title, request.PersonId, request.PipelineId, request.StageId);
+
+        var httpRequest = new HttpRequestMessage(HttpMethod.Post, url);
+        httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        httpRequest.Headers.Add("Accept", "application/json");
+        httpRequest.Content = new StringContent(
+            JsonSerializer.Serialize(request),
+            System.Text.Encoding.UTF8,
+            "application/json");
+
+        var json = JsonSerializer.Serialize(request);
+
+        // Log request (sanitize access token)
+        var headers = new Dictionary<string, string>
+        {
+            { "Authorization", "Bearer [REDACTED]" },
+            { "Content-Type", "application/json" }
+        };
+        apiLogger.LogRequest("POST", url, headers, json);
+
+        var response = await httpClient.SendAsync(httpRequest);
+        var responseContent = await response.Content.ReadAsStringAsync();
+
+        // Log response
+        apiLogger.LogResponse("POST", url, (int)response.StatusCode, responseContent);
+
+        if (response.StatusCode == (HttpStatusCode)429)
+        {
+            logger.LogWarning("Pipedrive rate limit exceeded - Status: 429");
+            throw new PipedriveRateLimitException("Pipedrive rate limit exceeded");
+        }
+
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogWarning($"Pipedrive create deal failed: {response.StatusCode}");
+            await HandleErrorResponse(response, responseContent);
+        }
+
+        var result = JsonSerializer.Deserialize<PipedriveDealResponse>(responseContent, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        if (result == null || !result.Success)
+        {
+            logger.LogError("Failed to create deal in Pipedrive - Success: false");
+            throw new PipedriveApiException("Failed to create deal in Pipedrive");
+        }
+
+        logger.LogInformation("Deal created successfully: id={DealId}", result.Data?.Id);
+
+        return result;
+    }
+
+    /// <summary>
     /// Handle error responses from Pipedrive API
     /// </summary>
     private Task HandleErrorResponse(HttpResponseMessage response, string content)

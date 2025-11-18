@@ -2,7 +2,7 @@
 
 **Feature:** Features 31, 32, 33 - Deal Auto-Lookup, Filtering/Sorting, and Display (Backend)
 **Date:** 2025-01-17
-**Status:** Draft
+**Status:** ✅ Complete
 **Dependencies:** Spec-106a (Backend Pipedrive API Service)
 
 ---
@@ -939,14 +939,15 @@ Log all errors to Application Insights:
 
 ## 13. Success Criteria
 
-- [ ] New endpoint `GET /api/pipedrive/persons/lookup` deployed
-- [ ] Returns person + deals in single response
-- [ ] Deals sorted correctly (open → won → lost)
-- [ ] Currency values formatted as strings
-- [ ] Stage/pipeline names enriched (not just IDs)
-- [ ] Graceful degradation when deals fetch fails
-- [ ] Manual testing passes all 4 test cases
-- [ ] Logging to Application Insights verified
+- [x] New endpoint `GET /api/pipedrive/persons/lookup` deployed
+- [x] Returns person + deals in single response
+- [x] Deals sorted correctly (open → won → lost → by update time descending)
+- [x] Currency values formatted as strings
+- [x] Stage/pipeline names enriched (not just IDs)
+- [x] Graceful degradation when deals fetch fails
+- [x] Manual testing passes all 4 test cases
+- [x] Logging to Application Insights verified
+- [x] **Enhancement:** Secondary sorting by `update_time` (most recent first) implemented
 
 ---
 
@@ -959,11 +960,12 @@ Implement caching for stages/pipelines:
 - TTL: 1 hour
 - Reduces API calls from 4 to 2 per lookup
 
-### 14.2 Sorting by Update Time (Post-MVP)
+### 14.2 Sorting by Update Time ~~(Post-MVP)~~ ✅ Implemented
 
-Add secondary sorting by `update_time`:
-- Store `updateTime` in Deal model
-- Sort: `OrderBy(status).ThenByDescending(updateTime)`
+~~Add secondary sorting by `update_time`:~~
+- ✅ Store `updateTime` in Deal model
+- ✅ Sort: `OrderBy(status).ThenByDescending(updateTime)`
+- **Implementation:** Completed in commit `9b3721f` with proper DateTime parsing
 
 ### 14.3 Deal Fields Expansion (Post-MVP)
 

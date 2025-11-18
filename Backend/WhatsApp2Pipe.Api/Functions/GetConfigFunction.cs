@@ -14,17 +14,20 @@ public class GetConfigFunction
     private readonly ISessionService sessionService;
     private readonly IConfiguration configuration;
     private readonly HttpRequestLogger httpRequestLogger;
+    private readonly IPipedriveApiClient pipedriveApiClient;
 
     public GetConfigFunction(
         ILogger<GetConfigFunction> logger,
         ISessionService sessionService,
         IConfiguration configuration,
-        HttpRequestLogger httpRequestLogger)
+        HttpRequestLogger httpRequestLogger,
+        IPipedriveApiClient pipedriveApiClient)
     {
         this.logger = logger;
         this.sessionService = sessionService;
         this.configuration = configuration;
         this.httpRequestLogger = httpRequestLogger;
+        this.pipedriveApiClient = pipedriveApiClient;
     }
 
     [Function("GetConfig")]
@@ -65,13 +68,41 @@ public class GetConfigFunction
             // 3. Get config message from configuration
             var configMessage = configuration["ConfigMessage"];
 
-            // 4. Return config (null if not set)
+            // 4. Fetch pipelines and stages
+            var pipelinesResponse = await pipedriveApiClient.GetPipelinesAsync(session);
+            var stagesResponse = await pipedriveApiClient.GetStagesAsync(session);
+
+            // 5. Filter active pipelines and format data
+            var pipelines = pipelinesResponse.Data?
+                .Where(p => p.Active)
+                .Select(p => new
+                {
+                    id = p.Id,
+                    name = p.Name,
+                    orderNr = p.OrderNr,
+                    active = p.Active
+                })
+                .ToArray() ?? Array.Empty<object>();
+
+            var stages = stagesResponse.Data?
+                .Select(s => new
+                {
+                    id = s.Id,
+                    name = s.Name,
+                    orderNr = s.OrderNr,
+                    pipelineId = s.PipelineId
+                })
+                .ToArray() ?? Array.Empty<object>();
+
+            // 6. Return config with pipelines/stages
             var response = req.CreateResponse(HttpStatusCode.OK);
             response.Headers.Add("Content-Type", "application/json");
 
             var responseBody = new
             {
-                message = configMessage
+                message = configMessage,
+                pipelines,
+                stages
             };
 
             await response.WriteStringAsync(JsonSerializer.Serialize(responseBody));

@@ -34,7 +34,7 @@ import { DealsSection } from './components/DealsSection'
 import { DealsLoadingSkeleton } from './components/DealsLoadingSkeleton'
 import { CreateNoteFromChat } from './components/CreateNoteFromChat'
 import type { Person } from '../types/person'
-import type { Deal } from '../types/deal'
+import type { Deal, Pipeline, Stage } from '../types/deal'
 import logger from '../utils/logger'
 
 interface ChatStatus {
@@ -66,6 +66,8 @@ type SidebarState =
       phone: string
       deals: Deal[] | null
       dealsError?: string
+      pipelines: Pipeline[]
+      stages: Stage[]
     }
   | { type: 'person-no-match'; name: string; phone: string }
   | { type: 'person-error'; name: string; phone: string; error: string }
@@ -84,6 +86,8 @@ export default function App() {
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false)
   const [configMessage, setConfigMessage] = useState<string | null>(null)
   const [showConfigMessage, setShowConfigMessage] = useState<boolean>(false)
+  const [pipelines, setPipelines] = useState<Pipeline[]>([])
+  const [stages, setStages] = useState<Stage[]>([])
 
   // Theme manager is now initialized in index.tsx before React mount (prevents flicker)
 
@@ -144,6 +148,13 @@ export default function App() {
           setConfigMessage(response.config.message)
           setShowConfigMessage(true)
         }
+        // Store pipelines and stages
+        if (response.config.pipelines) {
+          setPipelines(response.config.pipelines)
+        }
+        if (response.config.stages) {
+          setStages(response.config.stages)
+        }
       }
       // Silent failure - error logged to Sentry by service worker
     } catch (error) {
@@ -200,7 +211,13 @@ export default function App() {
 
         {/* Authenticated: Show chat-based content */}
         {authState === 'authenticated' && (
-          <SidebarContent state={state} setState={setState} userName={userName} />
+          <SidebarContent
+            state={state}
+            setState={setState}
+            userName={userName}
+            pipelines={pipelines}
+            stages={stages}
+          />
         )}
       </main>
 
@@ -287,9 +304,11 @@ interface SidebarContentProps {
   state: SidebarState
   setState: React.Dispatch<React.SetStateAction<SidebarState>>
   userName: string | null
+  pipelines: Pipeline[]
+  stages: Stage[]
 }
 
-function SidebarContent({ state, setState, userName }: SidebarContentProps) {
+function SidebarContent({ state, setState, userName, pipelines, stages }: SidebarContentProps) {
   const { lookupByPhone } = usePipedrive()
   // Track the current lookup to prevent race conditions when rapidly switching contacts
   const currentLookupRef = useRef<string | null>(null)
@@ -339,6 +358,8 @@ function SidebarContent({ state, setState, userName }: SidebarContentProps) {
                 phone,
                 deals: result.deals,
                 dealsError: result.dealsError,
+                pipelines,
+                stages,
               }
             } else {
               logger.log('[SidebarContent] Updating state to person-no-match for:', phone)
@@ -381,7 +402,7 @@ function SidebarContent({ state, setState, userName }: SidebarContentProps) {
         })
       }
     },
-    [lookupByPhone, setState]
+    [lookupByPhone, pipelines, setState, stages]
   )
 
   // Trigger person lookup when contact state is entered
@@ -439,6 +460,8 @@ function SidebarContent({ state, setState, userName }: SidebarContentProps) {
       person,
       phone,
       deals: [], // Empty deals when person is first created
+      pipelines,
+      stages,
     })
   }
 
@@ -484,7 +507,14 @@ function SidebarContent({ state, setState, userName }: SidebarContentProps) {
             personName={state.person.name}
             deals={state.deals}
             dealsError={state.dealsError}
+            pipelines={state.pipelines}
+            stages={state.stages}
             onRetry={() => handleRetry(state.phone, state.person.name)}
+            onDealsUpdated={(updatedDeals) => {
+              setState((prev) =>
+                prev.type === 'person-matched' ? { ...prev, deals: updatedDeals } : prev
+              )
+            }}
           />
 
           {userName && (

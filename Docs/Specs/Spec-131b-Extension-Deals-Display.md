@@ -2,7 +2,7 @@
 
 **Feature:** Features 31, 32, 33 - Deal Auto-Lookup, Filtering/Sorting, and Display (Extension)
 **Date:** 2025-01-17
-**Status:** Draft
+**Status:** ✅ Complete
 **Dependencies:** Spec-131a (Backend Deals API Service must be deployed)
 
 ---
@@ -948,17 +948,18 @@ logError('Failed to render deals', error, { personId, dealsCount: deals?.length 
 
 ## 14. Success Criteria
 
-- [ ] DealsSection component implemented and renders below PersonMatchedCard
-- [ ] Dropdown shows all deal titles in backend-sorted order
-- [ ] Won deals display in green, lost deals in gray
-- [ ] Selected deal shows title, value, pipeline, stage
-- [ ] Loading skeleton displays during fetch
-- [ ] Empty state shows "No deals yet" message
-- [ ] Error state shows retry button and works correctly
-- [ ] All 5 manual test scenarios pass
-- [ ] No console errors or warnings
-- [ ] Keyboard navigation works correctly
-- [ ] UI matches existing design system
+- [x] DealsSection component implemented and renders below PersonMatchedCard
+- [x] Dropdown shows all deal titles in backend-sorted order
+- [x] Won deals display in green, lost deals in gray
+- [x] Selected deal shows title, value, pipeline, stage
+- [x] Loading skeleton displays during fetch
+- [x] Empty state shows "No deals yet" message
+- [x] Error state shows retry button and works correctly
+- [x] All 5 manual test scenarios pass
+- [x] No console errors or warnings
+- [x] Keyboard navigation works correctly (Arrow Up/Down, Enter, Space, Escape)
+- [x] UI matches existing design system
+- [x] **Enhancement:** Full ARIA attributes for accessibility (combobox, listbox, aria-activedescendant)
 
 ---
 

@@ -64,7 +64,7 @@ Extend the Chat2Deal Chrome extension to support **Pipedrive Deals management** 
 
 ## 4) Scope — Functional Requirements
 
-### 4.1 Deal Auto-Lookup (Feature 31)
+### 4.1 Deal Auto-Lookup (Feature 31) - ✅ Complete
 
 When user switches to a 1:1 WhatsApp chat with a matched Person, extension automatically fetches all associated deals from Pipedrive.
 
@@ -83,7 +83,7 @@ When user switches to a 1:1 WhatsApp chat with a matched Person, extension autom
 
 ---
 
-### 4.2 Deal Selector Dropdown (Feature 32)
+### 4.2 Deal Selector Dropdown (Feature 32) - ✅ Complete
 
 Display all deals for the current Person in a dropdown selector with status indicators.
 
@@ -120,7 +120,7 @@ Display all deals for the current Person in a dropdown selector with status indi
 
 ---
 
-### 4.3 Deal Display (Feature 33)
+### 4.3 Deal Display (Feature 33) - ✅ Complete
 
 When user selects a deal from dropdown, display comprehensive deal information in a card below.
 
@@ -160,7 +160,7 @@ When user selects a deal from dropdown, display comprehensive deal information i
 
 ---
 
-### 4.4 Create New Deal (Feature 34)
+### 4.4 Create New Deal (Feature 34) - ⏳ Pending
 
 Allow users to create new deals linked to the current Person with minimal friction.
 
@@ -208,7 +208,7 @@ Allow users to create new deals linked to the current Person with minimal fricti
 
 ---
 
-### 4.5 Change Deal Stage (Feature 35)
+### 4.5 Change Deal Stage (Feature 35) - ⏳ Pending
 
 Allow users to move deals through pipeline stages via dropdown in deal card.
 
@@ -236,7 +236,7 @@ Allow users to move deals through pipeline stages via dropdown in deal card.
 
 ---
 
-### 4.6 Mark Deal as Won (Feature 36)
+### 4.6 Mark Deal as Won (Feature 36) - ⏳ Pending
 
 Allow users to mark open deals as Won with a single click.
 
@@ -264,7 +264,7 @@ Allow users to mark open deals as Won with a single click.
 
 ---
 
-### 4.7 Mark Deal as Lost (Feature 37)
+### 4.7 Mark Deal as Lost (Feature 37) - ⏳ Pending
 
 Allow users to mark open deals as Lost with required lost reason selection.
 
@@ -302,7 +302,7 @@ Allow users to mark open deals as Lost with required lost reason selection.
 
 ---
 
-### 4.8 Reopen Closed Deal (Feature 38)
+### 4.8 Reopen Closed Deal (Feature 38) - ⏳ Pending
 
 Allow users to reopen won or lost deals back to open status.
 
@@ -332,7 +332,7 @@ Allow users to reopen won or lost deals back to open status.
 
 ---
 
-### 4.9 Save WhatsApp Messages to Deal Notes (Feature 39)
+### 4.9 Save WhatsApp Messages to Deal Notes (Feature 39) - ⏳ Pending
 
 Extend existing "Create Note from Chat" feature (Spec-130b) to support saving selected WhatsApp messages to Deal notes (not just Person notes).
 
@@ -371,7 +371,7 @@ Extend existing "Create Note from Chat" feature (Spec-130b) to support saving se
 
 ---
 
-### 4.10 Deals Section Positioning & Layout (Feature 40)
+### 4.10 Deals Section Positioning & Layout (Feature 40) - ✅ Complete
 
 Define how Deals UI is positioned within the existing sidebar layout.
 

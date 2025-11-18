@@ -259,6 +259,11 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
     return true
   }
 
+  if (message.type === 'PIPEDRIVE_CREATE_DEAL') {
+    handlePipedriveCreateDeal(message, sendResponse)
+    return true
+  }
+
   // Handle feedback submission
   if (message.type === 'FEEDBACK_SUBMIT') {
     handleFeedbackSubmit(message, sendResponse)
@@ -425,6 +430,34 @@ async function handlePipedriveCreateNote(
     sendResponse({
       type: 'PIPEDRIVE_CREATE_NOTE_ERROR',
       error: errorMessage,
+    })
+  }
+}
+
+/**
+ * Handle create deal
+ */
+async function handlePipedriveCreateDeal(
+  message: PipedriveRequest,
+  sendResponse: (response: PipedriveResponse) => void
+) {
+  try {
+    if (message.type !== 'PIPEDRIVE_CREATE_DEAL') return
+
+    const deal = await pipedriveApiService.createDeal(message.data)
+
+    sendResponse({
+      type: 'PIPEDRIVE_CREATE_DEAL_SUCCESS',
+      deal,
+    })
+  } catch (error) {
+    const statusCode = isApiError(error) ? error.statusCode : 500
+    const errorMessage = getErrorMessage(error, 'Failed to create deal')
+
+    sendResponse({
+      type: 'PIPEDRIVE_ERROR',
+      error: errorMessage,
+      statusCode,
     })
   }
 }

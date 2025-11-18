@@ -8,7 +8,7 @@
 
 import { AUTH_CONFIG } from '../config'
 import type { Person, CreatePersonData, AttachPhoneData } from '../types/person'
-import type { Deal } from '../types/deal'
+import type { Deal, CreateDealData } from '../types/deal'
 import type { UserConfig } from '../types/config'
 import { logError } from '../utils/errorLogger'
 import { logBreadcrumb } from '../utils/breadcrumbs'
@@ -296,6 +296,24 @@ class PipedriveApiService {
 
     // Generic error for 500 or other status codes
     throw new Error('Failed to create note. Please try again.')
+  }
+
+  /**
+   * Create a deal in Pipedrive
+   * @param data - Deal data (title, personId, pipelineId, stageId, optional value)
+   * @returns Created deal with enriched metadata
+   * @throws Error with user-friendly message on failure
+   */
+  async createDeal(data: CreateDealData): Promise<Deal> {
+    logger.log('[PipedriveAPI] Creating deal:', data.title)
+
+    const deal = await this.makeRequest<Deal>('/api/pipedrive/deals', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+
+    logger.log('[PipedriveAPI] Deal created with ID:', deal.id)
+    return deal
   }
 
   /**
