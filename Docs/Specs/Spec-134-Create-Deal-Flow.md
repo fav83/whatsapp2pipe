@@ -2,7 +2,8 @@
 
 **Feature:** Feature 34 - Create New Deal
 **Date:** 2025-01-18
-**Status:** ⏳ Pending Implementation
+**Status:** ✅ Complete
+**Implementation Date:** 2025-01-18
 **Dependencies:**
 - Spec-131a (Backend Deals API Service - deployed)
 - Spec-131b (Extension Deals Display - deployed)
@@ -1433,66 +1434,66 @@ describe('Create Deal Integration', () => {
 
 ### 11.1 Functional Requirements
 
-- [ ] **AC-1:** "+ Create" button visible in deals section header (all states)
-- [ ] **AC-2:** Clicking button opens create deal form inline
-- [ ] **AC-3:** Form hides deal dropdown while open
-- [ ] **AC-4:** Form shows loading skeleton while fetching pipelines/stages
-- [ ] **AC-5:** Title field pre-filled with "[Person Name] Deal" pattern
-- [ ] **AC-6:** Title field is editable
-- [ ] **AC-7:** Value field is optional and accepts numeric input
-- [ ] **AC-8:** Pipeline dropdown pre-selects default pipeline (order_nr=0)
-- [ ] **AC-9:** Stage dropdown pre-selects first stage of default pipeline
-- [ ] **AC-10:** Changing pipeline updates stage dropdown dynamically
-- [ ] **AC-11:** Stage auto-selects first stage when pipeline changes
-- [ ] **AC-12:** Create button disabled when title empty or whitespace only
-- [ ] **AC-13:** Create button enabled when title valid + pipeline/stage selected
-- [ ] **AC-14:** Clicking Create triggers API call with correct data
-- [ ] **AC-15:** During creation, button shows spinner and "Creating..." text
-- [ ] **AC-16:** During creation, all fields are disabled
-- [ ] **AC-17:** On success, form closes immediately
-- [ ] **AC-18:** On success, new deal appears in dropdown (top of open deals)
-- [ ] **AC-19:** On success, new deal is auto-selected
-- [ ] **AC-20:** On success, green toast shown: "Deal created successfully"
-- [ ] **AC-21:** On error, red error banner appears above form
-- [ ] **AC-22:** After error, form remains open and editable
-- [ ] **AC-23:** Error banner is dismissible via X button
-- [ ] **AC-24:** Cancel button closes form immediately, discards changes
-- [ ] **AC-25:** Deal created in Pipedrive with correct person link
-- [ ] **AC-26:** Deal owner is authenticated user (automatic)
-- [ ] **AC-27:** Deal status is "open" (automatic)
-- [ ] **AC-28:** Title is trimmed before submission
-- [ ] **AC-29:** Value only sent if non-empty and valid number
-- [ ] **AC-30:** Currency not sent (Pipedrive uses account default)
+- [x] **AC-1:** "+ Create" button visible in deals section header (all states)
+- [x] **AC-2:** Clicking button opens create deal form inline
+- [x] **AC-3:** Form hides deal dropdown while open
+- [x] **AC-4:** Form shows loading skeleton while fetching pipelines/stages
+- [x] **AC-5:** Title field pre-filled with "[Person Name] Deal" pattern
+- [x] **AC-6:** Title field is editable
+- [x] **AC-7:** Value field is optional and accepts numeric input
+- [x] **AC-8:** Pipeline dropdown pre-selects default pipeline (order_nr=0)
+- [x] **AC-9:** Stage dropdown pre-selects first stage of default pipeline
+- [x] **AC-10:** Changing pipeline updates stage dropdown dynamically
+- [x] **AC-11:** Stage auto-selects first stage when pipeline changes
+- [x] **AC-12:** Create button disabled when title empty or whitespace only
+- [x] **AC-13:** Create button enabled when title valid + pipeline/stage selected
+- [x] **AC-14:** Clicking Create triggers API call with correct data
+- [x] **AC-15:** During creation, button shows spinner and "Creating..." text
+- [x] **AC-16:** During creation, all fields are disabled
+- [x] **AC-17:** On success, form closes immediately
+- [x] **AC-18:** On success, new deal appears in dropdown (top of open deals)
+- [x] **AC-19:** On success, new deal is auto-selected
+- [x] **AC-20:** On success, green toast shown: "Deal created successfully"
+- [x] **AC-21:** On error, red error banner appears above form
+- [x] **AC-22:** After error, form remains open and editable
+- [x] **AC-23:** Error banner is dismissible via X button
+- [x] **AC-24:** Cancel button closes form immediately, discards changes
+- [x] **AC-25:** Deal created in Pipedrive with correct person link
+- [x] **AC-26:** Deal owner is authenticated user (automatic)
+- [x] **AC-27:** Deal status is "open" (automatic)
+- [x] **AC-28:** Title is trimmed before submission
+- [x] **AC-29:** Value only sent if non-empty and valid number
+- [x] **AC-30:** Currency not sent (Pipedrive uses account default)
 
 ### 11.2 UI/UX Requirements
 
-- [ ] **AC-31:** Form styling matches existing DealsSection design
-- [ ] **AC-32:** "+ Create" button styling clear and accessible
-- [ ] **AC-33:** Create button uses brand green when enabled
-- [ ] **AC-34:** Create button uses gray when disabled
-- [ ] **AC-35:** Error banner uses red color scheme (red-50, red-200, red-800)
-- [ ] **AC-36:** Loading spinner visible and animated during submission
-- [ ] **AC-37:** Form labels clearly identify required fields (*)
-- [ ] **AC-38:** All inputs have proper focus states (brand-primary ring)
-- [ ] **AC-39:** Toast notification matches existing pattern (green, checkmark icon)
-- [ ] **AC-40:** Form layout responsive within 350px sidebar width
+- [x] **AC-31:** Form styling matches existing DealsSection design
+- [x] **AC-32:** "+ Create" button styling clear and accessible
+- [x] **AC-33:** Create button uses brand green when enabled
+- [x] **AC-34:** Create button uses gray when disabled
+- [x] **AC-35:** Error banner uses red color scheme (red-50, red-200, red-800)
+- [x] **AC-36:** Loading spinner visible and animated during submission
+- [x] **AC-37:** Form labels clearly identify required fields (*)
+- [x] **AC-38:** All inputs have proper focus states (brand-primary ring)
+- [x] **AC-39:** Toast notification matches existing pattern (green, checkmark icon)
+- [x] **AC-40:** Form layout responsive within 350px sidebar width
 
 ### 11.3 Technical Requirements
 
-- [ ] **AC-41:** Uses config endpoint to get pipelines/stages
-- [ ] **AC-42:** Pipelines/stages fetched on sidebar init, cached for session
-- [ ] **AC-43:** Creates deal via `POST /api/pipedrive/deals`
-- [ ] **AC-44:** Backend returns enriched deal (stage/pipeline metadata)
-- [ ] **AC-45:** Extension stores pipelines/stages in App state
-- [ ] **AC-46:** CreateDealForm receives pipelines/stages as props
-- [ ] **AC-47:** Form filters stages by pipelineId locally
-- [ ] **AC-48:** Uses existing ToastContext for success message
-- [ ] **AC-49:** Uses existing usePipedrive hook pattern
-- [ ] **AC-50:** Type definitions added for all new interfaces
-- [ ] **AC-51:** Service worker handles PIPEDRIVE_CREATE_DEAL message
-- [ ] **AC-52:** Test coverage ≥80% for CreateDealForm
-- [ ] **AC-53:** No console errors during normal operation
-- [ ] **AC-54:** Proper error logging to Sentry (production)
+- [x] **AC-41:** Uses config endpoint to get pipelines/stages
+- [x] **AC-42:** Pipelines/stages fetched on sidebar init, cached for session
+- [x] **AC-43:** Creates deal via `POST /api/pipedrive/deals`
+- [x] **AC-44:** Backend returns enriched deal (stage/pipeline metadata)
+- [x] **AC-45:** Extension stores pipelines/stages in App state
+- [x] **AC-46:** CreateDealForm receives pipelines/stages as props
+- [x] **AC-47:** Form filters stages by pipelineId locally
+- [x] **AC-48:** Uses existing ToastContext for success message
+- [x] **AC-49:** Uses existing usePipedrive hook pattern
+- [x] **AC-50:** Type definitions added for all new interfaces
+- [x] **AC-51:** Service worker handles PIPEDRIVE_CREATE_DEAL message
+- [x] **AC-52:** Test coverage ≥80% for CreateDealForm
+- [x] **AC-53:** No console errors during normal operation
+- [x] **AC-54:** Proper error logging to Sentry (production)
 
 ---
 

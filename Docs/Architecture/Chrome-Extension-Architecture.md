@@ -1709,12 +1709,17 @@ const PersonLookupError = lazy(() => import('./components/PersonLookupError'))
 
 ### 13.3 Future Architecture Considerations
 
-**Post-MVP Features (from BRD Section 11):**
+**Implemented Features:**
+- ✅ Notes integration (create notes from chat messages - Spec-130b)
+- ✅ Deals integration (view, create deals with pipeline/stage management - Spec-131a/b, Spec-134)
+
+**Post-MVP Features:**
 - Group chat support (requires participant picker UI)
-- Activities/Notes (new API endpoints, more complex UI)
-- Deals integration (pipeline views, stage management)
+- Activities/Tasks management (requires activity type selection, due dates)
+- Advanced deal management (update stages, mark won/lost, reopen deals)
 - Phone normalization (add country detection service)
 - Organizations (extend person linking model)
+- Deal products and participants management
 
 **Scalability:**
 - Multi-CRM support (abstract Pipedrive service layer)

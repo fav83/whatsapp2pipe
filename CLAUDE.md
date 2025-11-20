@@ -67,6 +67,7 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 - [Spec-130b-Extension-Create-Note-From-Chat.md](Docs/Specs/Spec-130b-Extension-Create-Note-From-Chat.md) - Extension UI for creating notes from WhatsApp chats (✅ Complete)
 - [Spec-131a-Backend-Deals-API.md](Docs/Specs/Spec-131a-Backend-Deals-API.md) - Backend Deals API Service with enrichment and sorting (✅ Complete)
 - [Spec-131b-Extension-Deals-Display.md](Docs/Specs/Spec-131b-Extension-Deals-Display.md) - Extension UI for displaying and selecting deals (✅ Complete)
+- [Spec-134-Create-Deal-Flow.md](Docs/Specs/Spec-134-Create-Deal-Flow.md) - Create deal flow with inline form and backend API (✅ Complete)
 
 ### Testing Documentation
 - [Testing/Manual/](Docs/Testing/Manual/) - Manual testing checklists for Extension, Landing, and Website
