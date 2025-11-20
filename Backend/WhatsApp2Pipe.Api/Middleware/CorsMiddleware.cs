@@ -8,7 +8,7 @@ namespace WhatsApp2Pipe.Api.Middleware;
 public class CorsMiddleware : IFunctionsWorkerMiddleware
 {
     private static readonly string[] FunctionsToSkip = { "AuthCallback" };
-    private const string AllowedMethods = "GET, POST, OPTIONS";
+    private const string AllowedMethods = "GET, POST, PUT, OPTIONS";
     private const string AllowedHeaders = "Content-Type, Authorization";
 
     private readonly IConfiguration configuration;

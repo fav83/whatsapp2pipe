@@ -68,6 +68,7 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 - [Spec-131a-Backend-Deals-API.md](Docs/Specs/Spec-131a-Backend-Deals-API.md) - Backend Deals API Service with enrichment and sorting (✅ Complete)
 - [Spec-131b-Extension-Deals-Display.md](Docs/Specs/Spec-131b-Extension-Deals-Display.md) - Extension UI for displaying and selecting deals (✅ Complete)
 - [Spec-134-Create-Deal-Flow.md](Docs/Specs/Spec-134-Create-Deal-Flow.md) - Create deal flow with inline form and backend API (✅ Complete)
+- [Spec-135-Change-Deal-Stage-Flow.md](Docs/Specs/Spec-135-Change-Deal-Stage-Flow.md) - Change deal stage and pipeline with save/cancel flow (✅ Complete)
 
 ### Testing Documentation
 - [Testing/Manual/](Docs/Testing/Manual/) - Manual testing checklists for Extension, Landing, and Website

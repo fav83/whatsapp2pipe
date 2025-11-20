@@ -7,7 +7,7 @@
 
 import { useState } from 'react'
 import type { Person, CreatePersonData, AttachPhoneData } from '../../types/person'
-import type { Deal, CreateDealData } from '../../types/deal'
+import type { Deal, CreateDealData, UpdateDealData } from '../../types/deal'
 import type { PipedriveRequest, PipedriveResponse } from '../../types/messages'
 
 interface PipedriveError {
@@ -254,6 +254,40 @@ export function usePipedrive() {
   }
 
   /**
+   * Update deal pipeline and/or stage
+   */
+  const updateDeal = async (dealId: number, data: UpdateDealData): Promise<Deal | null> => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await sendMessage<PipedriveResponse>({
+        type: 'PIPEDRIVE_UPDATE_DEAL',
+        dealId,
+        data,
+      })
+
+      if (response.type === 'PIPEDRIVE_UPDATE_DEAL_SUCCESS') {
+        return response.deal
+      } else if (response.type === 'PIPEDRIVE_ERROR') {
+        setError({
+          message: response.error,
+          statusCode: response.statusCode,
+        })
+        return null
+      }
+
+      throw new Error('Unexpected response type')
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update deal'
+      setError({ message: errorMessage, statusCode: 500 })
+      return null
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  /**
    * Clear error state
    */
   const clearError = () => setError(null)
@@ -278,6 +312,7 @@ export function usePipedrive() {
     attachPhone,
     createNote,
     createDeal,
+    updateDeal,
     clearError,
     clearSearchError,
     clearAttachError,

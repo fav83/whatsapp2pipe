@@ -82,4 +82,13 @@ public interface IPipedriveApiClient
     /// <param name="request">Deal data to create</param>
     /// <returns>Created deal response</returns>
     Task<PipedriveDealResponse> CreateDealAsync(Session session, PipedriveCreateDealRequest request);
+
+    /// <summary>
+    /// Update deal stage (and implicitly pipeline via stage's pipeline_id)
+    /// </summary>
+    /// <param name="session">Session containing access token (may be updated if token is refreshed)</param>
+    /// <param name="dealId">Deal ID to update</param>
+    /// <param name="stageId">New stage ID</param>
+    /// <returns>Updated deal object</returns>
+    Task<PipedriveDeal> UpdateDealAsync(Session session, int dealId, int stageId);
 }

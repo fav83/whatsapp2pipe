@@ -378,4 +378,100 @@ describe('Deals Integration', () => {
       expect(result.current.error).toBeNull()
     })
   })
+
+  describe('Update Deal Integration', () => {
+    it('complete update deal flow - from hook call to API to state update', async () => {
+      const { result } = renderHook(() => usePipedrive())
+
+      const originalDeal = mockDeals[0]
+      const updatedDeal: Deal = {
+        ...originalDeal,
+        stage: { id: 2, name: 'Negotiation', order: 2 },
+      }
+
+      // Mock successful API response
+      mockSendMessage.mockResolvedValueOnce({
+        type: 'PIPEDRIVE_UPDATE_DEAL_SUCCESS',
+        deal: updatedDeal,
+      })
+
+      // Call updateDeal
+      const returnedDeal = await result.current.updateDeal(originalDeal.id, {
+        pipelineId: 1,
+        stageId: 2,
+      })
+
+      // Verify API was called with correct parameters
+      expect(mockSendMessage).toHaveBeenCalledWith({
+        type: 'PIPEDRIVE_UPDATE_DEAL',
+        dealId: originalDeal.id,
+        data: {
+          pipelineId: 1,
+          stageId: 2,
+        },
+      })
+
+      // Verify returned deal matches updated deal
+      expect(returnedDeal).toEqual(updatedDeal)
+
+      // Verify loading state was managed correctly
+      expect(result.current.isLoading).toBe(false)
+      expect(result.current.error).toBeNull()
+    })
+
+    it('error recovery flow - handles API failure and allows retry', async () => {
+      const { result } = renderHook(() => usePipedrive())
+
+      const dealId = mockDeals[0].id
+
+      // First call fails
+      mockSendMessage.mockResolvedValueOnce({
+        type: 'PIPEDRIVE_ERROR',
+        error: 'Network timeout',
+        statusCode: 504,
+      })
+
+      const firstResult = await result.current.updateDeal(dealId, {
+        pipelineId: 1,
+        stageId: 2,
+      })
+
+      // Should return null on error
+      expect(firstResult).toBeNull()
+
+      // Wait for error to be set
+      await waitFor(() => {
+        expect(result.current.error).not.toBeNull()
+      })
+
+      expect(result.current.error?.message).toBe('Network timeout')
+      expect(result.current.error?.statusCode).toBe(504)
+
+      // Second call succeeds (retry)
+      const updatedDeal: Deal = {
+        ...mockDeals[0],
+        stage: { id: 2, name: 'Negotiation', order: 2 },
+      }
+
+      mockSendMessage.mockResolvedValueOnce({
+        type: 'PIPEDRIVE_UPDATE_DEAL_SUCCESS',
+        deal: updatedDeal,
+      })
+
+      const secondResult = await result.current.updateDeal(dealId, {
+        pipelineId: 1,
+        stageId: 2,
+      })
+
+      // Should succeed on retry
+      expect(secondResult).toEqual(updatedDeal)
+
+      // Wait for error to be cleared
+      await waitFor(() => {
+        expect(result.current.error).toBeNull()
+      })
+
+      expect(result.current.isLoading).toBe(false)
+    })
+  })
 })

@@ -89,6 +89,15 @@ export function DealsSection({
     onDealsUpdated?.(updatedDeals)
   }
 
+  // Handle deal updated
+  const handleDealUpdated = (updatedDeal: Deal) => {
+    // Update deals array with new deal data
+    const updatedDeals = deals.map((d) => (d.id === updatedDeal.id ? updatedDeal : d))
+
+    // Notify parent to update deals state
+    onDealsUpdated?.(updatedDeals)
+  }
+
   // Error state: deals fetch failed
   if (deals === null) {
     return <DealsErrorState error={dealsError} onRetry={onRetry || (() => {})} />
@@ -187,7 +196,14 @@ export function DealsSection({
         </div>
 
         <DealDropdown deals={deals} selectedDealId={selectedDealId} onSelect={setSelectedDealId} />
-        {selectedDealId && <DealDetails deal={selectedDeal} />}
+        {selectedDealId && selectedDeal && (
+          <DealDetails
+            deal={selectedDeal}
+            pipelines={pipelines}
+            stages={stages}
+            onDealUpdated={handleDealUpdated}
+          />
+        )}
       </div>
     </div>
   )

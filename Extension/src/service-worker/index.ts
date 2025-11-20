@@ -264,6 +264,11 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
     return true
   }
 
+  if (message.type === 'PIPEDRIVE_UPDATE_DEAL') {
+    handlePipedriveUpdateDeal(message, sendResponse)
+    return true
+  }
+
   // Handle feedback submission
   if (message.type === 'FEEDBACK_SUBMIT') {
     handleFeedbackSubmit(message, sendResponse)
@@ -435,6 +440,18 @@ async function handlePipedriveCreateNote(
 }
 
 /**
+ * Type guard to check if error has statusCode property
+ */
+function isApiError(error: unknown): error is { statusCode: number; message: string } {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'statusCode' in error &&
+    typeof (error as { statusCode: unknown }).statusCode === 'number'
+  )
+}
+
+/**
  * Handle create deal
  */
 async function handlePipedriveCreateDeal(
@@ -453,6 +470,34 @@ async function handlePipedriveCreateDeal(
   } catch (error) {
     const statusCode = isApiError(error) ? error.statusCode : 500
     const errorMessage = getErrorMessage(error, 'Failed to create deal')
+
+    sendResponse({
+      type: 'PIPEDRIVE_ERROR',
+      error: errorMessage,
+      statusCode,
+    })
+  }
+}
+
+/**
+ * Handle update deal
+ */
+async function handlePipedriveUpdateDeal(
+  message: PipedriveRequest,
+  sendResponse: (response: PipedriveResponse) => void
+) {
+  try {
+    if (message.type !== 'PIPEDRIVE_UPDATE_DEAL') return
+
+    const deal = await pipedriveApiService.updateDeal(message.dealId, message.data)
+
+    sendResponse({
+      type: 'PIPEDRIVE_UPDATE_DEAL_SUCCESS',
+      deal,
+    })
+  } catch (error) {
+    const statusCode = isApiError(error) ? error.statusCode : 500
+    const errorMessage = getErrorMessage(error, 'Failed to update deal')
 
     sendResponse({
       type: 'PIPEDRIVE_ERROR',

@@ -8,7 +8,7 @@
 
 import { AUTH_CONFIG } from '../config'
 import type { Person, CreatePersonData, AttachPhoneData } from '../types/person'
-import type { Deal, CreateDealData } from '../types/deal'
+import type { Deal, CreateDealData, UpdateDealData } from '../types/deal'
 import type { UserConfig } from '../types/config'
 import { logError } from '../utils/errorLogger'
 import { logBreadcrumb } from '../utils/breadcrumbs'
@@ -313,6 +313,25 @@ class PipedriveApiService {
     })
 
     logger.log('[PipedriveAPI] Deal created with ID:', deal.id)
+    return deal
+  }
+
+  /**
+   * Update a deal's pipeline and/or stage
+   * @param dealId - Deal ID to update
+   * @param data - Update data (pipelineId, stageId)
+   * @returns Updated deal with enriched metadata
+   * @throws Error with user-friendly message on failure
+   */
+  async updateDeal(dealId: number, data: UpdateDealData): Promise<Deal> {
+    logger.log('[PipedriveAPI] Updating deal:', dealId, data)
+
+    const deal = await this.makeRequest<Deal>(`/api/pipedrive/deals/${dealId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+
+    logger.log('[PipedriveAPI] Deal updated with ID:', deal.id)
     return deal
   }
 

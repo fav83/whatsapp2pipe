@@ -232,6 +232,104 @@ public class PipedriveApiClientTests
 
     #endregion
 
+    #region UpdateDealAsync Tests
+
+    [Fact]
+    public async Task UpdateDealAsync_ValidResponse_ReturnsUpdatedDeal()
+    {
+        // Arrange
+        var session = CreateTestSession();
+        var dealId = 123;
+        var stageId = 5;
+
+        var dealResponse = new PipedriveDealResponse
+        {
+            Success = true,
+            Data = new PipedriveDeal
+            {
+                Id = dealId,
+                Title = "Test Deal",
+                StageId = stageId,
+                Status = "open"
+            }
+        };
+
+        var mockHttpMessageHandler = CreateMockHttpMessageHandler(
+            HttpStatusCode.OK,
+            JsonSerializer.Serialize(dealResponse)
+        );
+
+        var httpClient = new HttpClient(mockHttpMessageHandler.Object)
+        {
+            BaseAddress = new Uri("https://api.pipedrive.com")
+        };
+        var client = new PipedriveApiClient(
+            httpClient, config, mockLogger.Object, mockOAuthService.Object, mockSessionService.Object);
+
+        // Act
+        var result = await client.UpdateDealAsync(session, dealId, stageId);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(dealId, result.Id);
+        Assert.Equal(stageId, result.StageId);
+        Assert.Equal("open", result.Status);
+    }
+
+    [Fact]
+    public async Task UpdateDealAsync_NotFound_ThrowsPipedriveNotFoundException()
+    {
+        // Arrange
+        var session = CreateTestSession();
+        var dealId = 999;
+        var stageId = 5;
+
+        var mockHttpMessageHandler = CreateMockHttpMessageHandler(
+            HttpStatusCode.NotFound,
+            "{\"success\":false,\"error\":\"Deal not found\"}"
+        );
+
+        var httpClient = new HttpClient(mockHttpMessageHandler.Object)
+        {
+            BaseAddress = new Uri("https://api.pipedrive.com")
+        };
+        var client = new PipedriveApiClient(
+            httpClient, config, mockLogger.Object, mockOAuthService.Object, mockSessionService.Object);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<PipedriveNotFoundException>(
+            async () => await client.UpdateDealAsync(session, dealId, stageId)
+        );
+    }
+
+    [Fact]
+    public async Task UpdateDealAsync_UnauthorizedError_ThrowsPipedriveUnauthorizedException()
+    {
+        // Arrange
+        var session = CreateTestSession();
+        var dealId = 123;
+        var stageId = 5;
+
+        var mockHttpMessageHandler = CreateMockHttpMessageHandler(
+            HttpStatusCode.Unauthorized,
+            "{\"success\":false,\"error\":\"Unauthorized\"}"
+        );
+
+        var httpClient = new HttpClient(mockHttpMessageHandler.Object)
+        {
+            BaseAddress = new Uri("https://api.pipedrive.com")
+        };
+        var client = new PipedriveApiClient(
+            httpClient, config, mockLogger.Object, mockOAuthService.Object, mockSessionService.Object);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<PipedriveUnauthorizedException>(
+            async () => await client.UpdateDealAsync(session, dealId, stageId)
+        );
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private Session CreateTestSession()

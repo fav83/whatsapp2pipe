@@ -8,7 +8,7 @@
 
 import type { Person, CreatePersonData, AttachPhoneData } from './person'
 import type { UserConfig } from './config'
-import type { Deal, CreateDealData } from './deal'
+import type { Deal, CreateDealData, UpdateDealData } from './deal'
 
 // ============================================================================
 // Auth Messages
@@ -153,6 +153,15 @@ export interface PipedriveCreateDealRequest {
 }
 
 /**
+ * Update deal pipeline and/or stage
+ */
+export interface PipedriveUpdateDealRequest {
+  type: 'PIPEDRIVE_UPDATE_DEAL'
+  dealId: number
+  data: UpdateDealData
+}
+
+/**
  * Union of all Pipedrive request messages
  */
 export type PipedriveRequest =
@@ -162,6 +171,7 @@ export type PipedriveRequest =
   | PipedriveAttachPhoneRequest
   | PipedriveCreateNoteRequest
   | PipedriveCreateDealRequest
+  | PipedriveUpdateDealRequest
 
 // Response Messages (Service Worker → Content Script)
 
@@ -226,6 +236,14 @@ export interface PipedriveCreateDealSuccess {
 }
 
 /**
+ * Successfully updated deal
+ */
+export interface PipedriveUpdateDealSuccess {
+  type: 'PIPEDRIVE_UPDATE_DEAL_SUCCESS'
+  deal: Deal
+}
+
+/**
  * Pipedrive API error
  * Includes HTTP status code and user-friendly message
  */
@@ -248,6 +266,7 @@ export type PipedriveResponse =
   | PipedriveCreateNoteSuccess
   | PipedriveCreateNoteError
   | PipedriveCreateDealSuccess
+  | PipedriveUpdateDealSuccess
   | PipedriveError
 
 // ============================================================================

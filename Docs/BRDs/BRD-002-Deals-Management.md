@@ -208,31 +208,36 @@ Allow users to create new deals linked to the current Person with minimal fricti
 
 ---
 
-### 4.5 Change Deal Stage (Feature 35) - ⏳ Pending
+### 4.5 Change Deal Stage (Feature 35) - ✅ Complete
 
-Allow users to move deals through pipeline stages via dropdown in deal card.
+Allow users to move deals through pipeline stages and pipelines via dropdowns in deal card.
 
-**UI Implementation:**
-- Current stage shown as dropdown in deal card (not read-only text)
-- Dropdown populated with all stages from the deal's pipeline
-- User selects new stage from dropdown
-- Change saves immediately on selection (no separate "Save" button)
+**Implementation (Spec-135):**
+- Both pipeline and stage shown as dropdowns for open deals
+- Stage dropdown dynamically updates when pipeline changes (filtered by selected pipeline)
+- First stage of new pipeline auto-selects when pipeline changes
+- Save/Cancel buttons appear when changes are made (explicit confirmation)
+- Loading state during save with disabled dropdowns
+- Success toast notification on successful update
+- Error banner for failures with retry option
+- Won/lost deals show pipeline/stage as read-only text (not editable)
 
-**Stage Change API:**
-- PATCH to Pipedrive `/deals/{id}` with `stage_id` updated
-
-**Validation:**
-- No client-side validation for stage-specific required fields
-- If Pipedrive API rejects stage change (e.g., missing required fields), show error toast
-- User can attempt any stage change; Pipedrive enforces rules
+**Backend API:**
+- PUT to `/api/pipedrive/deals/{id}` with `pipelineId` and `stageId`
+- Backend sends `stage_id` to Pipedrive (pipeline updated automatically via stage's pipeline association)
+- Response enriched with stage/pipeline metadata via DealTransformService
 
 **Acceptance Criteria:**
-- [ ] Current stage displayed as dropdown (editable) in deal card
-- [ ] Dropdown shows all stages for deal's pipeline
-- [ ] Stage change saves on selection
-- [ ] Success: Deal card updates with new stage immediately
-- [ ] Failure: Error message shown, stage reverts to previous value
-- [ ] Only visible for open deals (won/lost deals show stage as read-only text)
+- [x] Current stage and pipeline displayed as dropdowns for open deals
+- [x] Pipeline dropdown shows all active pipelines
+- [x] Stage dropdown shows stages from currently selected pipeline only
+- [x] Stage dropdown updates dynamically when pipeline changes
+- [x] First stage auto-selects when pipeline changes
+- [x] Save/Cancel buttons appear when changes are made
+- [x] Save button shows loading state with spinner
+- [x] Success: Deal card updates with new stage/pipeline, success toast shown
+- [x] Failure: Error banner shown with dismissible message, Save/Cancel remain visible for retry
+- [x] Won/lost deals show stage/pipeline as read-only text (no editing)
 
 ---
 

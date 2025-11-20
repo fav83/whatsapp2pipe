@@ -26,6 +26,11 @@ export interface CreateDealData {
   value?: number
 }
 
+export interface UpdateDealData {
+  pipelineId: number
+  stageId: number
+}
+
 export interface Pipeline {
   id: number
   name: string

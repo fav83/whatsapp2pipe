@@ -616,6 +616,67 @@ public class PipedriveApiClient : IPipedriveApiClient
     }
 
     /// <summary>
+    /// Update deal stage (and implicitly pipeline via stage's pipeline_id)
+    /// </summary>
+    public async Task<PipedriveDeal> UpdateDealAsync(Session session, int dealId, int stageId)
+    {
+        return await ExecuteWithRefreshAsync(
+            session,
+            (accessToken) => UpdateDealInternalAsync(accessToken, session.ApiDomain, dealId, stageId),
+            "UpdateDeal");
+    }
+
+    private async Task<PipedriveDeal> UpdateDealInternalAsync(string accessToken, string apiDomain, int dealId, int stageId)
+    {
+        var url = $"{apiDomain}/api/v1/deals/{dealId}";
+        var body = new { stage_id = stageId };
+
+        logger.LogInformation("Updating deal: dealId={DealId}, stageId={StageId}", dealId, stageId);
+
+        var json = JsonSerializer.Serialize(body);
+
+        var httpRequest = new HttpRequestMessage(HttpMethod.Put, url);
+        httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        httpRequest.Headers.Add("Accept", "application/json");
+        httpRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        // Log request (sanitize access token)
+        var headers = new Dictionary<string, string>
+        {
+            { "Authorization", "Bearer [REDACTED]" },
+            { "Content-Type", "application/json" }
+        };
+        apiLogger.LogRequest("PUT", url, headers, json);
+
+        var response = await httpClient.SendAsync(httpRequest);
+        var responseContent = await response.Content.ReadAsStringAsync();
+
+        // Log response
+        apiLogger.LogResponse("PUT", url, (int)response.StatusCode, responseContent);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogWarning($"Pipedrive update deal failed: {response.StatusCode}");
+            await HandleErrorResponse(response, responseContent);
+        }
+
+        var result = JsonSerializer.Deserialize<PipedriveDealResponse>(responseContent, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        if (result?.Data == null)
+        {
+            logger.LogError("Failed to update deal in Pipedrive - no data returned");
+            throw new PipedriveNotFoundException($"Deal {dealId} not found");
+        }
+
+        logger.LogInformation("Deal updated successfully: dealId={DealId}", dealId);
+
+        return result.Data;
+    }
+
+    /// <summary>
     /// Handle error responses from Pipedrive API
     /// </summary>
     private Task HandleErrorResponse(HttpResponseMessage response, string content)
@@ -625,6 +686,11 @@ public class PipedriveApiClient : IPipedriveApiClient
         if (response.StatusCode == HttpStatusCode.Unauthorized)
         {
             throw new PipedriveUnauthorizedException("Pipedrive access token is invalid or expired");
+        }
+
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            throw new PipedriveNotFoundException("Resource not found");
         }
 
         if (response.StatusCode == (HttpStatusCode)429)
