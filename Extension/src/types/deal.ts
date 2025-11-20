@@ -5,6 +5,8 @@ export interface Deal {
   stage: DealStage
   pipeline: DealPipeline
   status: 'open' | 'won' | 'lost'
+  lostReason?: string | null
+  updateTime?: string
 }
 
 export interface DealStage {

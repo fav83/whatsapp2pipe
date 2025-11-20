@@ -241,69 +241,80 @@ Allow users to move deals through pipeline stages and pipelines via dropdowns in
 
 ---
 
-### 4.6 Mark Deal as Won (Feature 36) - ⏳ Pending
+### 4.6 Mark Deal as Won (Feature 36) - ✅ Complete
 
-Allow users to mark open deals as Won with a single click.
+Allow users to mark open deals as Won with confirmation.
 
-**UI Implementation:**
-- "Mark as Won" button visible in deal card (only for open deals)
-- Button styled prominently (primary/success color)
-- One-click action (no confirmation dialog, no additional fields)
-
-**API Call:**
-- PATCH to Pipedrive `/deals/{id}` with `status` = "won"
+**Implementation (Spec-136):**
+- "Won ✓" button visible at bottom of deal card (only for open deals)
+- Button styled with success color (green)
+- Clicking shows confirmation UI: "Mark this deal as won?"
+- Confirm/Cancel buttons with loading states
+- Backend endpoint: `PUT /api/pipedrive/deals/{dealId}/status` with `status: "won"`
 
 **Post-Win Behavior:**
-- Deal card updates to show "Won" status
-- Status icon in dropdown changes to ✅
-- "Mark as Won" / "Mark as Lost" buttons hidden
-- "Reopen Deal" button now visible
+- Deal card updates to show "Won ✓" status
+- "Mark as Won" / "Mark as Lost" buttons hidden (deal closed)
+- "Open in Pipedrive" link visible at bottom
 - Deal remains in current stage (Pipedrive behavior)
+- Success toast: "Deal marked as won"
 
 **Acceptance Criteria:**
-- [ ] "Mark as Won" button visible for open deals only
-- [ ] One-click marks deal as won (no confirmation needed)
-- [ ] Deal status updates immediately in card and dropdown
-- [ ] Action buttons update correctly (hide Won/Lost, show Reopen)
-- [ ] Error handling if API call fails
+- [x] "Won ✓" button visible for open deals only
+- [x] Confirmation UI shown with Confirm/Cancel buttons
+- [x] Loading state during API call
+- [x] Deal status updates immediately in card
+- [x] Action buttons update correctly (hide Won/Lost buttons)
+- [x] Error handling with dismissible error banner and retry
+- [x] "Open in Pipedrive" link visible at bottom of deal card
 
 ---
 
-### 4.7 Mark Deal as Lost (Feature 37) - ⏳ Pending
+### 4.7 Mark Deal as Lost (Feature 37) - ✅ Complete
 
-Allow users to mark open deals as Lost with required lost reason selection.
+Allow users to mark open deals as Lost with optional lost reason input.
 
-**UI Implementation:**
-- "Mark as Lost" button visible in deal card (only for open deals)
-- Button styled with warning/danger color
-- Clicking opens lost reason picker (inline dropdown or small modal)
+**Implementation (Spec-136):**
+- "Lost ✗" button visible at bottom of deal card (only for open deals)
+- Button styled with danger color (red)
+- Clicking shows inline lost reason form
+- Text input field (max 150 characters), autofocus enabled
+- Character counter: "X/150"
+- Lost reason is **OPTIONAL** (user can submit empty reason)
+- Confirm/Cancel buttons with loading states
 
-**Lost Reason Picker:**
-- Display all available lost reasons from Pipedrive account
-- User MUST select a reason (required field)
-- "Confirm" / "Cancel" buttons
+**Lost Reason Form:**
+- Single-line text input (not dropdown)
+- Label: "Why was this deal lost? (optional)"
+- Placeholder: "Enter reason (optional)"
+- If provided, must be ≤150 characters
+- Backend validates length but doesn't require reason
 
 **API Call:**
-- PATCH to Pipedrive `/deals/{id}` with:
+- PUT to `/api/pipedrive/deals/{dealId}/status` with:
   - `status` = "lost"
-  - `lost_reason` = selected reason
+  - `lostReason` = entered text (or `undefined` if empty)
 
 **Post-Lost Behavior:**
-- Deal card updates to show "Lost" status
-- Lost reason displayed in deal card (e.g., "Lost: Price too high")
-- Status icon in dropdown changes to ❌
+- Deal card updates to show "Lost ✗" status
+- Lost reason displayed in deal card if provided
 - "Mark as Won" / "Mark as Lost" buttons hidden
-- "Reopen Deal" button now visible
+- "Open in Pipedrive" link visible at bottom
+- Success toast: "Deal marked as lost"
 
 **Acceptance Criteria:**
-- [ ] "Mark as Lost" button visible for open deals only
-- [ ] Clicking shows lost reason picker
-- [ ] Lost reason is required (cannot submit without selection)
-- [ ] Deal marked as lost with selected reason
-- [ ] Deal status and lost reason displayed correctly
-- [ ] Action buttons update correctly (hide Won/Lost, show Reopen)
-- [ ] Error handling if API call fails
-- [ ] Lost reason picker can be cancelled without marking deal lost
+- [x] "Lost ✗" button visible for open deals only
+- [x] Clicking shows inline lost reason form with autofocus
+- [x] Lost reason is OPTIONAL (Confirm button enabled even when empty)
+- [x] Character counter updates in real-time
+- [x] Input field maxLength enforced at 150 characters
+- [x] Loading state during API call
+- [x] Deal marked as lost with or without reason
+- [x] Lost reason displayed in deal card if provided
+- [x] Action buttons update correctly (hide Won/Lost buttons)
+- [x] Error handling with dismissible error banner and retry
+- [x] Cancel button resets form and returns to normal state
+- [x] "Open in Pipedrive" link visible at bottom of deal card
 
 ---
 

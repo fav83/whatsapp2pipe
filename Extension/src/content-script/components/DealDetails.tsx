@@ -188,18 +188,37 @@ export const DealDetails = React.memo(function DealDetails({
   stages,
   onDealUpdated,
 }: DealDetailsProps) {
+  /**
+   * Get Pipedrive URL for deal
+   * TODO: Get company domain from backend/auth session
+   */
+  function getPipedriveDealUrl(dealId: number): string {
+    // For now, use a placeholder domain
+    // This should be replaced with actual domain from auth session
+    return `https://app.pipedrive.com/deal/${dealId}`
+  }
+
   // Editing state
   const [selectedPipelineId, setSelectedPipelineId] = useState(deal.pipeline.id)
   const [selectedStageId, setSelectedStageId] = useState(deal.stage.id)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Won/Lost state
+  const [isConfirmingWon, setIsConfirmingWon] = useState(false)
+  const [isEnteringLostReason, setIsEnteringLostReason] = useState(false)
+  const [lostReason, setLostReason] = useState('')
+  const [isMarkingWon, setIsMarkingWon] = useState(false)
+  const [isMarkingLost, setIsMarkingLost] = useState(false)
+  const [wonError, setWonError] = useState<string | null>(null)
+  const [lostError, setLostError] = useState<string | null>(null)
+
   // Track original values for cancel and change detection
   const originalPipelineId = useRef(deal.pipeline.id)
   const originalStageId = useRef(deal.stage.id)
 
   // Hooks
-  const { updateDeal } = usePipedrive()
+  const { updateDeal, markDealWonLost } = usePipedrive()
   const { showToast } = useToast()
 
   // Update refs when deal prop changes (after successful save)
@@ -316,6 +335,94 @@ export const DealDetails = React.memo(function DealDetails({
     setError(null)
   }
 
+  /**
+   * Won/Lost Event Handlers
+   */
+  const handleWonClick = () => {
+    setIsConfirmingWon(true)
+    setWonError(null)
+  }
+
+  const handleCancelWon = () => {
+    setIsConfirmingWon(false)
+    setWonError(null)
+  }
+
+  const handleConfirmWon = async () => {
+    setIsMarkingWon(true)
+    setWonError(null)
+
+    try {
+      const updatedDeal = await markDealWonLost(deal.id, 'won')
+
+      if (updatedDeal) {
+        onDealUpdated?.(updatedDeal)
+        setIsConfirmingWon(false)
+        showToast('Deal marked as won')
+      } else {
+        setWonError('Failed to mark deal as won')
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to mark deal as won'
+      setWonError(errorMessage)
+      logError('Failed to mark deal as won', err, { dealId: deal.id }, Sentry.getCurrentScope())
+    } finally {
+      setIsMarkingWon(false)
+    }
+  }
+
+  const handleLostClick = () => {
+    setIsEnteringLostReason(true)
+    setLostReason('')
+    setLostError(null)
+  }
+
+  const handleCancelLost = () => {
+    setIsEnteringLostReason(false)
+    setLostReason('')
+    setLostError(null)
+  }
+
+  const handleLostReasonChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLostReason(e.target.value)
+  }
+
+  const handleConfirmLost = async () => {
+    const trimmedReason = lostReason.trim()
+
+    setIsMarkingLost(true)
+    setLostError(null)
+
+    try {
+      // Lost reason is optional - only send if provided
+      const updatedDeal = await markDealWonLost(
+        deal.id,
+        'lost',
+        trimmedReason.length > 0 ? trimmedReason : undefined
+      )
+
+      if (updatedDeal) {
+        onDealUpdated?.(updatedDeal)
+        setIsEnteringLostReason(false)
+        setLostReason('')
+        showToast('Deal marked as lost')
+      } else {
+        setLostError('Failed to mark deal as lost')
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to mark deal as lost'
+      setLostError(errorMessage)
+      logError(
+        'Failed to mark deal as lost',
+        err,
+        { dealId: deal.id, lostReason: trimmedReason },
+        Sentry.getCurrentScope()
+      )
+    } finally {
+      setIsMarkingLost(false)
+    }
+  }
+
   // Render for editable (open) deals
   if (isEditable) {
     return (
@@ -365,7 +472,8 @@ export const DealDetails = React.memo(function DealDetails({
               onClick={handleCancel}
               disabled={isSaving}
               type="button"
-              className="flex-1 px-4 py-2 border border-border-secondary text-text-primary text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-2 bg-white border text-brand-primary text-sm font-medium rounded-lg hover:bg-brand-primary hover:text-white hover:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ border: '1px solid #665F98', borderColor: '#665F98' }}
             >
               Cancel
             </button>
@@ -386,6 +494,159 @@ export const DealDetails = React.memo(function DealDetails({
             </button>
           </div>
         )}
+
+        {/* Won/Lost Buttons (only if no changes and not in won/lost flow) */}
+        {!hasChanges && !isConfirmingWon && !isEnteringLostReason && (
+          <div className="flex gap-2 pt-2 border-t border-border-primary">
+            <button
+              onClick={handleWonClick}
+              disabled={isSaving}
+              type="button"
+              className="flex-1 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              <span className="text-base">✓</span> Won
+            </button>
+            <button
+              onClick={handleLostClick}
+              disabled={isSaving}
+              type="button"
+              className="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              <span className="text-base">✗</span> Lost
+            </button>
+          </div>
+        )}
+
+        {/* Open in Pipedrive Link */}
+        <a
+          href={getPipedriveDealUrl(deal.id)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-brand-primary hover:text-brand-hover text-sm font-bold underline transition-colors"
+        >
+          <span>Open in Pipedrive</span>
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+            />
+          </svg>
+        </a>
+
+        {/* Won Confirmation UI */}
+        {isConfirmingWon && (
+          <div className="mt-4 p-4 bg-gray-50 border border-border-primary rounded-lg">
+            {wonError && (
+              <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                <div className="flex-1 text-sm text-red-800">{wonError}</div>
+                <button
+                  onClick={() => setWonError(null)}
+                  aria-label="Dismiss error"
+                  className="hover:bg-red-100 rounded p-0.5"
+                  type="button"
+                >
+                  <X className="w-4 h-4 text-red-600" />
+                </button>
+              </div>
+            )}
+            <p className="text-sm text-text-primary mb-3">Mark this deal as won?</p>
+            <div className="flex gap-2">
+              <button
+                onClick={handleConfirmWon}
+                disabled={isMarkingWon}
+                type="button"
+                className="flex-1 px-4 py-2 bg-brand-primary text-white text-sm font-medium rounded-lg hover:bg-brand-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isMarkingWon ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Spinner size="sm" color="white" />
+                    Saving...
+                  </span>
+                ) : (
+                  'Confirm'
+                )}
+              </button>
+              <button
+                onClick={handleCancelWon}
+                disabled={isMarkingWon}
+                type="button"
+                className="flex-1 px-4 py-2 bg-white border text-brand-primary text-sm font-medium rounded-lg hover:bg-brand-primary hover:text-white hover:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ border: '1px solid #665F98', borderColor: '#665F98' }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Lost Reason Form */}
+        {isEnteringLostReason && (
+          <div className="mt-4 p-4 bg-gray-50 border border-border-primary rounded-lg">
+            {lostError && (
+              <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                <div className="flex-1 text-sm text-red-800">{lostError}</div>
+                <button
+                  onClick={() => setLostError(null)}
+                  aria-label="Dismiss error"
+                  className="hover:bg-red-100 rounded p-0.5"
+                  type="button"
+                >
+                  <X className="w-4 h-4 text-red-600" />
+                </button>
+              </div>
+            )}
+            <div className="mb-3">
+              <label
+                htmlFor="lost-reason"
+                className="block text-sm font-medium text-text-primary mb-2"
+              >
+                Why was this deal lost? (optional)
+              </label>
+              <input
+                type="text"
+                id="lost-reason"
+                value={lostReason}
+                onChange={handleLostReasonChange}
+                placeholder="Enter reason (optional)"
+                maxLength={150}
+                disabled={isMarkingLost}
+                autoFocus
+                className="w-full px-3 py-2 border border-border-primary rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
+              />
+              <div className="mt-1 text-xs text-text-tertiary text-right">
+                {lostReason.length}/150
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handleConfirmLost}
+                disabled={isMarkingLost}
+                type="button"
+                className="flex-1 px-4 py-2 bg-brand-primary text-white text-sm font-medium rounded-lg hover:bg-brand-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isMarkingLost ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Spinner size="sm" color="white" />
+                    Saving...
+                  </span>
+                ) : (
+                  'Confirm'
+                )}
+              </button>
+              <button
+                onClick={handleCancelLost}
+                disabled={isMarkingLost}
+                type="button"
+                className="flex-1 px-4 py-2 bg-white border text-brand-primary text-sm font-medium rounded-lg hover:bg-brand-primary hover:text-white hover:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ border: '1px solid #665F98', borderColor: '#665F98' }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     )
   }
@@ -393,6 +654,21 @@ export const DealDetails = React.memo(function DealDetails({
   // Render for won/lost deals (read-only)
   return (
     <div className="mt-3 space-y-2">
+      {/* Status */}
+      <div className="text-sm text-text-secondary">
+        <span className="font-medium">Status:</span>{' '}
+        <span className={deal.status === 'won' ? 'text-green-600' : 'text-red-600'}>
+          {deal.status === 'won' ? '✓ Won' : '✗ Lost'}
+        </span>
+      </div>
+
+      {/* Lost Reason (if deal is lost) */}
+      {deal.status === 'lost' && deal.lostReason && (
+        <div className="text-sm text-text-secondary">
+          <span className="font-medium">Lost Reason:</span> {deal.lostReason}
+        </div>
+      )}
+
       {/* Value */}
       <div className="text-sm text-text-secondary">
         <span className="font-medium">Value:</span> {deal.value}
@@ -407,6 +683,24 @@ export const DealDetails = React.memo(function DealDetails({
       <div className="text-sm text-text-secondary">
         <span className="font-medium">Stage:</span> {deal.stage.name}
       </div>
+
+      {/* Open in Pipedrive Link */}
+      <a
+        href={getPipedriveDealUrl(deal.id)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1 text-brand-primary hover:text-brand-hover text-sm font-bold underline transition-colors"
+      >
+        <span>Open in Pipedrive</span>
+        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+          />
+        </svg>
+      </a>
     </div>
   )
 })

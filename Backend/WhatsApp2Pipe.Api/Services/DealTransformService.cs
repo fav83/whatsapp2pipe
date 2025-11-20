@@ -52,6 +52,7 @@ public class DealTransformService
                     Name = pipeline.Name
                 },
                 Status = pdDeal.Status,
+                LostReason = pdDeal.LostReason,
                 UpdateTime = pdDeal.UpdateTime
             });
         }

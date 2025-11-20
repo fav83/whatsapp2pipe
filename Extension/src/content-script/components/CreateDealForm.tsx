@@ -169,7 +169,7 @@ export function CreateDealForm({
         <div className="flex gap-2 pt-2">
           <button
             onClick={onCancel}
-            className="flex-1 px-4 py-2 border border-border-secondary text-text-primary text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex-1 px-4 py-2 border border-solid border-border-secondary text-text-primary text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors"
           >
             Close
           </button>

@@ -288,6 +288,45 @@ export function usePipedrive() {
   }
 
   /**
+   * Mark deal as won or lost
+   */
+  const markDealWonLost = async (
+    dealId: number,
+    status: 'won' | 'lost',
+    lostReason?: string
+  ): Promise<Deal | null> => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await sendMessage<PipedriveResponse>({
+        type: 'PIPEDRIVE_MARK_DEAL_WON_LOST',
+        dealId,
+        status,
+        lostReason,
+      })
+
+      if (response.type === 'PIPEDRIVE_MARK_DEAL_WON_LOST_SUCCESS') {
+        return response.deal
+      } else if (response.type === 'PIPEDRIVE_ERROR') {
+        setError({
+          message: response.error,
+          statusCode: response.statusCode,
+        })
+        return null
+      }
+
+      throw new Error('Unexpected response type')
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update deal status'
+      setError({ message: errorMessage, statusCode: 500 })
+      return null
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  /**
    * Clear error state
    */
   const clearError = () => setError(null)
@@ -313,6 +352,7 @@ export function usePipedrive() {
     createNote,
     createDeal,
     updateDeal,
+    markDealWonLost,
     clearError,
     clearSearchError,
     clearAttachError,

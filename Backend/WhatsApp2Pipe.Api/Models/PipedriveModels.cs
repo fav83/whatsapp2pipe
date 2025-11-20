@@ -204,6 +204,9 @@ public class Deal
     [JsonPropertyName("status")]
     public string Status { get; set; } = string.Empty; // "open", "won", "lost"
 
+    [JsonPropertyName("lostReason")]
+    public string? LostReason { get; set; }
+
     [JsonPropertyName("updateTime")]
     public string? UpdateTime { get; set; }
 }
@@ -251,6 +254,9 @@ public class PipedriveDeal
 
     [JsonPropertyName("status")]
     public string Status { get; set; } = string.Empty;
+
+    [JsonPropertyName("lost_reason")]
+    public string? LostReason { get; set; }
 
     [JsonPropertyName("update_time")]
     public string? UpdateTime { get; set; }
@@ -386,4 +392,28 @@ public class PipedriveDealResponse
 
     [JsonPropertyName("data")]
     public PipedriveDeal? Data { get; set; }
+}
+
+/// <summary>
+/// Request to mark deal as won or lost (from extension to backend)
+/// </summary>
+public class MarkDealWonLostRequest
+{
+    [JsonPropertyName("status")]
+    public string Status { get; set; } = string.Empty; // "won" or "lost"
+
+    [JsonPropertyName("lostReason")]
+    public string? LostReason { get; set; }
+}
+
+/// <summary>
+/// Request to update a deal via Pipedrive API
+/// </summary>
+public class PipedriveUpdateDealRequest
+{
+    [JsonPropertyName("status")]
+    public string Status { get; set; } = string.Empty;
+
+    [JsonPropertyName("lost_reason")]
+    public string? LostReason { get; set; }
 }

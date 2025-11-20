@@ -336,6 +336,36 @@ class PipedriveApiService {
   }
 
   /**
+   * Mark a deal as won or lost
+   * @param dealId - Deal ID to update
+   * @param status - Deal status: "won" or "lost"
+   * @param lostReason - Required when status is "lost", optional for "won"
+   * @returns Updated deal with enriched metadata
+   * @throws Error with user-friendly message on failure
+   */
+  async markDealWonLost(
+    dealId: number,
+    status: 'won' | 'lost',
+    lostReason?: string
+  ): Promise<Deal> {
+    logger.log('[PipedriveAPI] Marking deal as', status, '- dealId:', dealId)
+
+    const response = await this.makeRequest<{ success: boolean; data: Deal }>(
+      `/api/pipedrive/deals/${dealId}/status`,
+      {
+        method: 'PUT',
+        body: JSON.stringify({
+          status,
+          lostReason,
+        }),
+      }
+    )
+
+    logger.log('[PipedriveAPI] Deal marked as', status, '- dealId:', response.data.id)
+    return response.data
+  }
+
+  /**
    * Submit user feedback
    */
   async submitFeedback(message: string): Promise<void> {

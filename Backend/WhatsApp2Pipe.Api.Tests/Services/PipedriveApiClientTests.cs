@@ -330,6 +330,156 @@ public class PipedriveApiClientTests
 
     #endregion
 
+    #region MarkDealWonLostAsync Tests
+
+    [Fact]
+    public async Task MarkDealWonLostAsync_WonStatus_ReturnsUpdatedDeal()
+    {
+        // Arrange
+        var session = CreateTestSession();
+        var dealId = 456;
+        var status = "won";
+
+        var dealResponse = new PipedriveDealResponse
+        {
+            Success = true,
+            Data = new PipedriveDeal
+            {
+                Id = dealId,
+                Title = "Won Deal",
+                Value = 50000,
+                Currency = "USD",
+                StageId = 5,
+                Status = "won",
+                UpdateTime = "2025-01-20 15:30:00"
+            }
+        };
+
+        var mockHttpMessageHandler = CreateMockHttpMessageHandler(
+            HttpStatusCode.OK,
+            JsonSerializer.Serialize(dealResponse)
+        );
+
+        var httpClient = new HttpClient(mockHttpMessageHandler.Object)
+        {
+            BaseAddress = new Uri("https://api.pipedrive.com")
+        };
+        var client = new PipedriveApiClient(
+            httpClient, config, mockLogger.Object, mockOAuthService.Object, mockSessionService.Object);
+
+        // Act
+        var result = await client.MarkDealWonLostAsync(session, dealId, status, null);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(dealId, result.Id);
+        Assert.Equal("Won Deal", result.Title);
+        Assert.Equal("won", result.Status);
+        Assert.Null(result.LostReason);
+    }
+
+    [Fact]
+    public async Task MarkDealWonLostAsync_LostStatusWithReason_ReturnsUpdatedDeal()
+    {
+        // Arrange
+        var session = CreateTestSession();
+        var dealId = 456;
+        var status = "lost";
+        var lostReason = "Customer chose competitor";
+
+        var dealResponse = new PipedriveDealResponse
+        {
+            Success = true,
+            Data = new PipedriveDeal
+            {
+                Id = dealId,
+                Title = "Lost Deal",
+                Value = 50000,
+                Currency = "USD",
+                StageId = 5,
+                Status = "lost",
+                LostReason = lostReason,
+                UpdateTime = "2025-01-20 15:30:00"
+            }
+        };
+
+        var mockHttpMessageHandler = CreateMockHttpMessageHandler(
+            HttpStatusCode.OK,
+            JsonSerializer.Serialize(dealResponse)
+        );
+
+        var httpClient = new HttpClient(mockHttpMessageHandler.Object)
+        {
+            BaseAddress = new Uri("https://api.pipedrive.com")
+        };
+        var client = new PipedriveApiClient(
+            httpClient, config, mockLogger.Object, mockOAuthService.Object, mockSessionService.Object);
+
+        // Act
+        var result = await client.MarkDealWonLostAsync(session, dealId, status, lostReason);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(dealId, result.Id);
+        Assert.Equal("Lost Deal", result.Title);
+        Assert.Equal("lost", result.Status);
+        Assert.Equal(lostReason, result.LostReason);
+    }
+
+    [Fact]
+    public async Task MarkDealWonLostAsync_DealNotFound_ThrowsNotFoundException()
+    {
+        // Arrange
+        var session = CreateTestSession();
+        var dealId = 999;
+        var status = "won";
+
+        var mockHttpMessageHandler = CreateMockHttpMessageHandler(
+            HttpStatusCode.NotFound,
+            "{\"success\":false,\"error\":\"Deal not found\"}"
+        );
+
+        var httpClient = new HttpClient(mockHttpMessageHandler.Object)
+        {
+            BaseAddress = new Uri("https://api.pipedrive.com")
+        };
+        var client = new PipedriveApiClient(
+            httpClient, config, mockLogger.Object, mockOAuthService.Object, mockSessionService.Object);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<PipedriveNotFoundException>(
+            async () => await client.MarkDealWonLostAsync(session, dealId, status, null)
+        );
+    }
+
+    [Fact]
+    public async Task MarkDealWonLostAsync_UnauthorizedResponse_ThrowsUnauthorizedException()
+    {
+        // Arrange
+        var session = CreateTestSession();
+        var dealId = 456;
+        var status = "won";
+
+        var mockHttpMessageHandler = CreateMockHttpMessageHandler(
+            HttpStatusCode.Unauthorized,
+            "{\"success\":false,\"error\":\"Unauthorized\"}"
+        );
+
+        var httpClient = new HttpClient(mockHttpMessageHandler.Object)
+        {
+            BaseAddress = new Uri("https://api.pipedrive.com")
+        };
+        var client = new PipedriveApiClient(
+            httpClient, config, mockLogger.Object, mockOAuthService.Object, mockSessionService.Object);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<PipedriveUnauthorizedException>(
+            async () => await client.MarkDealWonLostAsync(session, dealId, status, null)
+        );
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private Session CreateTestSession()

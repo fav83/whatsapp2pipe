@@ -430,6 +430,239 @@ public class DealTransformServiceTests
 
     #endregion
 
+    #region Won/Lost Fields Tests
+
+    [Fact]
+    public void TransformDeals_LostDealWithReason_IncludesLostReason()
+    {
+        // Arrange
+        var pipedriveDeals = new[]
+        {
+            new PipedriveDeal
+            {
+                Id = 1,
+                Title = "Lost Deal",
+                Value = 50000m,
+                Currency = "USD",
+                StageId = 1,
+                Status = "lost",
+                LostReason = "Customer chose competitor",
+                UpdateTime = "2025-01-20 15:30:00"
+            }
+        };
+
+        var stages = new[]
+        {
+            new PipedriveStage { Id = 1, Name = "Stage", OrderNr = 1, PipelineId = 1 }
+        };
+
+        var pipelines = new[]
+        {
+            new PipedrivePipeline { Id = 1, Name = "Pipeline" }
+        };
+
+        // Act
+        var deals = service.TransformDeals(pipedriveDeals, stages, pipelines);
+
+        // Assert
+        Assert.Single(deals);
+        Assert.Equal("lost", deals[0].Status);
+        Assert.Equal("Customer chose competitor", deals[0].LostReason);
+        Assert.Equal("2025-01-20 15:30:00", deals[0].UpdateTime);
+    }
+
+    [Fact]
+    public void TransformDeals_WonDeal_NullLostReason()
+    {
+        // Arrange
+        var pipedriveDeals = new[]
+        {
+            new PipedriveDeal
+            {
+                Id = 1,
+                Title = "Won Deal",
+                Value = 75000m,
+                Currency = "USD",
+                StageId = 1,
+                Status = "won",
+                LostReason = null,
+                UpdateTime = "2025-01-21 10:00:00"
+            }
+        };
+
+        var stages = new[]
+        {
+            new PipedriveStage { Id = 1, Name = "Stage", OrderNr = 1, PipelineId = 1 }
+        };
+
+        var pipelines = new[]
+        {
+            new PipedrivePipeline { Id = 1, Name = "Pipeline" }
+        };
+
+        // Act
+        var deals = service.TransformDeals(pipedriveDeals, stages, pipelines);
+
+        // Assert
+        Assert.Single(deals);
+        Assert.Equal("won", deals[0].Status);
+        Assert.Null(deals[0].LostReason);
+        Assert.Equal("2025-01-21 10:00:00", deals[0].UpdateTime);
+    }
+
+    [Fact]
+    public void TransformDeals_OpenDeal_NullLostReason()
+    {
+        // Arrange
+        var pipedriveDeals = new[]
+        {
+            new PipedriveDeal
+            {
+                Id = 1,
+                Title = "Open Deal",
+                Value = 25000m,
+                Currency = "USD",
+                StageId = 1,
+                Status = "open",
+                LostReason = null,
+                UpdateTime = "2025-01-22 14:30:00"
+            }
+        };
+
+        var stages = new[]
+        {
+            new PipedriveStage { Id = 1, Name = "Stage", OrderNr = 1, PipelineId = 1 }
+        };
+
+        var pipelines = new[]
+        {
+            new PipedrivePipeline { Id = 1, Name = "Pipeline" }
+        };
+
+        // Act
+        var deals = service.TransformDeals(pipedriveDeals, stages, pipelines);
+
+        // Assert
+        Assert.Single(deals);
+        Assert.Equal("open", deals[0].Status);
+        Assert.Null(deals[0].LostReason);
+        Assert.Equal("2025-01-22 14:30:00", deals[0].UpdateTime);
+    }
+
+    [Fact]
+    public void TransformDeals_MixedStatusesWithLostReason_OnlyLostHasReason()
+    {
+        // Arrange
+        var pipedriveDeals = new[]
+        {
+            new PipedriveDeal
+            {
+                Id = 1,
+                Title = "Open Deal",
+                Value = 1000m,
+                Currency = "USD",
+                StageId = 1,
+                Status = "open",
+                LostReason = null,
+                UpdateTime = "2025-01-20 10:00:00"
+            },
+            new PipedriveDeal
+            {
+                Id = 2,
+                Title = "Won Deal",
+                Value = 2000m,
+                Currency = "USD",
+                StageId = 1,
+                Status = "won",
+                LostReason = null,
+                UpdateTime = "2025-01-21 11:00:00"
+            },
+            new PipedriveDeal
+            {
+                Id = 3,
+                Title = "Lost Deal",
+                Value = 3000m,
+                Currency = "USD",
+                StageId = 1,
+                Status = "lost",
+                LostReason = "Budget constraints",
+                UpdateTime = "2025-01-22 12:00:00"
+            }
+        };
+
+        var stages = new[]
+        {
+            new PipedriveStage { Id = 1, Name = "Stage", OrderNr = 1, PipelineId = 1 }
+        };
+
+        var pipelines = new[]
+        {
+            new PipedrivePipeline { Id = 1, Name = "Pipeline" }
+        };
+
+        // Act
+        var deals = service.TransformDeals(pipedriveDeals, stages, pipelines);
+
+        // Assert
+        Assert.Equal(3, deals.Count);
+
+        // Open deal (first in sort order)
+        Assert.Equal("open", deals[0].Status);
+        Assert.Null(deals[0].LostReason);
+        Assert.Equal("2025-01-20 10:00:00", deals[0].UpdateTime);
+
+        // Won deal (second in sort order)
+        Assert.Equal("won", deals[1].Status);
+        Assert.Null(deals[1].LostReason);
+        Assert.Equal("2025-01-21 11:00:00", deals[1].UpdateTime);
+
+        // Lost deal (third in sort order)
+        Assert.Equal("lost", deals[2].Status);
+        Assert.Equal("Budget constraints", deals[2].LostReason);
+        Assert.Equal("2025-01-22 12:00:00", deals[2].UpdateTime);
+    }
+
+    [Fact]
+    public void TransformDeals_NullUpdateTime_HandlesCorrectly()
+    {
+        // Arrange
+        var pipedriveDeals = new[]
+        {
+            new PipedriveDeal
+            {
+                Id = 1,
+                Title = "Deal Without UpdateTime",
+                Value = 10000m,
+                Currency = "USD",
+                StageId = 1,
+                Status = "open",
+                LostReason = null,
+                UpdateTime = null
+            }
+        };
+
+        var stages = new[]
+        {
+            new PipedriveStage { Id = 1, Name = "Stage", OrderNr = 1, PipelineId = 1 }
+        };
+
+        var pipelines = new[]
+        {
+            new PipedrivePipeline { Id = 1, Name = "Pipeline" }
+        };
+
+        // Act
+        var deals = service.TransformDeals(pipedriveDeals, stages, pipelines);
+
+        // Assert
+        Assert.Single(deals);
+        Assert.Equal("open", deals[0].Status);
+        Assert.Null(deals[0].LostReason);
+        Assert.Null(deals[0].UpdateTime);
+    }
+
+    #endregion
+
     #region Edge Cases
 
     [Fact]

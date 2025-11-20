@@ -269,6 +269,11 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
     return true
   }
 
+  if (message.type === 'PIPEDRIVE_MARK_DEAL_WON_LOST') {
+    handlePipedriveMarkDealWonLost(message, sendResponse)
+    return true
+  }
+
   // Handle feedback submission
   if (message.type === 'FEEDBACK_SUBMIT') {
     handleFeedbackSubmit(message, sendResponse)
@@ -498,6 +503,38 @@ async function handlePipedriveUpdateDeal(
   } catch (error) {
     const statusCode = isApiError(error) ? error.statusCode : 500
     const errorMessage = getErrorMessage(error, 'Failed to update deal')
+
+    sendResponse({
+      type: 'PIPEDRIVE_ERROR',
+      error: errorMessage,
+      statusCode,
+    })
+  }
+}
+
+/**
+ * Handle mark deal as won/lost
+ */
+async function handlePipedriveMarkDealWonLost(
+  message: PipedriveRequest,
+  sendResponse: (response: PipedriveResponse) => void
+) {
+  try {
+    if (message.type !== 'PIPEDRIVE_MARK_DEAL_WON_LOST') return
+
+    const deal = await pipedriveApiService.markDealWonLost(
+      message.dealId,
+      message.status,
+      message.lostReason
+    )
+
+    sendResponse({
+      type: 'PIPEDRIVE_MARK_DEAL_WON_LOST_SUCCESS',
+      deal,
+    })
+  } catch (error) {
+    const statusCode = isApiError(error) ? error.statusCode : 500
+    const errorMessage = getErrorMessage(error, 'Failed to update deal status')
 
     sendResponse({
       type: 'PIPEDRIVE_ERROR',

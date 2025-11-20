@@ -677,6 +677,78 @@ public class PipedriveApiClient : IPipedriveApiClient
     }
 
     /// <summary>
+    /// Mark deal as won or lost (with automatic token refresh)
+    /// </summary>
+    public async Task<PipedriveDeal> MarkDealWonLostAsync(Session session, int dealId, string status, string? lostReason)
+    {
+        return await ExecuteWithRefreshAsync(
+            session,
+            (accessToken) => MarkDealWonLostInternalAsync(accessToken, session.ApiDomain, dealId, status, lostReason),
+            "MarkDealWonLost");
+    }
+
+    private async Task<PipedriveDeal> MarkDealWonLostInternalAsync(string accessToken, string apiDomain, int dealId, string status, string? lostReason)
+    {
+        var url = $"{apiDomain}/api/v1/deals/{dealId}";
+
+        // Build request body based on status
+        object body;
+        if (status == "lost" && !string.IsNullOrEmpty(lostReason))
+        {
+            body = new { status = status, lost_reason = lostReason };
+        }
+        else
+        {
+            body = new { status = status };
+        }
+
+        logger.LogInformation("Marking deal as {Status}: dealId={DealId}, lostReason={LostReason}",
+            status, dealId, lostReason ?? "N/A");
+
+        var json = JsonSerializer.Serialize(body);
+
+        var httpRequest = new HttpRequestMessage(HttpMethod.Put, url);
+        httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        httpRequest.Headers.Add("Accept", "application/json");
+        httpRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        // Log request (sanitize access token)
+        var headers = new Dictionary<string, string>
+        {
+            { "Authorization", "Bearer [REDACTED]" },
+            { "Content-Type", "application/json" }
+        };
+        apiLogger.LogRequest("PUT", url, headers, json);
+
+        var response = await httpClient.SendAsync(httpRequest);
+        var responseContent = await response.Content.ReadAsStringAsync();
+
+        // Log response
+        apiLogger.LogResponse("PUT", url, (int)response.StatusCode, responseContent);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogWarning($"Pipedrive mark deal won/lost failed: {response.StatusCode}");
+            await HandleErrorResponse(response, responseContent);
+        }
+
+        var result = JsonSerializer.Deserialize<PipedriveDealResponse>(responseContent, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        if (result?.Data == null)
+        {
+            logger.LogError("Failed to mark deal as {Status} in Pipedrive - no data returned", status);
+            throw new PipedriveNotFoundException($"Deal {dealId} not found");
+        }
+
+        logger.LogInformation("Deal marked as {Status} successfully: dealId={DealId}", status, dealId);
+
+        return result.Data;
+    }
+
+    /// <summary>
     /// Handle error responses from Pipedrive API
     /// </summary>
     private Task HandleErrorResponse(HttpResponseMessage response, string content)

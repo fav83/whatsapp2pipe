@@ -91,4 +91,14 @@ public interface IPipedriveApiClient
     /// <param name="stageId">New stage ID</param>
     /// <returns>Updated deal object</returns>
     Task<PipedriveDeal> UpdateDealAsync(Session session, int dealId, int stageId);
+
+    /// <summary>
+    /// Mark deal as won or lost (with automatic token refresh on 401)
+    /// </summary>
+    /// <param name="session">Session containing access token (may be updated if token is refreshed)</param>
+    /// <param name="dealId">Deal ID to update</param>
+    /// <param name="status">Deal status: "won" or "lost"</param>
+    /// <param name="lostReason">Required when status is "lost", optional for "won"</param>
+    /// <returns>Updated deal object</returns>
+    Task<PipedriveDeal> MarkDealWonLostAsync(Session session, int dealId, string status, string? lostReason);
 }

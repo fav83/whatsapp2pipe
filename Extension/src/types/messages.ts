@@ -162,6 +162,16 @@ export interface PipedriveUpdateDealRequest {
 }
 
 /**
+ * Mark deal as won or lost
+ */
+export interface PipedriveMarkDealWonLostRequest {
+  type: 'PIPEDRIVE_MARK_DEAL_WON_LOST'
+  dealId: number
+  status: 'won' | 'lost'
+  lostReason?: string
+}
+
+/**
  * Union of all Pipedrive request messages
  */
 export type PipedriveRequest =
@@ -172,6 +182,7 @@ export type PipedriveRequest =
   | PipedriveCreateNoteRequest
   | PipedriveCreateDealRequest
   | PipedriveUpdateDealRequest
+  | PipedriveMarkDealWonLostRequest
 
 // Response Messages (Service Worker → Content Script)
 
@@ -244,6 +255,14 @@ export interface PipedriveUpdateDealSuccess {
 }
 
 /**
+ * Successfully marked deal as won or lost
+ */
+export interface PipedriveMarkDealWonLostSuccess {
+  type: 'PIPEDRIVE_MARK_DEAL_WON_LOST_SUCCESS'
+  deal: Deal
+}
+
+/**
  * Pipedrive API error
  * Includes HTTP status code and user-friendly message
  */
@@ -267,6 +286,7 @@ export type PipedriveResponse =
   | PipedriveCreateNoteError
   | PipedriveCreateDealSuccess
   | PipedriveUpdateDealSuccess
+  | PipedriveMarkDealWonLostSuccess
   | PipedriveError
 
 // ============================================================================

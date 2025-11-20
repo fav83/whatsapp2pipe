@@ -599,4 +599,262 @@ describe('usePipedrive', () => {
       })
     })
   })
+
+  describe('markDealWonLost', () => {
+    it('successfully marks deal as won', async () => {
+      const mockDeal = {
+        id: 123,
+        title: 'Test Deal',
+        value: '$50,000.00',
+        stage: { id: 5, name: 'Won', order: 99 },
+        pipeline: { id: 1, name: 'Sales Pipeline' },
+        status: 'won' as const,
+        updateTime: '2025-01-20 15:30:00',
+      }
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'PIPEDRIVE_MARK_DEAL_WON_LOST_SUCCESS',
+        deal: mockDeal,
+      })
+
+      const { result } = renderHook(() => usePipedrive())
+      const deal = await result.current.markDealWonLost(123, 'won')
+
+      expect(deal).toEqual(mockDeal)
+      expect(result.current.error).toBeNull()
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    it('successfully marks deal as lost with reason', async () => {
+      const mockDeal = {
+        id: 456,
+        title: 'Lost Deal',
+        value: '$30,000.00',
+        stage: { id: 6, name: 'Lost', order: 100 },
+        pipeline: { id: 1, name: 'Sales Pipeline' },
+        status: 'lost' as const,
+        lostReason: 'Customer chose competitor',
+        updateTime: '2025-01-20 16:00:00',
+      }
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'PIPEDRIVE_MARK_DEAL_WON_LOST_SUCCESS',
+        deal: mockDeal,
+      })
+
+      const { result } = renderHook(() => usePipedrive())
+      const deal = await result.current.markDealWonLost(456, 'lost', 'Customer chose competitor')
+
+      expect(deal).toEqual(mockDeal)
+      expect(result.current.error).toBeNull()
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    it('sets loading state during request', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockImplementation(
+        () => new Promise((resolve) => setTimeout(resolve, 100))
+      )
+
+      const { result } = renderHook(() => usePipedrive())
+
+      expect(result.current.isLoading).toBe(false)
+
+      const promise = result.current.markDealWonLost(123, 'won')
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(true)
+      })
+
+      await promise
+    })
+
+    it('returns null and sets error on deal not found', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'PIPEDRIVE_ERROR',
+        error: 'Deal not found',
+        statusCode: 404,
+      })
+
+      const { result } = renderHook(() => usePipedrive())
+      const deal = await result.current.markDealWonLost(999, 'won')
+
+      expect(deal).toBeNull()
+      await waitFor(() => {
+        expect(result.current.error).toMatchObject({
+          message: 'Deal not found',
+          statusCode: 404,
+        })
+      })
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    it('returns null and sets error on authentication failure', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'PIPEDRIVE_ERROR',
+        error: 'Invalid or expired session',
+        statusCode: 401,
+      })
+
+      const { result } = renderHook(() => usePipedrive())
+      const deal = await result.current.markDealWonLost(123, 'won')
+
+      expect(deal).toBeNull()
+      await waitFor(() => {
+        expect(result.current.error).toMatchObject({
+          message: 'Invalid or expired session',
+          statusCode: 401,
+        })
+      })
+    })
+
+    it('returns null and sets error on validation failure', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'PIPEDRIVE_ERROR',
+        error: 'Lost reason is required when marking deal as lost',
+        statusCode: 400,
+      })
+
+      const { result } = renderHook(() => usePipedrive())
+      const deal = await result.current.markDealWonLost(123, 'lost')
+
+      expect(deal).toBeNull()
+      await waitFor(() => {
+        expect(result.current.error).toMatchObject({
+          message: 'Lost reason is required when marking deal as lost',
+          statusCode: 400,
+        })
+      })
+    })
+
+    it('sends correct message with won status', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'PIPEDRIVE_MARK_DEAL_WON_LOST_SUCCESS',
+        deal: {
+          id: 123,
+          title: 'Deal',
+          value: '$1,000.00',
+          stage: { id: 1, name: 'Won', order: 99 },
+          pipeline: { id: 1, name: 'Sales' },
+          status: 'won' as const,
+        },
+      })
+
+      const { result } = renderHook(() => usePipedrive())
+      await result.current.markDealWonLost(123, 'won')
+
+      expect(chrome.runtime.sendMessage).toHaveBeenCalledWith({
+        type: 'PIPEDRIVE_MARK_DEAL_WON_LOST',
+        dealId: 123,
+        status: 'won',
+        lostReason: undefined,
+      })
+    })
+
+    it('sends correct message with lost status and reason', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'PIPEDRIVE_MARK_DEAL_WON_LOST_SUCCESS',
+        deal: {
+          id: 456,
+          title: 'Deal',
+          value: '$2,000.00',
+          stage: { id: 1, name: 'Lost', order: 100 },
+          pipeline: { id: 1, name: 'Sales' },
+          status: 'lost' as const,
+          lostReason: 'Budget constraints',
+        },
+      })
+
+      const { result } = renderHook(() => usePipedrive())
+      await result.current.markDealWonLost(456, 'lost', 'Budget constraints')
+
+      expect(chrome.runtime.sendMessage).toHaveBeenCalledWith({
+        type: 'PIPEDRIVE_MARK_DEAL_WON_LOST',
+        dealId: 456,
+        status: 'lost',
+        lostReason: 'Budget constraints',
+      })
+    })
+
+    it('clears previous error on new request', async () => {
+      // First request fails
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValueOnce({
+        type: 'PIPEDRIVE_ERROR',
+        error: 'First error',
+        statusCode: 500,
+      })
+
+      const { result } = renderHook(() => usePipedrive())
+      await result.current.markDealWonLost(123, 'won')
+
+      await waitFor(() => {
+        expect(result.current.error).toMatchObject({
+          message: 'First error',
+        })
+      })
+
+      // Second request succeeds
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValueOnce({
+        type: 'PIPEDRIVE_MARK_DEAL_WON_LOST_SUCCESS',
+        deal: {
+          id: 123,
+          title: 'Deal',
+          value: '$1,000.00',
+          stage: { id: 1, name: 'Won', order: 99 },
+          pipeline: { id: 1, name: 'Sales' },
+          status: 'won' as const,
+        },
+      })
+
+      await result.current.markDealWonLost(123, 'won')
+
+      await waitFor(() => {
+        expect(result.current.error).toBeNull()
+      })
+    })
+
+    it('handles unexpected response type', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'UNKNOWN_TYPE',
+      } as unknown as chrome.runtime.MessageResponse)
+
+      const { result } = renderHook(() => usePipedrive())
+      const deal = await result.current.markDealWonLost(123, 'won')
+
+      expect(deal).toBeNull()
+      await waitFor(() => {
+        expect(result.current.error).toMatchObject({
+          message: expect.stringContaining('Unexpected response'),
+          statusCode: 500,
+        })
+      })
+    })
+
+    it('handles sendMessage rejection', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockRejectedValue(
+        new Error('Service worker not responding')
+      )
+
+      const { result } = renderHook(() => usePipedrive())
+      const deal = await result.current.markDealWonLost(123, 'won')
+
+      expect(deal).toBeNull()
+      await waitFor(() => {
+        expect(result.current.error).toMatchObject({
+          message: 'Service worker not responding',
+          statusCode: 500,
+        })
+      })
+    })
+
+    it('clears loading state even when error occurs', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'PIPEDRIVE_ERROR',
+        error: 'Error',
+        statusCode: 500,
+      })
+
+      const { result } = renderHook(() => usePipedrive())
+      await result.current.markDealWonLost(123, 'won')
+
+      expect(result.current.isLoading).toBe(false)
+    })
+  })
 })
