@@ -162,12 +162,12 @@ export interface PipedriveUpdateDealRequest {
 }
 
 /**
- * Mark deal as won or lost
+ * Mark deal as won or lost, or reopen deal
  */
 export interface PipedriveMarkDealWonLostRequest {
   type: 'PIPEDRIVE_MARK_DEAL_WON_LOST'
   dealId: number
-  status: 'won' | 'lost'
+  status: 'won' | 'lost' | 'open'
   lostReason?: string
 }
 

@@ -336,16 +336,16 @@ class PipedriveApiService {
   }
 
   /**
-   * Mark a deal as won or lost
+   * Mark a deal as won, lost, or reopen to open status
    * @param dealId - Deal ID to update
-   * @param status - Deal status: "won" or "lost"
-   * @param lostReason - Required when status is "lost", optional for "won"
+   * @param status - Deal status: "won", "lost", or "open"
+   * @param lostReason - Required when status is "lost", optional for "won", ignored for "open"
    * @returns Updated deal with enriched metadata
    * @throws Error with user-friendly message on failure
    */
   async markDealWonLost(
     dealId: number,
-    status: 'won' | 'lost',
+    status: 'won' | 'lost' | 'open',
     lostReason?: string
   ): Promise<Deal> {
     logger.log('[PipedriveAPI] Marking deal as', status, '- dealId:', dealId)

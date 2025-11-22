@@ -327,6 +327,27 @@ export function usePipedrive() {
   }
 
   /**
+   * Reopen a won or lost deal back to open status
+   */
+  const reopenDeal = async (dealId: number): Promise<Deal> => {
+    const response = await sendMessage<PipedriveResponse>({
+      type: 'PIPEDRIVE_MARK_DEAL_WON_LOST',
+      dealId,
+      status: 'open',
+    })
+
+    if (response.type === 'PIPEDRIVE_ERROR') {
+      throw new Error(response.error)
+    }
+
+    if (response.type === 'PIPEDRIVE_MARK_DEAL_WON_LOST_SUCCESS') {
+      return response.deal
+    }
+
+    throw new Error('Unexpected response type')
+  }
+
+  /**
    * Clear error state
    */
   const clearError = () => setError(null)
@@ -353,6 +374,7 @@ export function usePipedrive() {
     createDeal,
     updateDeal,
     markDealWonLost,
+    reopenDeal,
     clearError,
     clearSearchError,
     clearAttachError,

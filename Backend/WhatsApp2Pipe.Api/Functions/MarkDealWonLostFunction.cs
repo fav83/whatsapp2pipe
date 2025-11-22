@@ -122,10 +122,10 @@ public class MarkDealWonLostFunction
                 return CreateErrorResponse(req, HttpStatusCode.BadRequest, "Status is required");
             }
 
-            if (markRequest.Status != "won" && markRequest.Status != "lost")
+            if (markRequest.Status != "won" && markRequest.Status != "lost" && markRequest.Status != "open")
             {
                 logger.LogWarning("[MarkDealWonLost] FAILED Step 4: Invalid status value: {Status}", markRequest.Status);
-                return CreateErrorResponse(req, HttpStatusCode.BadRequest, "Status must be 'won' or 'lost'");
+                return CreateErrorResponse(req, HttpStatusCode.BadRequest, "Status must be 'won', 'lost', or 'open'");
             }
 
             if (markRequest.Status == "lost")
@@ -136,6 +136,11 @@ public class MarkDealWonLostFunction
                     logger.LogWarning("[MarkDealWonLost] FAILED Step 4: Lost reason too long: {Length}", markRequest.LostReason.Length);
                     return CreateErrorResponse(req, HttpStatusCode.BadRequest, "Lost reason must be 150 characters or less");
                 }
+            }
+            else if (markRequest.Status == "open")
+            {
+                // Reopening a deal - no lost reason should be provided
+                // Pipedrive will handle clearing lost_reason field if needed
             }
 
             logger.LogInformation("[MarkDealWonLost] Step 4 PASSED: All required fields valid");

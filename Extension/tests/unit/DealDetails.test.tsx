@@ -726,4 +726,346 @@ describe('DealDetails - Won/Lost Actions', () => {
       expect(mockOnDealUpdated).not.toHaveBeenCalled()
     })
   })
+
+  describe('Reopen Deal Flow', () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
+      vi.mocked(usePipedrive).mockReturnValue({
+        updateDeal: vi.fn(),
+        markDealWonLost: vi.fn(),
+        reopenDeal: vi.fn(),
+      } as ReturnType<typeof usePipedrive>)
+      vi.mocked(useToast).mockReturnValue({
+        showToast: vi.fn(),
+      })
+    })
+
+    it('shows Reopen button for won deals', () => {
+      render(<DealDetails {...defaultProps} deal={mockWonDeal} />)
+
+      expect(screen.getByRole('button', { name: /reopen deal/i })).toBeInTheDocument()
+    })
+
+    it('shows Reopen button for lost deals', () => {
+      render(<DealDetails {...defaultProps} deal={mockLostDeal} />)
+
+      expect(screen.getByRole('button', { name: /reopen deal/i })).toBeInTheDocument()
+    })
+
+    it('does not show Reopen button for open deals', () => {
+      render(<DealDetails {...defaultProps} deal={mockOpenDeal} />)
+
+      expect(screen.queryByRole('button', { name: /reopen deal/i })).not.toBeInTheDocument()
+    })
+
+    it('shows confirmation UI when Reopen button is clicked', () => {
+      render(<DealDetails {...defaultProps} deal={mockWonDeal} />)
+
+      const reopenButton = screen.getByRole('button', { name: /reopen deal/i })
+      fireEvent.click(reopenButton)
+
+      expect(screen.getByText(/reopen this deal/i)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /confirm/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
+    })
+
+    it('hides Reopen button when in confirmation UI', () => {
+      render(<DealDetails {...defaultProps} deal={mockWonDeal} />)
+
+      const reopenButton = screen.getByRole('button', { name: /reopen deal/i })
+      fireEvent.click(reopenButton)
+
+      // Original button should be hidden
+      expect(screen.queryByRole('button', { name: /reopen deal/i })).not.toBeInTheDocument()
+    })
+
+    it('calls reopenDeal with correct parameters on Confirm', async () => {
+      const mockReopenDeal = vi.fn().mockResolvedValue({
+        ...mockWonDeal,
+        status: 'open',
+      })
+      vi.mocked(usePipedrive).mockReturnValue({
+        updateDeal: vi.fn(),
+        markDealWonLost: vi.fn(),
+        reopenDeal: mockReopenDeal,
+      } as ReturnType<typeof usePipedrive>)
+
+      render(<DealDetails {...defaultProps} deal={mockWonDeal} />)
+
+      // Click Reopen button
+      const reopenButton = screen.getByRole('button', { name: /reopen deal/i })
+      fireEvent.click(reopenButton)
+
+      // Click Confirm in confirmation UI
+      const confirmButton = screen.getByRole('button', { name: /confirm/i })
+      fireEvent.click(confirmButton)
+
+      await waitFor(() => {
+        expect(mockReopenDeal).toHaveBeenCalledWith(456)
+      })
+    })
+
+    it('shows loading state when reopening', async () => {
+      const mockReopenDeal = vi.fn(() => new Promise(() => {})) // Never resolves
+      vi.mocked(usePipedrive).mockReturnValue({
+        updateDeal: vi.fn(),
+        markDealWonLost: vi.fn(),
+        reopenDeal: mockReopenDeal,
+      } as ReturnType<typeof usePipedrive>)
+
+      render(<DealDetails {...defaultProps} deal={mockWonDeal} />)
+
+      const reopenButton = screen.getByRole('button', { name: /reopen deal/i })
+      fireEvent.click(reopenButton)
+
+      const confirmButton = screen.getByRole('button', { name: /confirm/i })
+      fireEvent.click(confirmButton)
+
+      await waitFor(() => {
+        expect(screen.getByText(/saving/i)).toBeInTheDocument()
+        expect(confirmButton).toBeDisabled()
+      })
+    })
+
+    it('calls onDealUpdated and shows toast on successful reopen', async () => {
+      const mockReopenDeal = vi.fn().mockResolvedValue({
+        ...mockWonDeal,
+        status: 'open',
+      })
+      const mockShowToast = vi.fn()
+      const mockOnDealUpdated = vi.fn()
+
+      vi.mocked(usePipedrive).mockReturnValue({
+        updateDeal: vi.fn(),
+        markDealWonLost: vi.fn(),
+        reopenDeal: mockReopenDeal,
+      } as ReturnType<typeof usePipedrive>)
+
+      vi.mocked(useToast).mockReturnValue({
+        showToast: mockShowToast,
+      })
+
+      render(<DealDetails {...defaultProps} deal={mockWonDeal} onDealUpdated={mockOnDealUpdated} />)
+
+      const reopenButton = screen.getByRole('button', { name: /reopen deal/i })
+      fireEvent.click(reopenButton)
+
+      const confirmButton = screen.getByRole('button', { name: /confirm/i })
+      fireEvent.click(confirmButton)
+
+      await waitFor(() => {
+        expect(mockOnDealUpdated).toHaveBeenCalledWith({
+          ...mockWonDeal,
+          status: 'open',
+        })
+        expect(mockShowToast).toHaveBeenCalledWith('Deal reopened')
+      })
+    })
+
+    it('shows error banner on API failure when reopening', async () => {
+      const mockReopenDeal = vi.fn().mockRejectedValue(new Error('Network error'))
+      vi.mocked(usePipedrive).mockReturnValue({
+        updateDeal: vi.fn(),
+        markDealWonLost: vi.fn(),
+        reopenDeal: mockReopenDeal,
+      } as ReturnType<typeof usePipedrive>)
+
+      render(<DealDetails {...defaultProps} deal={mockWonDeal} />)
+
+      const reopenButton = screen.getByRole('button', { name: /reopen deal/i })
+      fireEvent.click(reopenButton)
+
+      const confirmButton = screen.getByRole('button', { name: /confirm/i })
+      fireEvent.click(confirmButton)
+
+      await waitFor(() => {
+        expect(screen.getByText(/network error/i)).toBeInTheDocument()
+      })
+    })
+
+    it('error banner can be dismissed in reopen flow', async () => {
+      const mockReopenDeal = vi.fn().mockRejectedValue(new Error('Network error'))
+      vi.mocked(usePipedrive).mockReturnValue({
+        updateDeal: vi.fn(),
+        markDealWonLost: vi.fn(),
+        reopenDeal: mockReopenDeal,
+      } as ReturnType<typeof usePipedrive>)
+
+      render(<DealDetails {...defaultProps} deal={mockWonDeal} />)
+
+      const reopenButton = screen.getByRole('button', { name: /reopen deal/i })
+      fireEvent.click(reopenButton)
+
+      const confirmButton = screen.getByRole('button', { name: /confirm/i })
+      fireEvent.click(confirmButton)
+
+      await waitFor(() => {
+        expect(screen.getByText(/network error/i)).toBeInTheDocument()
+      })
+
+      const dismissButton = screen.getByLabelText(/dismiss error/i)
+      fireEvent.click(dismissButton)
+
+      expect(screen.queryByText(/network error/i)).not.toBeInTheDocument()
+    })
+
+    it('resets state when Cancel is clicked in reopen confirmation', () => {
+      render(<DealDetails {...defaultProps} deal={mockWonDeal} />)
+
+      const reopenButton = screen.getByRole('button', { name: /reopen deal/i })
+      fireEvent.click(reopenButton)
+
+      expect(screen.getByText(/reopen this deal/i)).toBeInTheDocument()
+
+      const cancelButton = screen.getByRole('button', { name: /cancel/i })
+      fireEvent.click(cancelButton)
+
+      // Should return to initial state with Reopen button
+      expect(screen.queryByText(/reopen this deal/i)).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /reopen deal/i })).toBeInTheDocument()
+    })
+
+    it('hides lost reason after successful reopen', async () => {
+      const mockReopenDeal = vi.fn().mockResolvedValue({
+        ...mockLostDeal,
+        status: 'open',
+        lostReason: null,
+      })
+
+      vi.mocked(usePipedrive).mockReturnValue({
+        updateDeal: vi.fn(),
+        markDealWonLost: vi.fn(),
+        reopenDeal: mockReopenDeal,
+      } as ReturnType<typeof usePipedrive>)
+
+      const { rerender } = render(<DealDetails {...defaultProps} deal={mockLostDeal} />)
+
+      // Lost reason visible before reopen
+      expect(screen.getByText(/customer chose competitor/i)).toBeInTheDocument()
+
+      const reopenButton = screen.getByRole('button', { name: /reopen deal/i })
+      fireEvent.click(reopenButton)
+
+      const confirmButton = screen.getByRole('button', { name: /confirm/i })
+      fireEvent.click(confirmButton)
+
+      await waitFor(() => {
+        expect(mockReopenDeal).toHaveBeenCalled()
+      })
+
+      // Simulate parent updating deal prop with reopened deal
+      rerender(
+        <DealDetails
+          {...defaultProps}
+          deal={{
+            ...mockLostDeal,
+            status: 'open',
+            lostReason: null,
+          }}
+        />
+      )
+
+      // Lost reason no longer visible
+      expect(screen.queryByText(/customer chose competitor/i)).not.toBeInTheDocument()
+      // Won/Lost buttons should now be visible
+      expect(screen.getByRole('button', { name: /won/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /lost/i })).toBeInTheDocument()
+    })
+
+    it('shows Won/Lost buttons after successful reopen', async () => {
+      const mockReopenDeal = vi.fn().mockResolvedValue({
+        ...mockWonDeal,
+        status: 'open',
+      })
+
+      vi.mocked(usePipedrive).mockReturnValue({
+        updateDeal: vi.fn(),
+        markDealWonLost: vi.fn(),
+        reopenDeal: mockReopenDeal,
+      } as ReturnType<typeof usePipedrive>)
+
+      const { rerender } = render(<DealDetails {...defaultProps} deal={mockWonDeal} />)
+
+      const reopenButton = screen.getByRole('button', { name: /reopen deal/i })
+      fireEvent.click(reopenButton)
+
+      const confirmButton = screen.getByRole('button', { name: /confirm/i })
+      fireEvent.click(confirmButton)
+
+      await waitFor(() => {
+        expect(mockReopenDeal).toHaveBeenCalled()
+      })
+
+      // Simulate parent updating deal prop
+      rerender(
+        <DealDetails
+          {...defaultProps}
+          deal={{
+            ...mockWonDeal,
+            status: 'open',
+          }}
+        />
+      )
+
+      // Won/Lost buttons now visible
+      expect(screen.getByRole('button', { name: /won/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /lost/i })).toBeInTheDocument()
+    })
+
+    it('clears reopen confirmation UI when switching to different deal', () => {
+      const { rerender } = render(<DealDetails {...defaultProps} deal={mockWonDeal} />)
+
+      // Click Reopen button to show confirmation UI
+      const reopenButton = screen.getByRole('button', { name: /reopen deal/i })
+      fireEvent.click(reopenButton)
+
+      expect(screen.getByText(/reopen this deal/i)).toBeInTheDocument()
+
+      // Switch to a different deal
+      const differentDeal = {
+        ...mockLostDeal,
+        id: 999,
+        title: 'Different Deal',
+      }
+      rerender(<DealDetails {...defaultProps} deal={differentDeal} />)
+
+      // Confirmation UI should be cleared
+      expect(screen.queryByText(/reopen this deal/i)).not.toBeInTheDocument()
+      // New deal should show Reopen button
+      expect(screen.getByRole('button', { name: /reopen deal/i })).toBeInTheDocument()
+    })
+
+    it('clears reopen error when switching to different deal', async () => {
+      const mockReopenDeal = vi.fn().mockRejectedValue(new Error('Network error'))
+      vi.mocked(usePipedrive).mockReturnValue({
+        updateDeal: vi.fn(),
+        markDealWonLost: vi.fn(),
+        reopenDeal: mockReopenDeal,
+      } as ReturnType<typeof usePipedrive>)
+
+      const { rerender } = render(<DealDetails {...defaultProps} deal={mockWonDeal} />)
+
+      // Trigger reopen error
+      const reopenButton = screen.getByRole('button', { name: /reopen deal/i })
+      fireEvent.click(reopenButton)
+
+      const confirmButton = screen.getByRole('button', { name: /confirm/i })
+      fireEvent.click(confirmButton)
+
+      await waitFor(() => {
+        expect(screen.getByText(/network error/i)).toBeInTheDocument()
+      })
+
+      // Switch to a different deal
+      const differentDeal = {
+        ...mockLostDeal,
+        id: 999,
+        title: 'Different Deal',
+      }
+      rerender(<DealDetails {...defaultProps} deal={differentDeal} />)
+
+      // Error should be cleared
+      expect(screen.queryByText(/network error/i)).not.toBeInTheDocument()
+    })
+  })
 })

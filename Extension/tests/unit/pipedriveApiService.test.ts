@@ -539,6 +539,177 @@ describe('PipedriveApiService', () => {
     })
   })
 
+  describe('markDealWonLost', () => {
+    const mockDeal = {
+      id: 123,
+      title: 'Test Deal',
+      value: '$50,000.00',
+      status: 'won',
+      stage: { id: 1, name: 'Closed', order: 5 },
+      pipeline: { id: 1, name: 'Sales' },
+      updateTime: '2025-01-22 10:00:00',
+    }
+
+    it('sends PUT request to correct endpoint for won status', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        json: async () => ({ success: true, data: mockDeal }),
+      } as Response)
+
+      await pipedriveApiService.markDealWonLost(123, 'won')
+
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/pipedrive/deals/123/status'),
+        expect.objectContaining({
+          method: 'PUT',
+          headers: expect.objectContaining({
+            Authorization: 'Bearer test_code',
+            'Content-Type': 'application/json',
+          }),
+        })
+      )
+    })
+
+    it('sends PUT request to correct endpoint for lost status', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        json: async () => ({ success: true, data: { ...mockDeal, status: 'lost' } }),
+      } as Response)
+
+      await pipedriveApiService.markDealWonLost(123, 'lost', 'Budget constraints')
+
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/pipedrive/deals/123/status'),
+        expect.objectContaining({
+          method: 'PUT',
+        })
+      )
+    })
+
+    it('sends PUT request to correct endpoint for open status (reopen)', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        json: async () => ({ success: true, data: { ...mockDeal, status: 'open' } }),
+      } as Response)
+
+      await pipedriveApiService.markDealWonLost(123, 'open')
+
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/pipedrive/deals/123/status'),
+        expect.objectContaining({
+          method: 'PUT',
+          headers: expect.objectContaining({
+            Authorization: 'Bearer test_code',
+            'Content-Type': 'application/json',
+          }),
+        })
+      )
+    })
+
+    it('includes status in request body for won', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        json: async () => ({ success: true, data: mockDeal }),
+      } as Response)
+
+      await pipedriveApiService.markDealWonLost(123, 'won')
+
+      const callArgs = vi.mocked(fetch).mock.calls[0]
+      const body = JSON.parse(callArgs[1]?.body as string)
+      expect(body.status).toBe('won')
+    })
+
+    it('includes status and lostReason in request body for lost', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        json: async () => ({ success: true, data: { ...mockDeal, status: 'lost' } }),
+      } as Response)
+
+      await pipedriveApiService.markDealWonLost(123, 'lost', 'Budget constraints')
+
+      const callArgs = vi.mocked(fetch).mock.calls[0]
+      const body = JSON.parse(callArgs[1]?.body as string)
+      expect(body.status).toBe('lost')
+      expect(body.lostReason).toBe('Budget constraints')
+    })
+
+    it('includes status in request body for open (reopen)', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        json: async () => ({ success: true, data: { ...mockDeal, status: 'open' } }),
+      } as Response)
+
+      await pipedriveApiService.markDealWonLost(123, 'open')
+
+      const callArgs = vi.mocked(fetch).mock.calls[0]
+      const body = JSON.parse(callArgs[1]?.body as string)
+      expect(body.status).toBe('open')
+    })
+
+    it('does not include lostReason for won status', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        json: async () => ({ success: true, data: mockDeal }),
+      } as Response)
+
+      await pipedriveApiService.markDealWonLost(123, 'won')
+
+      const callArgs = vi.mocked(fetch).mock.calls[0]
+      const body = JSON.parse(callArgs[1]?.body as string)
+      expect(body.lostReason).toBeUndefined()
+    })
+
+    it('does not include lostReason for open status (reopen)', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        json: async () => ({ success: true, data: { ...mockDeal, status: 'open' } }),
+      } as Response)
+
+      await pipedriveApiService.markDealWonLost(123, 'open')
+
+      const callArgs = vi.mocked(fetch).mock.calls[0]
+      const body = JSON.parse(callArgs[1]?.body as string)
+      expect(body.lostReason).toBeUndefined()
+    })
+
+    it('returns updated deal on success', async () => {
+      const updatedDeal = { ...mockDeal, status: 'won' }
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        json: async () => ({ success: true, data: updatedDeal }),
+      } as Response)
+
+      const result = await pipedriveApiService.markDealWonLost(123, 'won')
+
+      expect(result).toEqual(updatedDeal)
+    })
+
+    it('handles 404 not found error', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: false,
+        status: 404,
+        json: async () => ({ error: 'Deal not found' }),
+      } as Response)
+
+      await expect(pipedriveApiService.markDealWonLost(123, 'won')).rejects.toMatchObject({
+        statusCode: 404,
+        message: expect.stringContaining('not found'),
+      })
+    })
+
+    it('handles 400 bad request error', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: async () => ({ error: 'Invalid status' }),
+      } as Response)
+
+      await expect(pipedriveApiService.markDealWonLost(123, 'won')).rejects.toMatchObject({
+        statusCode: 400,
+      })
+    })
+  })
+
   describe('Error Handling', () => {
     it('handles 401 unauthorized error', async () => {
       vi.mocked(fetch).mockResolvedValue({

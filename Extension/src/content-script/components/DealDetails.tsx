@@ -213,12 +213,17 @@ export const DealDetails = React.memo(function DealDetails({
   const [wonError, setWonError] = useState<string | null>(null)
   const [lostError, setLostError] = useState<string | null>(null)
 
+  // Reopen state
+  const [isConfirmingReopen, setIsConfirmingReopen] = useState(false)
+  const [isReopening, setIsReopening] = useState(false)
+  const [reopenError, setReopenError] = useState<string | null>(null)
+
   // Track original values for cancel and change detection
   const originalPipelineId = useRef(deal.pipeline.id)
   const originalStageId = useRef(deal.stage.id)
 
   // Hooks
-  const { updateDeal, markDealWonLost } = usePipedrive()
+  const { updateDeal, markDealWonLost, reopenDeal } = usePipedrive()
   const { showToast } = useToast()
 
   // Update refs when deal prop changes (after successful save)
@@ -228,6 +233,21 @@ export const DealDetails = React.memo(function DealDetails({
     setSelectedPipelineId(deal.pipeline.id)
     setSelectedStageId(deal.stage.id)
   }, [deal.pipeline.id, deal.stage.id])
+
+  // Reset all transient UI state when switching deals
+  useEffect(() => {
+    setIsConfirmingReopen(false)
+    setIsReopening(false)
+    setReopenError(null)
+    setIsConfirmingWon(false)
+    setIsEnteringLostReason(false)
+    setLostReason('')
+    setIsMarkingWon(false)
+    setIsMarkingLost(false)
+    setWonError(null)
+    setLostError(null)
+    setError(null)
+  }, [deal.id])
 
   // Get stages for currently selected pipeline
   const currentStages = useMemo(() => {
@@ -420,6 +440,43 @@ export const DealDetails = React.memo(function DealDetails({
       )
     } finally {
       setIsMarkingLost(false)
+    }
+  }
+
+  /**
+   * Reopen Event Handlers
+   */
+  const handleReopenClick = () => {
+    setIsConfirmingReopen(true)
+    setReopenError(null)
+  }
+
+  const handleCancelReopen = () => {
+    setIsConfirmingReopen(false)
+    setReopenError(null)
+  }
+
+  const handleConfirmReopen = async () => {
+    setIsReopening(true)
+    setReopenError(null)
+
+    try {
+      const updatedDeal = await reopenDeal(deal.id)
+
+      // Update parent component with new deal data
+      onDealUpdated?.(updatedDeal)
+
+      // Close confirmation UI
+      setIsConfirmingReopen(false)
+
+      // Show success toast
+      showToast('Deal reopened')
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to reopen deal'
+      setReopenError(errorMessage)
+      logError('Failed to reopen deal', error, { dealId: deal.id }, Sentry.getCurrentScope())
+    } finally {
+      setIsReopening(false)
     }
   }
 
@@ -683,6 +740,66 @@ export const DealDetails = React.memo(function DealDetails({
       <div className="text-sm text-text-secondary">
         <span className="font-medium">Stage:</span> {deal.stage.name}
       </div>
+
+      {/* Reopen Button Section (for won/lost deals only) */}
+      {!isConfirmingReopen && (
+        <div className="pt-2 border-t border-border-primary">
+          <button
+            onClick={handleReopenClick}
+            className="w-full px-4 py-2 bg-brand-primary text-white text-sm font-medium rounded-lg hover:bg-brand-hover transition-colors flex items-center justify-center gap-2"
+            aria-label="Reopen deal"
+            type="button"
+          >
+            Reopen
+          </button>
+        </div>
+      )}
+
+      {/* Reopen Confirmation UI */}
+      {isConfirmingReopen && (
+        <div className="mt-2 p-4 bg-gray-50 border border-border-primary rounded-lg">
+          {reopenError && (
+            <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+              <div className="flex-1 text-sm text-red-800">{reopenError}</div>
+              <button
+                onClick={() => setReopenError(null)}
+                aria-label="Dismiss error"
+                className="hover:bg-red-100 rounded p-0.5"
+                type="button"
+              >
+                <X className="w-4 h-4 text-red-600" />
+              </button>
+            </div>
+          )}
+          <p className="text-sm text-text-primary mb-3">Reopen this deal?</p>
+          <div className="flex gap-2">
+            <button
+              onClick={handleConfirmReopen}
+              disabled={isReopening}
+              type="button"
+              className="flex-1 px-4 py-2 bg-brand-primary text-white text-sm font-medium rounded-lg hover:bg-brand-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isReopening ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Spinner size="sm" color="white" />
+                  Saving...
+                </span>
+              ) : (
+                'Confirm'
+              )}
+            </button>
+            <button
+              onClick={handleCancelReopen}
+              disabled={isReopening}
+              type="button"
+              className="flex-1 px-4 py-2 bg-white border text-brand-primary text-sm font-medium rounded-lg hover:bg-brand-primary hover:text-white hover:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ border: '1px solid #665F98', borderColor: '#665F98' }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Open in Pipedrive Link */}
       <a

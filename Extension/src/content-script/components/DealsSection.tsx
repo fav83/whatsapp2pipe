@@ -92,10 +92,22 @@ export function DealsSection({
   // Handle deal updated
   const handleDealUpdated = (updatedDeal: Deal) => {
     // Update deals array with new deal data
-    const updatedDeals = deals.map((d) => (d.id === updatedDeal.id ? updatedDeal : d))
+    const updatedDeals = deals?.map((d) => (d.id === updatedDeal.id ? updatedDeal : d)) || []
 
-    // Notify parent to update deals state
-    onDealsUpdated?.(updatedDeals)
+    // If deal was reopened (status changed to 'open'), move it to top
+    if (updatedDeal.status === 'open') {
+      // Remove the reopened deal from its current position
+      const otherDeals = updatedDeals.filter((d) => d.id !== updatedDeal.id)
+
+      // Place it at the top of the list
+      const reorderedDeals = [updatedDeal, ...otherDeals]
+
+      // Notify parent to update deals state
+      onDealsUpdated?.(reorderedDeals)
+    } else {
+      // For won/lost updates, no reordering needed
+      onDealsUpdated?.(updatedDeals)
+    }
   }
 
   // Error state: deals fetch failed
