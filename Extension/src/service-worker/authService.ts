@@ -37,6 +37,12 @@ class ServiceWorkerAuthService {
 
       logger.log('[SW AuthService] OAuth popup completed, redirect URL received')
 
+      // Check if redirect URL was received
+      if (!redirectUrl) {
+        logger.error('[SW AuthService] No redirect URL received from OAuth flow')
+        throw new Error('OAuth flow did not return a redirect URL')
+      }
+
       // Validate state (CSRF protection) - optional but recommended
       const isStateValid = await this.validateState(redirectUrl)
       if (!isStateValid) {

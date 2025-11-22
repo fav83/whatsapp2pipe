@@ -1036,6 +1036,7 @@ async setTheme(themeName: ThemeName): Promise<void> {
   - PersonNoMatchState create & attach interactions
   - AuthContext state changes
   - usePipedrive hook integration (with chrome.runtime.sendMessage mocking)
+  - Full App component in various states (person-matched, person-no-match, etc.)
 
 **E2E Tests (Playwright):**
 - **Target:** Full extension behavior in real Chrome
@@ -1062,10 +1063,56 @@ async setTheme(themeName: ThemeName): Promise<void> {
 - Test phone numbers and JIDs
 - Mock OAuth tokens and responses
 
+**Test Configuration:**
+- Test files excluded from type-check (`tsconfig.json`): `tests/**/*`, `src/**/*.test.ts`, `src/**/*.test.tsx`
+- Reason: Test files have different type requirements (@testing-library/jest-dom matchers)
+- Production code has strict type checking, test code can be more lenient
+- Tests are validated by running them, not by type-checking
+
 **CI Considerations (Future):**
 - Unit/integration run on every push
 - E2E runs on pull requests (slower, more resource-intensive)
 - Coverage reports generated (target: 80%+ for services/utils)
+
+### 8.3 Testing Gaps & Lessons Learned
+
+**Why Integration Tests Are Critical:**
+
+The `selectedDealId` ReferenceError bug demonstrated the importance of integration testing:
+- **Issue:** State defined in `App` component but not passed as props to `SidebarContent`
+- **Root Cause:** No integration tests rendering full App component tree
+- **Impact:** Bug reached production despite passing all existing tests
+- **Lesson:** Unit tests alone aren't sufficient for prop-drilling validation
+
+**Testing Best Practices:**
+
+1. **Test Full Component Trees**
+   - Integration tests catch prop-drilling bugs that unit tests miss
+   - Render App component in various states (person-matched, person-no-match, with deals)
+   - Verify state flows correctly from parent to child components
+
+2. **Always Pass State Through Props**
+   - Don't assume child components can access parent state
+   - TypeScript catches these errors when type-check is run during build
+
+3. **Run Type-Check Before Building**
+   - Catches prop-drilling errors at compile-time
+   - Prevents runtime ReferenceErrors
+   - Zero cost at runtime (types are stripped)
+
+4. **Fix Type Errors Immediately**
+   - Don't let type errors accumulate
+   - Each error makes the next harder to find
+   - Use type assertions sparingly and only when interfacing with untyped code
+
+**Prevention Checklist:**
+
+Before adding features involving state management:
+- [ ] Define prop interfaces explicitly
+- [ ] Pass all required props to child components
+- [ ] Run `npm run type-check` to verify
+- [ ] Write integration tests for full component tree
+- [ ] Test in browser before committing
 
 ---
 
@@ -1362,10 +1409,39 @@ VITE_BACKEND_URL=https://your-backend-url.azurewebsites.net
 
 ### 9.4 Code Quality Workflow
 
+**Type Safety Enforcement:**
+
+The build system enforces TypeScript type safety at multiple stages to prevent runtime errors:
+
+1. **Build-time Type Checking** (`package.json`):
+   ```json
+   "build": "npm run type-check && node ./scripts/increment-version.cjs && ..."
+   ```
+   - Type errors fail the build **before** any compilation
+   - Catches prop-drilling bugs (like `selectedDealId`) before deployment
+   - Zero-cost abstraction - no runtime overhead, compile-time safety only
+
+2. **Pre-commit Type Checking** (`.husky/pre-commit`):
+   ```bash
+   npm run type-check && npx lint-staged
+   ```
+   - Type errors caught **before** commits are created
+   - Prevents accumulation of type debt
+   - Works alongside existing ESLint and Prettier checks
+   - Developers can't accidentally commit code with type errors
+
+3. **Comprehensive Testing Script** (`package.json`):
+   ```json
+   "test:all": "npm run type-check && npm run lint && npm run test"
+   ```
+   - Single command to verify code quality before pushing
+   - Ensures all checks pass: types, linting, and tests
+   - Can be used in CI/CD pipelines
+
 **Pre-commit Hooks (Husky + lint-staged):**
 ```json
 // .husky/pre-commit
-npx lint-staged
+npm run type-check && npx lint-staged
 
 // lint-staged config
 {
@@ -1385,6 +1461,43 @@ npx lint-staged
 - Consistent formatting (semi-colons, quotes, spacing)
 - Line width: 100 characters
 - Integrated with Tailwind (class sorting plugin)
+
+**TypeScript Configuration Highlights:**
+
+Key fixes for production code type safety:
+
+1. **Sentry Integration** (`src/content-script/sentry.ts`, `src/service-worker/sentry.ts`):
+   - Added `BrowserOptions` type import and type assertion for `beforeSend`
+   - Fixed type mismatch between `sanitizeEvent` and Sentry's expected type
+
+2. **Window Type Extensions** (`src/types/window.d.ts`):
+   - Global window type extensions for Sentry: `Sentry?: typeof SentryBrowser`
+
+3. **WhatsApp Integration** (`src/content-script/utils/WhatsAppInspector.ts`):
+   - Uses `// @ts-nocheck` directive for reverse-engineered WhatsApp internals
+   - Reason: No type definitions exist for undocumented WhatsApp APIs
+
+4. **Type Assertions** (`src/utils/sentryFilters.ts`):
+   - Used sparingly for Sentry event sanitization
+   - Documented why assertions are needed
+   - Pattern: `sanitizeValue(data) as typeof data`
+
+**Developer Workflow:**
+
+Before committing:
+```bash
+npm run test:all  # Run all checks: type-check + lint + test
+```
+
+If type-check fails:
+1. Fix the type errors (don't ignore them)
+2. Use type assertions sparingly and only when necessary
+3. Document why type assertions are needed
+
+When adding new code:
+- Define prop interfaces explicitly
+- Pass all required props to child components
+- Run `npm run type-check` frequently during development
 
 ---
 

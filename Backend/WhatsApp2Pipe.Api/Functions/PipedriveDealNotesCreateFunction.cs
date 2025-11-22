@@ -8,15 +8,15 @@ using WhatsApp2Pipe.Api.Services;
 
 namespace WhatsApp2Pipe.Api.Functions;
 
-public class PipedriveNotesCreateFunction
+public class PipedriveDealNotesCreateFunction
 {
-    private readonly ILogger<PipedriveNotesCreateFunction> logger;
+    private readonly ILogger<PipedriveDealNotesCreateFunction> logger;
     private readonly ISessionService sessionService;
     private readonly IPipedriveApiClient pipedriveApiClient;
     private readonly HttpRequestLogger httpRequestLogger;
 
-    public PipedriveNotesCreateFunction(
-        ILogger<PipedriveNotesCreateFunction> logger,
+    public PipedriveDealNotesCreateFunction(
+        ILogger<PipedriveDealNotesCreateFunction> logger,
         ISessionService sessionService,
         IPipedriveApiClient pipedriveApiClient,
         HttpRequestLogger httpRequestLogger)
@@ -27,9 +27,9 @@ public class PipedriveNotesCreateFunction
         this.httpRequestLogger = httpRequestLogger;
     }
 
-    [Function("PipedriveNotesCreate")]
+    [Function("PipedriveDealNotesCreate")]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", "options", Route = "pipedrive/notes/person")] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", "options", Route = "pipedrive/notes/deal")] HttpRequestData req)
     {
         // Handle CORS preflight
         if (req.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
@@ -39,7 +39,7 @@ public class PipedriveNotesCreateFunction
 
         await httpRequestLogger.LogRequestAsync(req);
 
-        logger.LogInformation("PipedriveNotesCreate function triggered");
+        logger.LogInformation("PipedriveDealNotesCreate function triggered");
 
         try
         {
@@ -48,7 +48,7 @@ public class PipedriveNotesCreateFunction
             {
                 logger.LogWarning("Missing Authorization header");
                 var unauthorizedResponse = req.CreateResponse(HttpStatusCode.Unauthorized);
-                httpRequestLogger.LogResponse("PipedriveNotesCreate", (int)HttpStatusCode.Unauthorized);
+                httpRequestLogger.LogResponse("PipedriveDealNotesCreate", (int)HttpStatusCode.Unauthorized);
                 return unauthorizedResponse;
             }
 
@@ -57,7 +57,7 @@ public class PipedriveNotesCreateFunction
             {
                 logger.LogWarning("Invalid Authorization header format");
                 var unauthorizedResponse = req.CreateResponse(HttpStatusCode.Unauthorized);
-                httpRequestLogger.LogResponse("PipedriveNotesCreate", (int)HttpStatusCode.Unauthorized);
+                httpRequestLogger.LogResponse("PipedriveDealNotesCreate", (int)HttpStatusCode.Unauthorized);
                 return unauthorizedResponse;
             }
 
@@ -69,7 +69,7 @@ public class PipedriveNotesCreateFunction
             {
                 logger.LogWarning("Invalid or expired verification code");
                 var unauthorizedResponse = req.CreateResponse(HttpStatusCode.Unauthorized);
-                httpRequestLogger.LogResponse("PipedriveNotesCreate", (int)HttpStatusCode.Unauthorized);
+                httpRequestLogger.LogResponse("PipedriveDealNotesCreate", (int)HttpStatusCode.Unauthorized);
                 return unauthorizedResponse;
             }
 
@@ -80,14 +80,14 @@ public class PipedriveNotesCreateFunction
                 logger.LogWarning("Empty request body");
                 var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
                 await badRequestResponse.WriteStringAsync("Request body is required");
-                httpRequestLogger.LogResponse("PipedriveNotesCreate", (int)HttpStatusCode.BadRequest, "Request body is required");
+                httpRequestLogger.LogResponse("PipedriveDealNotesCreate", (int)HttpStatusCode.BadRequest, "Request body is required");
                 return badRequestResponse;
             }
 
-            CreatePersonNoteRequest? createRequest;
+            CreateDealNoteRequest? createRequest;
             try
             {
-                createRequest = JsonSerializer.Deserialize<CreatePersonNoteRequest>(requestBody, new JsonSerializerOptions
+                createRequest = JsonSerializer.Deserialize<CreateDealNoteRequest>(requestBody, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
                 });
@@ -97,7 +97,7 @@ public class PipedriveNotesCreateFunction
                 logger.LogWarning(ex, "Malformed JSON in request body");
                 var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
                 await badRequestResponse.WriteStringAsync("Invalid request body");
-                httpRequestLogger.LogResponse("PipedriveNotesCreate", (int)HttpStatusCode.BadRequest, "Invalid request body");
+                httpRequestLogger.LogResponse("PipedriveDealNotesCreate", (int)HttpStatusCode.BadRequest, "Invalid request body");
                 return badRequestResponse;
             }
 
@@ -106,17 +106,17 @@ public class PipedriveNotesCreateFunction
                 logger.LogWarning("Invalid request body");
                 var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
                 await badRequestResponse.WriteStringAsync("Invalid request body");
-                httpRequestLogger.LogResponse("PipedriveNotesCreate", (int)HttpStatusCode.BadRequest, "Invalid request body");
+                httpRequestLogger.LogResponse("PipedriveDealNotesCreate", (int)HttpStatusCode.BadRequest, "Invalid request body");
                 return badRequestResponse;
             }
 
             // Validate required fields
-            if (createRequest.PersonId <= 0)
+            if (createRequest.DealId <= 0)
             {
-                logger.LogWarning("Invalid personId: {PersonId}", createRequest.PersonId);
+                logger.LogWarning("Invalid dealId: {DealId}", createRequest.DealId);
                 var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                await badRequestResponse.WriteStringAsync("PersonId must be greater than 0");
-                httpRequestLogger.LogResponse("PipedriveNotesCreate", (int)HttpStatusCode.BadRequest, "PersonId must be greater than 0");
+                await badRequestResponse.WriteStringAsync("DealId must be greater than 0");
+                httpRequestLogger.LogResponse("PipedriveDealNotesCreate", (int)HttpStatusCode.BadRequest, "DealId must be greater than 0");
                 return badRequestResponse;
             }
 
@@ -125,28 +125,28 @@ public class PipedriveNotesCreateFunction
                 logger.LogWarning("Missing or empty content");
                 var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
                 await badRequestResponse.WriteStringAsync("Content is required");
-                httpRequestLogger.LogResponse("PipedriveNotesCreate", (int)HttpStatusCode.BadRequest, "Content is required");
+                httpRequestLogger.LogResponse("PipedriveDealNotesCreate", (int)HttpStatusCode.BadRequest, "Content is required");
                 return badRequestResponse;
             }
 
             // Call Pipedrive API
             logger.LogInformation(
-                "Creating note in Pipedrive: personId={PersonId}, contentLength={Length}",
-                createRequest.PersonId,
+                "Creating note in Pipedrive: dealId={DealId}, contentLength={Length}",
+                createRequest.DealId,
                 createRequest.Content.Length
             );
 
             var pipedriveResponse = await pipedriveApiClient.CreateNoteAsync(
                 session,
                 createRequest.Content,
-                personId: createRequest.PersonId
+                dealId: createRequest.DealId
             );
 
             if (pipedriveResponse.Data == null)
             {
                 logger.LogError("Pipedrive returned null data");
                 var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
-                httpRequestLogger.LogResponse("PipedriveNotesCreate", (int)HttpStatusCode.InternalServerError);
+                httpRequestLogger.LogResponse("PipedriveDealNotesCreate", (int)HttpStatusCode.InternalServerError);
                 return errorResponse;
             }
 
@@ -154,7 +154,7 @@ public class PipedriveNotesCreateFunction
 
             // Return 201 Created with empty body
             var response = req.CreateResponse(HttpStatusCode.Created);
-            httpRequestLogger.LogResponse("PipedriveNotesCreate", (int)HttpStatusCode.Created);
+            httpRequestLogger.LogResponse("PipedriveDealNotesCreate", (int)HttpStatusCode.Created);
             return response;
         }
         catch (PipedriveUnauthorizedException ex)
@@ -163,21 +163,21 @@ public class PipedriveNotesCreateFunction
             var response = req.CreateResponse(HttpStatusCode.Unauthorized);
             var errorBody = new { error = "session_expired", message = "Refresh token expired, please sign in again" };
             await response.WriteAsJsonAsync(errorBody);
-            httpRequestLogger.LogResponse("PipedriveNotesCreate", (int)HttpStatusCode.Unauthorized, errorBody);
+            httpRequestLogger.LogResponse("PipedriveDealNotesCreate", (int)HttpStatusCode.Unauthorized, errorBody);
             return response;
         }
         catch (PipedriveRateLimitException)
         {
             logger.LogWarning("Pipedrive rate limit exceeded");
             var rateLimitResponse = req.CreateResponse((HttpStatusCode)429);
-            httpRequestLogger.LogResponse("PipedriveNotesCreate", 429);
+            httpRequestLogger.LogResponse("PipedriveDealNotesCreate", 429);
             return rateLimitResponse;
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error creating note in Pipedrive");
             var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
-            httpRequestLogger.LogResponse("PipedriveNotesCreate", (int)HttpStatusCode.InternalServerError);
+            httpRequestLogger.LogResponse("PipedriveDealNotesCreate", (int)HttpStatusCode.InternalServerError);
             return errorResponse;
         }
     }

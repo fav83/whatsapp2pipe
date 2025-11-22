@@ -212,7 +212,7 @@ function extractMessagesFromStore(contactName: string, userName: string): Extrac
         senderName: fromMe ? userName : contactName,
       }
     })
-    .sort((a, b) => a.timestamp - b.timestamp) // Oldest first
+    .sort((a: ExtractedMessage, b: ExtractedMessage) => a.timestamp - b.timestamp) // Oldest first
 
   if (isDevelopment) {
     console.log('[Message Extractor MAIN] Extracted messages:', extracted.length)

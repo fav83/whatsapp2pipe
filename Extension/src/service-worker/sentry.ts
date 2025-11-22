@@ -1,3 +1,4 @@
+import type { BrowserOptions } from '@sentry/browser'
 import { BrowserClient, Scope, defaultStackParser, makeFetchTransport } from '@sentry/browser'
 import { sanitizeEvent } from '../utils/sentryFilters'
 
@@ -12,7 +13,7 @@ const sentryClient = new BrowserClient({
   transport: makeFetchTransport,
   stackParser: defaultStackParser,
 
-  beforeSend: sanitizeEvent,
+  beforeSend: sanitizeEvent as BrowserOptions['beforeSend'],
   tracesSampleRate: 0,
   sampleRate: 1.0,
 })

@@ -318,25 +318,44 @@ public class PipedriveApiClient : IPipedriveApiClient
     }
 
     /// <summary>
-    /// Create a note in Pipedrive attached to a person (with automatic token refresh)
+    /// Create a note in Pipedrive attached to a person or deal (with automatic token refresh)
     /// </summary>
-    public async Task<PipedriveNoteResponse> CreateNoteAsync(Session session, int personId, string content)
+    public async Task<PipedriveNoteResponse> CreateNoteAsync(Session session, string content, int? personId = null, int? dealId = null)
     {
+        if (personId == null && dealId == null)
+        {
+            throw new ArgumentException("Either personId or dealId must be provided");
+        }
+
+        if (personId != null && dealId != null)
+        {
+            throw new ArgumentException("Cannot provide both personId and dealId");
+        }
+
         return await ExecuteWithRefreshAsync(
             session,
-            (accessToken) => CreateNoteInternalAsync(accessToken, session.ApiDomain, personId, content),
+            (accessToken) => CreateNoteInternalAsync(accessToken, session.ApiDomain, content, personId, dealId),
             "CreateNote");
     }
 
-    private async Task<PipedriveNoteResponse> CreateNoteInternalAsync(string accessToken, string apiDomain, int personId, string content)
+    private async Task<PipedriveNoteResponse> CreateNoteInternalAsync(string accessToken, string apiDomain, string content, int? personId, int? dealId)
     {
         var url = $"{apiDomain}/api/v1/notes";
-        logger.LogInformation("Creating note: personId={PersonId}, contentLength={Length}", personId, content.Length);
+
+        if (personId != null)
+        {
+            logger.LogInformation("Creating note: personId={PersonId}, contentLength={Length}", personId, content.Length);
+        }
+        else
+        {
+            logger.LogInformation("Creating note: dealId={DealId}, contentLength={Length}", dealId, content.Length);
+        }
 
         var request = new PipedriveCreateNoteRequest
         {
             Content = content,
-            PersonId = personId
+            PersonId = personId,
+            DealId = dealId
         };
 
         var httpRequest = new HttpRequestMessage(HttpMethod.Post, url);

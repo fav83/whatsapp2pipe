@@ -242,11 +242,11 @@ class PipedriveApiService {
   /**
    * Create a note in Pipedrive attached to a person
    * @param personId - Pipedrive person ID
-   * @param content - Formatted note content
+   * @param content - Note content (formatted WhatsApp conversation)
    * @throws Error with user-friendly message on failure
    */
-  async createNote(personId: number, content: string): Promise<void> {
-    logger.log('[PipedriveAPI] Creating note for person:', personId)
+  async createPersonNote(personId: number, content: string): Promise<void> {
+    logger.log('[PipedriveAPI] Creating person note for person:', personId)
 
     const verificationCode = await this.getVerificationCode()
 
@@ -254,7 +254,7 @@ class PipedriveApiService {
       throw new Error('Not authenticated')
     }
 
-    const response = await fetch(`${this.baseUrl}/api/pipedrive/notes`, {
+    const response = await fetch(`${this.baseUrl}/api/pipedrive/notes/person`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -268,7 +268,7 @@ class PipedriveApiService {
 
     // Handle status codes
     if (response.status === 201) {
-      logger.log('[PipedriveAPI] Note created successfully')
+      logger.log('[PipedriveAPI] Person note created successfully')
       return // Success
     }
 
@@ -288,6 +288,73 @@ class PipedriveApiService {
     if (response.status === 400) {
       const errorText = await response.text()
       throw new Error(errorText || 'Invalid request')
+    }
+
+    if (response.status === 404) {
+      throw new Error('Person not found')
+    }
+
+    if (response.status === 429) {
+      throw new Error('Rate limit exceeded. Please try again later.')
+    }
+
+    // Generic error for 500 or other status codes
+    throw new Error('Failed to create note. Please try again.')
+  }
+
+  /**
+   * Create a note in Pipedrive attached to a deal
+   * @param dealId - Pipedrive deal ID
+   * @param content - Note content (formatted WhatsApp conversation)
+   * @throws Error with user-friendly message on failure
+   */
+  async createDealNote(dealId: number, content: string): Promise<void> {
+    logger.log('[PipedriveAPI] Creating deal note for deal:', dealId)
+
+    const verificationCode = await this.getVerificationCode()
+
+    if (!verificationCode) {
+      throw new Error('Not authenticated')
+    }
+
+    const response = await fetch(`${this.baseUrl}/api/pipedrive/notes/deal`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${verificationCode}`,
+      },
+      body: JSON.stringify({
+        dealId,
+        content,
+      }),
+    })
+
+    // Handle status codes
+    if (response.status === 201) {
+      logger.log('[PipedriveAPI] Deal note created successfully')
+      return // Success
+    }
+
+    if (response.status === 401) {
+      // Try to parse error body
+      try {
+        const errorData = await response.json()
+        if (errorData.error === 'session_expired') {
+          throw new Error('Session expired. Please sign in again.')
+        }
+      } catch {
+        // Fall through to generic unauthorized
+      }
+      throw new Error('Unauthorized. Please sign in again.')
+    }
+
+    if (response.status === 400) {
+      const errorText = await response.text()
+      throw new Error(errorText || 'Invalid request')
+    }
+
+    if (response.status === 404) {
+      throw new Error('Deal not found')
     }
 
     if (response.status === 429) {

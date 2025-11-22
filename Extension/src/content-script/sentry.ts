@@ -1,3 +1,4 @@
+import type { BrowserOptions } from '@sentry/browser'
 import { BrowserClient, Scope, defaultStackParser, makeFetchTransport } from '@sentry/browser'
 import { sanitizeEvent } from '../utils/sentryFilters'
 
@@ -16,7 +17,7 @@ const sentryClient = new BrowserClient({
   stackParser: defaultStackParser,
 
   // PII filtering only (debug IDs handle source map matching)
-  beforeSend: sanitizeEvent,
+  beforeSend: sanitizeEvent as BrowserOptions['beforeSend'],
 
   // No performance monitoring
   tracesSampleRate: 0,

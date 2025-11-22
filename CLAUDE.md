@@ -71,6 +71,8 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 - [Spec-135-Change-Deal-Stage-Flow.md](Docs/Specs/Spec-135-Change-Deal-Stage-Flow.md) - Change deal stage and pipeline with save/cancel flow (✅ Complete)
 - [Spec-136-Mark-Deal-Won-Lost-Flow.md](Docs/Specs/Spec-136-Mark-Deal-Won-Lost-Flow.md) - Mark deals as won/lost with optional lost reason and Open in Pipedrive links (✅ Complete)
 - [Spec-136-Implementation-Summary.md](Docs/Specs/Spec-136-Implementation-Summary.md) - Complete implementation summary with deviations and testing results
+- [Spec-137-Reopen-Deal-Flow.md](Docs/Specs/Spec-137-Reopen-Deal-Flow.md) - Reopen closed deals with comprehensive test coverage (✅ Complete)
+- [Spec-139-Save-Messages-To-Deal-Notes.md](Docs/Specs/Spec-139-Save-Messages-To-Deal-Notes.md) - Save WhatsApp messages to Deal notes with split button UI (✅ Complete)
 
 ### Testing Documentation
 - [Testing/Manual/](Docs/Testing/Manual/) - Manual testing checklists for Extension, Landing, and Website

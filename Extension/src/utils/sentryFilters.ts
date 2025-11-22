@@ -62,14 +62,14 @@ function sanitizeValue(value: unknown): unknown {
 export function sanitizeEvent(event: Event, _hint?: EventHint): Event | null {
   // Sanitize error message
   if (event.message) {
-    event.message = sanitizeValue(event.message)
+    event.message = sanitizeValue(event.message) as string
   }
 
   // Sanitize exception values
   if (event.exception?.values) {
     event.exception.values = event.exception.values.map((exception) => ({
       ...exception,
-      value: exception.value ? sanitizeValue(exception.value) : exception.value,
+      value: exception.value ? (sanitizeValue(exception.value) as string) : exception.value,
     }))
   }
 
@@ -77,9 +77,9 @@ export function sanitizeEvent(event: Event, _hint?: EventHint): Event | null {
   if (event.breadcrumbs) {
     event.breadcrumbs = event.breadcrumbs.map((breadcrumb) => ({
       ...breadcrumb,
-      message: breadcrumb.message ? sanitizeValue(breadcrumb.message) : breadcrumb.message,
+      message: breadcrumb.message ? (sanitizeValue(breadcrumb.message) as string) : breadcrumb.message,
       data: breadcrumb.data ? sanitizeValue(breadcrumb.data) : breadcrumb.data,
-    }))
+    })) as typeof event.breadcrumbs
   }
 
   // Sanitize contexts (extra data)
@@ -99,17 +99,17 @@ export function sanitizeEvent(event: Event, _hint?: EventHint): Event | null {
       }
     }
 
-    event.contexts = sanitizedContexts
+    event.contexts = sanitizedContexts as typeof event.contexts
   }
 
   // Sanitize request data
   if (event.request) {
-    event.request = sanitizeValue(event.request)
+    event.request = sanitizeValue(event.request) as typeof event.request
   }
 
   // Sanitize extra data
   if (event.extra) {
-    event.extra = sanitizeValue(event.extra)
+    event.extra = sanitizeValue(event.extra) as typeof event.extra
   }
 
   return event

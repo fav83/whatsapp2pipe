@@ -1,7 +1,8 @@
 # Spec-137: Reopen Deal Flow
 
 **Date:** 2025-01-22
-**Status:** Draft
+**Status:** ✅ Complete
+**Implemented:** 2025-01-22
 **Related BRD:** [BRD-002: Deals Management](../BRDs/BRD-002-Deals-Management.md) (Feature 38)
 **Dependencies:**
 - [Spec-131b: Extension Deals Display](./Spec-131b-Extension-Deals-Display.md) (DealDetails component)

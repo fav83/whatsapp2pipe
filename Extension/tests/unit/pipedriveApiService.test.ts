@@ -787,4 +787,250 @@ describe('PipedriveApiService', () => {
       )
     })
   })
+
+  describe('createPersonNote', () => {
+    it('sends POST request to /api/pipedrive/notes/person', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        status: 201,
+      } as Response)
+
+      await pipedriveApiService.createPersonNote(123, 'Test note content')
+
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/pipedrive/notes/person'),
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            Authorization: 'Bearer test_code',
+            'Content-Type': 'application/json',
+          }),
+        })
+      )
+    })
+
+    it('includes personId and content in request body', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        status: 201,
+      } as Response)
+
+      await pipedriveApiService.createPersonNote(123, 'WhatsApp conversation content')
+
+      const callArgs = vi.mocked(fetch).mock.calls[0]
+      const body = JSON.parse(callArgs[1]?.body as string)
+      expect(body.personId).toBe(123)
+      expect(body.content).toBe('WhatsApp conversation content')
+    })
+
+    it('returns void on 201 success', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        status: 201,
+      } as Response)
+
+      const result = await pipedriveApiService.createPersonNote(123, 'Test content')
+      expect(result).toBeUndefined()
+    })
+
+    it('handles 401 session expired error', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        status: 401,
+        json: async () => ({ error: 'session_expired' }),
+      } as Response)
+
+      await expect(
+        pipedriveApiService.createPersonNote(123, 'Test content')
+      ).rejects.toThrow('Session expired. Please sign in again.')
+    })
+
+    it('handles 401 generic unauthorized error', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        status: 401,
+        json: async () => ({}),
+      } as Response)
+
+      await expect(
+        pipedriveApiService.createPersonNote(123, 'Test content')
+      ).rejects.toThrow('Unauthorized. Please sign in again.')
+    })
+
+    it('handles 400 bad request error', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        status: 400,
+        text: async () => 'Invalid personId',
+      } as Response)
+
+      await expect(
+        pipedriveApiService.createPersonNote(0, 'Test content')
+      ).rejects.toThrow('Invalid personId')
+    })
+
+    it('handles 404 person not found error', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        status: 404,
+      } as Response)
+
+      await expect(
+        pipedriveApiService.createPersonNote(999, 'Test content')
+      ).rejects.toThrow('Person not found')
+    })
+
+    it('handles 429 rate limit error', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        status: 429,
+      } as Response)
+
+      await expect(
+        pipedriveApiService.createPersonNote(123, 'Test content')
+      ).rejects.toThrow('Rate limit exceeded. Please try again later.')
+    })
+
+    it('handles 500 server error', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        status: 500,
+      } as Response)
+
+      await expect(
+        pipedriveApiService.createPersonNote(123, 'Test content')
+      ).rejects.toThrow('Failed to create note. Please try again.')
+    })
+
+    it('requires authentication', async () => {
+      global.chrome = {
+        storage: {
+          local: {
+            get: vi.fn().mockResolvedValue({}),
+          },
+        },
+        runtime: {
+          getManifest: vi.fn(() => ({ version: '1.0.0' })),
+        },
+      } as typeof chrome
+
+      await expect(
+        pipedriveApiService.createPersonNote(123, 'Test content')
+      ).rejects.toThrow('Not authenticated')
+    })
+  })
+
+  describe('createDealNote', () => {
+    it('sends POST request to /api/pipedrive/notes/deal', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        status: 201,
+      } as Response)
+
+      await pipedriveApiService.createDealNote(456, 'Test deal note content')
+
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/pipedrive/notes/deal'),
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            Authorization: 'Bearer test_code',
+            'Content-Type': 'application/json',
+          }),
+        })
+      )
+    })
+
+    it('includes dealId and content in request body', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        status: 201,
+      } as Response)
+
+      await pipedriveApiService.createDealNote(456, 'WhatsApp conversation content')
+
+      const callArgs = vi.mocked(fetch).mock.calls[0]
+      const body = JSON.parse(callArgs[1]?.body as string)
+      expect(body.dealId).toBe(456)
+      expect(body.content).toBe('WhatsApp conversation content')
+    })
+
+    it('returns void on 201 success', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        status: 201,
+      } as Response)
+
+      const result = await pipedriveApiService.createDealNote(456, 'Test content')
+      expect(result).toBeUndefined()
+    })
+
+    it('handles 401 session expired error', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        status: 401,
+        json: async () => ({ error: 'session_expired' }),
+      } as Response)
+
+      await expect(
+        pipedriveApiService.createDealNote(456, 'Test content')
+      ).rejects.toThrow('Session expired. Please sign in again.')
+    })
+
+    it('handles 401 generic unauthorized error', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        status: 401,
+        json: async () => ({}),
+      } as Response)
+
+      await expect(
+        pipedriveApiService.createDealNote(456, 'Test content')
+      ).rejects.toThrow('Unauthorized. Please sign in again.')
+    })
+
+    it('handles 400 bad request error', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        status: 400,
+        text: async () => 'Invalid dealId',
+      } as Response)
+
+      await expect(
+        pipedriveApiService.createDealNote(0, 'Test content')
+      ).rejects.toThrow('Invalid dealId')
+    })
+
+    it('handles 404 deal not found error', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        status: 404,
+      } as Response)
+
+      await expect(
+        pipedriveApiService.createDealNote(999, 'Test content')
+      ).rejects.toThrow('Deal not found')
+    })
+
+    it('handles 429 rate limit error', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        status: 429,
+      } as Response)
+
+      await expect(
+        pipedriveApiService.createDealNote(456, 'Test content')
+      ).rejects.toThrow('Rate limit exceeded. Please try again later.')
+    })
+
+    it('handles 500 server error', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        status: 500,
+      } as Response)
+
+      await expect(
+        pipedriveApiService.createDealNote(456, 'Test content')
+      ).rejects.toThrow('Failed to create note. Please try again.')
+    })
+
+    it('requires authentication', async () => {
+      global.chrome = {
+        storage: {
+          local: {
+            get: vi.fn().mockResolvedValue({}),
+          },
+        },
+        runtime: {
+          getManifest: vi.fn(() => ({ version: '1.0.0' })),
+        },
+      } as typeof chrome
+
+      await expect(
+        pipedriveApiService.createDealNote(456, 'Test content')
+      ).rejects.toThrow('Not authenticated')
+    })
+  })
 })

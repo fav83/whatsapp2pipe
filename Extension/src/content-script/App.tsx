@@ -88,6 +88,7 @@ export default function App() {
   const [showConfigMessage, setShowConfigMessage] = useState<boolean>(false)
   const [pipelines, setPipelines] = useState<Pipeline[]>([])
   const [stages, setStages] = useState<Stage[]>([])
+  const [selectedDealId, setSelectedDealId] = useState<number | null>(null)
 
   // Theme manager is now initialized in index.tsx before React mount (prevents flicker)
 
@@ -135,6 +136,17 @@ export default function App() {
       fetchConfig()
     }
   }, [authState])
+
+  // Clear selectedDealId when contact changes or state type changes
+  useEffect(() => {
+    // Clear selected deal when:
+    // 1. State type is not person-matched (user navigated away)
+    // 2. Phone number changed (switching between contacts is handled by state change)
+    if (state.type !== 'person-matched' && selectedDealId !== null) {
+      logger.log('[App] Clearing selectedDealId due to state type change:', state.type)
+      setSelectedDealId(null)
+    }
+  }, [state, selectedDealId])
 
   /**
    * Fetch user configuration from backend
@@ -217,6 +229,8 @@ export default function App() {
             userName={userName}
             pipelines={pipelines}
             stages={stages}
+            selectedDealId={selectedDealId}
+            setSelectedDealId={setSelectedDealId}
           />
         )}
       </main>
@@ -306,9 +320,11 @@ interface SidebarContentProps {
   userName: string | null
   pipelines: Pipeline[]
   stages: Stage[]
+  selectedDealId: number | null
+  setSelectedDealId: (dealId: number | null) => void
 }
 
-function SidebarContent({ state, setState, userName, pipelines, stages }: SidebarContentProps) {
+function SidebarContent({ state, setState, userName, pipelines, stages, selectedDealId, setSelectedDealId }: SidebarContentProps) {
   const { lookupByPhone } = usePipedrive()
   // Track the current lookup to prevent race conditions when rapidly switching contacts
   const currentLookupRef = useRef<string | null>(null)
@@ -509,6 +525,8 @@ function SidebarContent({ state, setState, userName, pipelines, stages }: Sideba
             dealsError={state.dealsError}
             pipelines={state.pipelines}
             stages={state.stages}
+            selectedDealId={selectedDealId}
+            onSelectedDealChanged={setSelectedDealId}
             onRetry={() => handleRetry(state.phone, state.person.name)}
             onDealsUpdated={(updatedDeals) => {
               setState((prev) =>
@@ -522,6 +540,12 @@ function SidebarContent({ state, setState, userName, pipelines, stages }: Sideba
               personId={state.person.id}
               contactName={state.person.name}
               userName={userName}
+              selectedDealId={selectedDealId}
+              selectedDealTitle={
+                selectedDealId
+                  ? state.deals?.find((d) => d.id === selectedDealId)?.title
+                  : undefined
+              }
             />
           )}
         </>

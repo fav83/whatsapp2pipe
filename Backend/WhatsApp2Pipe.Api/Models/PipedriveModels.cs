@@ -166,7 +166,12 @@ public class PipedriveCreateNoteRequest
     public string Content { get; set; } = string.Empty;
 
     [JsonPropertyName("person_id")]
-    public int PersonId { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? PersonId { get; set; }
+
+    [JsonPropertyName("deal_id")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? DealId { get; set; }
 }
 
 /// <summary>

@@ -50,15 +50,16 @@ public interface IPipedriveApiClient
     Task<PipedriveUserResponse> GetCurrentUserAsync(Session session);
 
     /// <summary>
-    /// Create a note in Pipedrive attached to a person
+    /// Create a note in Pipedrive attached to a person or deal
     /// </summary>
     /// <param name="session">User session with access token</param>
-    /// <param name="personId">Pipedrive person ID to attach note to</param>
     /// <param name="content">Note content (plain text or HTML)</param>
+    /// <param name="personId">Optional Pipedrive person ID to attach note to (mutually exclusive with dealId)</param>
+    /// <param name="dealId">Optional Pipedrive deal ID to attach note to (mutually exclusive with personId)</param>
     /// <returns>Created note object</returns>
     /// <exception cref="PipedriveUnauthorizedException">Thrown when refresh token is expired</exception>
     /// <exception cref="PipedriveRateLimitException">Thrown when rate limit exceeded</exception>
-    Task<PipedriveNoteResponse> CreateNoteAsync(Session session, int personId, string content);
+    Task<PipedriveNoteResponse> CreateNoteAsync(Session session, string content, int? personId = null, int? dealId = null);
 
     /// <summary>
     /// Get all deals for a person (with automatic token refresh on 401)

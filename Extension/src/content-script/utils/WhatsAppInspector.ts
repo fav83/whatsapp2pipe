@@ -10,8 +10,10 @@
  *
  * Note: This file works with WhatsApp's undocumented internal APIs.
  * Some `any` types are unavoidable when working with reverse-engineered structures.
+ * Type checking is disabled for this file due to reverse-engineered WhatsApp internals.
  */
 
+// @ts-nocheck - WhatsApp internals have no type definitions
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 

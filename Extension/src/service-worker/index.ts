@@ -254,8 +254,13 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
     return true
   }
 
-  if (message.type === 'PIPEDRIVE_CREATE_NOTE') {
-    handlePipedriveCreateNote(message, sendResponse)
+  if (message.type === 'PIPEDRIVE_CREATE_PERSON_NOTE') {
+    handlePipedriveCreatePersonNote(message, sendResponse)
+    return true
+  }
+
+  if (message.type === 'PIPEDRIVE_CREATE_DEAL_NOTE') {
+    handlePipedriveCreateDealNote(message, sendResponse)
     return true
   }
 
@@ -421,24 +426,48 @@ async function handlePipedriveAttach(
 }
 
 /**
- * Handle create note
+ * Handle create person note
  */
-async function handlePipedriveCreateNote(
+async function handlePipedriveCreatePersonNote(
   message: PipedriveRequest,
   sendResponse: (response: PipedriveResponse) => void
 ) {
   try {
-    if (message.type !== 'PIPEDRIVE_CREATE_NOTE') return
+    if (message.type !== 'PIPEDRIVE_CREATE_PERSON_NOTE') return
 
-    await pipedriveApiService.createNote(message.personId, message.content)
+    await pipedriveApiService.createPersonNote(message.personId, message.content)
 
     sendResponse({
-      type: 'PIPEDRIVE_CREATE_NOTE_SUCCESS',
+      type: 'PIPEDRIVE_CREATE_PERSON_NOTE_SUCCESS',
     })
   } catch (error) {
     const errorMessage = getErrorMessage(error, 'Failed to create note')
     sendResponse({
-      type: 'PIPEDRIVE_CREATE_NOTE_ERROR',
+      type: 'PIPEDRIVE_CREATE_PERSON_NOTE_ERROR',
+      error: errorMessage,
+    })
+  }
+}
+
+/**
+ * Handle create deal note
+ */
+async function handlePipedriveCreateDealNote(
+  message: PipedriveRequest,
+  sendResponse: (response: PipedriveResponse) => void
+) {
+  try {
+    if (message.type !== 'PIPEDRIVE_CREATE_DEAL_NOTE') return
+
+    await pipedriveApiService.createDealNote(message.dealId, message.content)
+
+    sendResponse({
+      type: 'PIPEDRIVE_CREATE_DEAL_NOTE_SUCCESS',
+    })
+  } catch (error) {
+    const errorMessage = getErrorMessage(error, 'Failed to create note')
+    sendResponse({
+      type: 'PIPEDRIVE_CREATE_DEAL_NOTE_ERROR',
       error: errorMessage,
     })
   }

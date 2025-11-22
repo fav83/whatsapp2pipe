@@ -857,4 +857,297 @@ describe('usePipedrive', () => {
       expect(result.current.isLoading).toBe(false)
     })
   })
+
+  describe('createPersonNote', () => {
+    it('successfully creates person note', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE_SUCCESS',
+      })
+
+      const { result } = renderHook(() => usePipedrive())
+      const success = await result.current.createPersonNote(123, 'Test note content')
+
+      expect(success).toBe(true)
+      expect(result.current.createNoteError).toBeNull()
+      expect(result.current.isCreatingNote).toBe(false)
+    })
+
+    it('sends correct message type and payload', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE_SUCCESS',
+      })
+
+      const { result } = renderHook(() => usePipedrive())
+      await result.current.createPersonNote(456, 'Note content here')
+
+      expect(chrome.runtime.sendMessage).toHaveBeenCalledWith({
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE',
+        personId: 456,
+        content: 'Note content here',
+      })
+    })
+
+    it('sets isCreatingNote during request', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockImplementation(
+        () => new Promise((resolve) => setTimeout(resolve, 100))
+      )
+
+      const { result } = renderHook(() => usePipedrive())
+
+      expect(result.current.isCreatingNote).toBe(false)
+
+      const promise = result.current.createPersonNote(123, 'Test content')
+
+      await waitFor(() => {
+        expect(result.current.isCreatingNote).toBe(true)
+      })
+
+      await promise
+      expect(result.current.isCreatingNote).toBe(false)
+    })
+
+    it('returns false and sets createNoteError on failure', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE_ERROR',
+        error: 'Person not found',
+      })
+
+      const { result } = renderHook(() => usePipedrive())
+      const success = await result.current.createPersonNote(999, 'Test content')
+
+      expect(success).toBe(false)
+      await waitFor(() => {
+        expect(result.current.createNoteError).toBe('Person not found')
+      })
+      expect(result.current.isCreatingNote).toBe(false)
+    })
+
+    it('returns false and sets createNoteError on authentication failure', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE_ERROR',
+        error: 'Invalid or expired session',
+      })
+
+      const { result } = renderHook(() => usePipedrive())
+      const success = await result.current.createPersonNote(123, 'Test content')
+
+      expect(success).toBe(false)
+      await waitFor(() => {
+        expect(result.current.createNoteError).toBe('Invalid or expired session')
+      })
+    })
+
+    it('clears previous createNoteError on new request', async () => {
+      // First request fails
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValueOnce({
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE_ERROR',
+        error: 'First error',
+      })
+
+      const { result } = renderHook(() => usePipedrive())
+      await result.current.createPersonNote(123, 'Content')
+
+      await waitFor(() => {
+        expect(result.current.createNoteError).toBe('First error')
+      })
+
+      // Second request succeeds
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValueOnce({
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE_SUCCESS',
+      })
+
+      await result.current.createPersonNote(123, 'Content')
+
+      await waitFor(() => {
+        expect(result.current.createNoteError).toBeNull()
+      })
+    })
+
+    it('handles sendMessage rejection', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockRejectedValue(
+        new Error('Service worker not responding')
+      )
+
+      const { result } = renderHook(() => usePipedrive())
+      const success = await result.current.createPersonNote(123, 'Content')
+
+      expect(success).toBe(false)
+      await waitFor(() => {
+        expect(result.current.createNoteError).toBe('Service worker not responding')
+      })
+    })
+
+    it('handles unexpected response type', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'UNKNOWN_TYPE',
+      } as unknown as chrome.runtime.MessageResponse)
+
+      const { result } = renderHook(() => usePipedrive())
+      const success = await result.current.createPersonNote(123, 'Content')
+
+      expect(success).toBe(false)
+      await waitFor(() => {
+        expect(result.current.createNoteError).toContain('Unexpected response')
+      })
+    })
+
+    it('clears loading state even when error occurs', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE_ERROR',
+        error: 'Error',
+      })
+
+      const { result } = renderHook(() => usePipedrive())
+      await result.current.createPersonNote(123, 'Content')
+
+      expect(result.current.isCreatingNote).toBe(false)
+    })
+  })
+
+  describe('createDealNote', () => {
+    it('successfully creates deal note', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE_SUCCESS',
+      })
+
+      const { result } = renderHook(() => usePipedrive())
+      const success = await result.current.createDealNote(789, 'Deal note content')
+
+      expect(success).toBe(true)
+      expect(result.current.createNoteError).toBeNull()
+      expect(result.current.isCreatingNote).toBe(false)
+    })
+
+    it('sends correct message type and payload', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE_SUCCESS',
+      })
+
+      const { result } = renderHook(() => usePipedrive())
+      await result.current.createDealNote(999, 'Important deal notes')
+
+      expect(chrome.runtime.sendMessage).toHaveBeenCalledWith({
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE',
+        dealId: 999,
+        content: 'Important deal notes',
+      })
+    })
+
+    it('sets isCreatingNote during request', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockImplementation(
+        () => new Promise((resolve) => setTimeout(resolve, 100))
+      )
+
+      const { result } = renderHook(() => usePipedrive())
+
+      expect(result.current.isCreatingNote).toBe(false)
+
+      const promise = result.current.createDealNote(789, 'Test content')
+
+      await waitFor(() => {
+        expect(result.current.isCreatingNote).toBe(true)
+      })
+
+      await promise
+      expect(result.current.isCreatingNote).toBe(false)
+    })
+
+    it('returns false and sets createNoteError on failure', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE_ERROR',
+        error: 'Deal not found',
+      })
+
+      const { result } = renderHook(() => usePipedrive())
+      const success = await result.current.createDealNote(999, 'Test content')
+
+      expect(success).toBe(false)
+      await waitFor(() => {
+        expect(result.current.createNoteError).toBe('Deal not found')
+      })
+      expect(result.current.isCreatingNote).toBe(false)
+    })
+
+    it('returns false and sets createNoteError on authentication failure', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE_ERROR',
+        error: 'Invalid or expired session',
+      })
+
+      const { result } = renderHook(() => usePipedrive())
+      const success = await result.current.createDealNote(789, 'Test content')
+
+      expect(success).toBe(false)
+      await waitFor(() => {
+        expect(result.current.createNoteError).toBe('Invalid or expired session')
+      })
+    })
+
+    it('clears previous createNoteError on new request', async () => {
+      // First request fails
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValueOnce({
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE_ERROR',
+        error: 'First error',
+      })
+
+      const { result } = renderHook(() => usePipedrive())
+      await result.current.createDealNote(789, 'Content')
+
+      await waitFor(() => {
+        expect(result.current.createNoteError).toBe('First error')
+      })
+
+      // Second request succeeds
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValueOnce({
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE_SUCCESS',
+      })
+
+      await result.current.createDealNote(789, 'Content')
+
+      await waitFor(() => {
+        expect(result.current.createNoteError).toBeNull()
+      })
+    })
+
+    it('handles sendMessage rejection', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockRejectedValue(
+        new Error('Service worker not responding')
+      )
+
+      const { result } = renderHook(() => usePipedrive())
+      const success = await result.current.createDealNote(789, 'Content')
+
+      expect(success).toBe(false)
+      await waitFor(() => {
+        expect(result.current.createNoteError).toBe('Service worker not responding')
+      })
+    })
+
+    it('handles unexpected response type', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'UNKNOWN_TYPE',
+      } as unknown as chrome.runtime.MessageResponse)
+
+      const { result } = renderHook(() => usePipedrive())
+      const success = await result.current.createDealNote(789, 'Content')
+
+      expect(success).toBe(false)
+      await waitFor(() => {
+        expect(result.current.createNoteError).toContain('Unexpected response')
+      })
+    })
+
+    it('clears loading state even when error occurs', async () => {
+      vi.mocked(chrome.runtime.sendMessage).mockResolvedValue({
+        type: 'PIPEDRIVE_ERROR',
+        error: 'Error',
+        statusCode: 500,
+      })
+
+      const { result } = renderHook(() => usePipedrive())
+      await result.current.createDealNote(789, 'Content')
+
+      expect(result.current.isCreatingNote).toBe(false)
+    })
+  })
 })

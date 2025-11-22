@@ -8,6 +8,12 @@ import type {
   ConfigResponse,
   PipedriveMarkDealWonLostRequest,
   PipedriveResponse,
+  PipedriveCreatePersonNoteRequest,
+  PipedriveCreatePersonNoteSuccess,
+  PipedriveCreatePersonNoteError,
+  PipedriveCreateDealNoteRequest,
+  PipedriveCreateDealNoteSuccess,
+  PipedriveCreateDealNoteError,
 } from '../../src/types/messages'
 import type { Deal } from '../../src/types/deal'
 
@@ -547,6 +553,470 @@ describe('Service Worker Message Handlers', () => {
       expect(sendResponse).toHaveBeenCalledWith({
         type: 'PIPEDRIVE_MARK_DEAL_WON_LOST_SUCCESS',
         deal: mockDeal,
+      })
+    })
+  })
+
+  describe('handlePipedriveCreatePersonNote', () => {
+    let handlePipedriveCreatePersonNote: (
+      message: PipedriveCreatePersonNoteRequest,
+      sendResponse: (response: PipedriveCreatePersonNoteSuccess | PipedriveCreatePersonNoteError) => void
+    ) => Promise<void>
+    let mockPipedriveApiService: {
+      createPersonNote: ReturnType<typeof vi.fn>
+    }
+
+    beforeEach(() => {
+      // Mock pipedriveApiService
+      mockPipedriveApiService = {
+        createPersonNote: vi.fn(),
+      }
+
+      // Mock handler function (simulates the actual handler logic)
+      handlePipedriveCreatePersonNote = async (message, sendResponse) => {
+        try {
+          if (message.type !== 'PIPEDRIVE_CREATE_PERSON_NOTE') return
+
+          await mockPipedriveApiService.createPersonNote(message.personId, message.content)
+
+          sendResponse({
+            type: 'PIPEDRIVE_CREATE_PERSON_NOTE_SUCCESS',
+          })
+        } catch (error) {
+          const errorMessage =
+            typeof error === 'object' && error !== null && 'message' in error
+              ? String((error as { message: unknown }).message)
+              : error instanceof Error
+                ? error.message
+                : 'Failed to create person note'
+
+          sendResponse({
+            type: 'PIPEDRIVE_CREATE_PERSON_NOTE_ERROR',
+            error: errorMessage,
+          })
+        }
+      }
+    })
+
+    it('successfully creates person note', async () => {
+      mockPipedriveApiService.createPersonNote.mockResolvedValue(undefined)
+
+      const message: PipedriveCreatePersonNoteRequest = {
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE',
+        personId: 123,
+        content: 'Test note content',
+      }
+      const sendResponse = vi.fn()
+
+      await handlePipedriveCreatePersonNote(message, sendResponse)
+
+      expect(mockPipedriveApiService.createPersonNote).toHaveBeenCalledWith(123, 'Test note content')
+      expect(sendResponse).toHaveBeenCalledWith({
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE_SUCCESS',
+      })
+    })
+
+    it('handles person not found error', async () => {
+      const mockError = {
+        message: 'Person not found',
+        statusCode: 404,
+      }
+      mockPipedriveApiService.createPersonNote.mockRejectedValue(mockError)
+
+      const message: PipedriveCreatePersonNoteRequest = {
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE',
+        personId: 999,
+        content: 'Test content',
+      }
+      const sendResponse = vi.fn()
+
+      await handlePipedriveCreatePersonNote(message, sendResponse)
+
+      expect(sendResponse).toHaveBeenCalledWith({
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE_ERROR',
+        error: 'Person not found',
+      })
+    })
+
+    it('handles authentication errors', async () => {
+      const mockError = {
+        message: 'Invalid or expired session',
+        statusCode: 401,
+      }
+      mockPipedriveApiService.createPersonNote.mockRejectedValue(mockError)
+
+      const message: PipedriveCreatePersonNoteRequest = {
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE',
+        personId: 123,
+        content: 'Test content',
+      }
+      const sendResponse = vi.fn()
+
+      await handlePipedriveCreatePersonNote(message, sendResponse)
+
+      expect(sendResponse).toHaveBeenCalledWith({
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE_ERROR',
+        error: 'Invalid or expired session',
+      })
+    })
+
+    it('handles validation errors', async () => {
+      const mockError = {
+        message: 'Content is required',
+        statusCode: 400,
+      }
+      mockPipedriveApiService.createPersonNote.mockRejectedValue(mockError)
+
+      const message: PipedriveCreatePersonNoteRequest = {
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE',
+        personId: 123,
+        content: '',
+      }
+      const sendResponse = vi.fn()
+
+      await handlePipedriveCreatePersonNote(message, sendResponse)
+
+      expect(sendResponse).toHaveBeenCalledWith({
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE_ERROR',
+        error: 'Content is required',
+      })
+    })
+
+    it('handles generic errors', async () => {
+      mockPipedriveApiService.createPersonNote.mockRejectedValue(new Error('Network error'))
+
+      const message: PipedriveCreatePersonNoteRequest = {
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE',
+        personId: 123,
+        content: 'Test content',
+      }
+      const sendResponse = vi.fn()
+
+      await handlePipedriveCreatePersonNote(message, sendResponse)
+
+      expect(sendResponse).toHaveBeenCalledWith({
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE_ERROR',
+        error: 'Network error',
+      })
+    })
+
+    it('handles rate limit errors', async () => {
+      const mockError = {
+        message: 'Rate limit exceeded',
+        statusCode: 429,
+      }
+      mockPipedriveApiService.createPersonNote.mockRejectedValue(mockError)
+
+      const message: PipedriveCreatePersonNoteRequest = {
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE',
+        personId: 123,
+        content: 'Test content',
+      }
+      const sendResponse = vi.fn()
+
+      await handlePipedriveCreatePersonNote(message, sendResponse)
+
+      expect(sendResponse).toHaveBeenCalledWith({
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE_ERROR',
+        error: 'Rate limit exceeded',
+      })
+    })
+
+    it('does not call sendResponse for invalid message type', async () => {
+      const message = { type: 'INVALID_TYPE' } as unknown as PipedriveCreatePersonNoteRequest
+      const sendResponse = vi.fn()
+
+      await handlePipedriveCreatePersonNote(message, sendResponse)
+
+      expect(mockPipedriveApiService.createPersonNote).not.toHaveBeenCalled()
+      expect(sendResponse).not.toHaveBeenCalled()
+    })
+
+    it('handles non-Error exceptions', async () => {
+      mockPipedriveApiService.createPersonNote.mockRejectedValue('String error')
+
+      const message: PipedriveCreatePersonNoteRequest = {
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE',
+        personId: 123,
+        content: 'Test content',
+      }
+      const sendResponse = vi.fn()
+
+      await handlePipedriveCreatePersonNote(message, sendResponse)
+
+      expect(sendResponse).toHaveBeenCalledWith({
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE_ERROR',
+        error: 'Failed to create person note',
+      })
+    })
+
+    it('handles very long note content', async () => {
+      const longContent = 'A'.repeat(10000)
+      mockPipedriveApiService.createPersonNote.mockResolvedValue(undefined)
+
+      const message: PipedriveCreatePersonNoteRequest = {
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE',
+        personId: 123,
+        content: longContent,
+      }
+      const sendResponse = vi.fn()
+
+      await handlePipedriveCreatePersonNote(message, sendResponse)
+
+      expect(mockPipedriveApiService.createPersonNote).toHaveBeenCalledWith(123, longContent)
+      expect(sendResponse).toHaveBeenCalledWith({
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE_SUCCESS',
+      })
+    })
+
+    it('handles note content with special characters', async () => {
+      const specialContent = 'Test & <script>alert("XSS")</script> "quotes" and \'apostrophes\''
+      mockPipedriveApiService.createPersonNote.mockResolvedValue(undefined)
+
+      const message: PipedriveCreatePersonNoteRequest = {
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE',
+        personId: 123,
+        content: specialContent,
+      }
+      const sendResponse = vi.fn()
+
+      await handlePipedriveCreatePersonNote(message, sendResponse)
+
+      expect(mockPipedriveApiService.createPersonNote).toHaveBeenCalledWith(123, specialContent)
+      expect(sendResponse).toHaveBeenCalledWith({
+        type: 'PIPEDRIVE_CREATE_PERSON_NOTE_SUCCESS',
+      })
+    })
+  })
+
+  describe('handlePipedriveCreateDealNote', () => {
+    let handlePipedriveCreateDealNote: (
+      message: PipedriveCreateDealNoteRequest,
+      sendResponse: (response: PipedriveCreateDealNoteSuccess | PipedriveCreateDealNoteError) => void
+    ) => Promise<void>
+    let mockPipedriveApiService: {
+      createDealNote: ReturnType<typeof vi.fn>
+    }
+
+    beforeEach(() => {
+      // Mock pipedriveApiService
+      mockPipedriveApiService = {
+        createDealNote: vi.fn(),
+      }
+
+      // Mock handler function (simulates the actual handler logic)
+      handlePipedriveCreateDealNote = async (message, sendResponse) => {
+        try {
+          if (message.type !== 'PIPEDRIVE_CREATE_DEAL_NOTE') return
+
+          await mockPipedriveApiService.createDealNote(message.dealId, message.content)
+
+          sendResponse({
+            type: 'PIPEDRIVE_CREATE_DEAL_NOTE_SUCCESS',
+          })
+        } catch (error) {
+          const errorMessage =
+            typeof error === 'object' && error !== null && 'message' in error
+              ? String((error as { message: unknown }).message)
+              : error instanceof Error
+                ? error.message
+                : 'Failed to create deal note'
+
+          sendResponse({
+            type: 'PIPEDRIVE_CREATE_DEAL_NOTE_ERROR',
+            error: errorMessage,
+          })
+        }
+      }
+    })
+
+    it('successfully creates deal note', async () => {
+      mockPipedriveApiService.createDealNote.mockResolvedValue(undefined)
+
+      const message: PipedriveCreateDealNoteRequest = {
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE',
+        dealId: 789,
+        content: 'Important deal note',
+      }
+      const sendResponse = vi.fn()
+
+      await handlePipedriveCreateDealNote(message, sendResponse)
+
+      expect(mockPipedriveApiService.createDealNote).toHaveBeenCalledWith(789, 'Important deal note')
+      expect(sendResponse).toHaveBeenCalledWith({
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE_SUCCESS',
+      })
+    })
+
+    it('handles deal not found error', async () => {
+      const mockError = {
+        message: 'Deal not found',
+        statusCode: 404,
+      }
+      mockPipedriveApiService.createDealNote.mockRejectedValue(mockError)
+
+      const message: PipedriveCreateDealNoteRequest = {
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE',
+        dealId: 999,
+        content: 'Test content',
+      }
+      const sendResponse = vi.fn()
+
+      await handlePipedriveCreateDealNote(message, sendResponse)
+
+      expect(sendResponse).toHaveBeenCalledWith({
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE_ERROR',
+        error: 'Deal not found',
+      })
+    })
+
+    it('handles authentication errors', async () => {
+      const mockError = {
+        message: 'Invalid or expired session',
+        statusCode: 401,
+      }
+      mockPipedriveApiService.createDealNote.mockRejectedValue(mockError)
+
+      const message: PipedriveCreateDealNoteRequest = {
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE',
+        dealId: 789,
+        content: 'Test content',
+      }
+      const sendResponse = vi.fn()
+
+      await handlePipedriveCreateDealNote(message, sendResponse)
+
+      expect(sendResponse).toHaveBeenCalledWith({
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE_ERROR',
+        error: 'Invalid or expired session',
+      })
+    })
+
+    it('handles validation errors', async () => {
+      const mockError = {
+        message: 'Content is required',
+        statusCode: 400,
+      }
+      mockPipedriveApiService.createDealNote.mockRejectedValue(mockError)
+
+      const message: PipedriveCreateDealNoteRequest = {
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE',
+        dealId: 789,
+        content: '',
+      }
+      const sendResponse = vi.fn()
+
+      await handlePipedriveCreateDealNote(message, sendResponse)
+
+      expect(sendResponse).toHaveBeenCalledWith({
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE_ERROR',
+        error: 'Content is required',
+      })
+    })
+
+    it('handles generic errors', async () => {
+      mockPipedriveApiService.createDealNote.mockRejectedValue(new Error('Network error'))
+
+      const message: PipedriveCreateDealNoteRequest = {
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE',
+        dealId: 789,
+        content: 'Test content',
+      }
+      const sendResponse = vi.fn()
+
+      await handlePipedriveCreateDealNote(message, sendResponse)
+
+      expect(sendResponse).toHaveBeenCalledWith({
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE_ERROR',
+        error: 'Network error',
+      })
+    })
+
+    it('handles rate limit errors', async () => {
+      const mockError = {
+        message: 'Rate limit exceeded',
+        statusCode: 429,
+      }
+      mockPipedriveApiService.createDealNote.mockRejectedValue(mockError)
+
+      const message: PipedriveCreateDealNoteRequest = {
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE',
+        dealId: 789,
+        content: 'Test content',
+      }
+      const sendResponse = vi.fn()
+
+      await handlePipedriveCreateDealNote(message, sendResponse)
+
+      expect(sendResponse).toHaveBeenCalledWith({
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE_ERROR',
+        error: 'Rate limit exceeded',
+      })
+    })
+
+    it('does not call sendResponse for invalid message type', async () => {
+      const message = { type: 'INVALID_TYPE' } as unknown as PipedriveCreateDealNoteRequest
+      const sendResponse = vi.fn()
+
+      await handlePipedriveCreateDealNote(message, sendResponse)
+
+      expect(mockPipedriveApiService.createDealNote).not.toHaveBeenCalled()
+      expect(sendResponse).not.toHaveBeenCalled()
+    })
+
+    it('handles non-Error exceptions', async () => {
+      mockPipedriveApiService.createDealNote.mockRejectedValue('String error')
+
+      const message: PipedriveCreateDealNoteRequest = {
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE',
+        dealId: 789,
+        content: 'Test content',
+      }
+      const sendResponse = vi.fn()
+
+      await handlePipedriveCreateDealNote(message, sendResponse)
+
+      expect(sendResponse).toHaveBeenCalledWith({
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE_ERROR',
+        error: 'Failed to create deal note',
+      })
+    })
+
+    it('handles very long note content', async () => {
+      const longContent = 'A'.repeat(10000)
+      mockPipedriveApiService.createDealNote.mockResolvedValue(undefined)
+
+      const message: PipedriveCreateDealNoteRequest = {
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE',
+        dealId: 789,
+        content: longContent,
+      }
+      const sendResponse = vi.fn()
+
+      await handlePipedriveCreateDealNote(message, sendResponse)
+
+      expect(mockPipedriveApiService.createDealNote).toHaveBeenCalledWith(789, longContent)
+      expect(sendResponse).toHaveBeenCalledWith({
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE_SUCCESS',
+      })
+    })
+
+    it('handles note content with special characters', async () => {
+      const specialContent = 'Test & <script>alert("XSS")</script> "quotes" and \'apostrophes\''
+      mockPipedriveApiService.createDealNote.mockResolvedValue(undefined)
+
+      const message: PipedriveCreateDealNoteRequest = {
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE',
+        dealId: 789,
+        content: specialContent,
+      }
+      const sendResponse = vi.fn()
+
+      await handlePipedriveCreateDealNote(message, sendResponse)
+
+      expect(mockPipedriveApiService.createDealNote).toHaveBeenCalledWith(789, specialContent)
+      expect(sendResponse).toHaveBeenCalledWith({
+        type: 'PIPEDRIVE_CREATE_DEAL_NOTE_SUCCESS',
       })
     })
   })

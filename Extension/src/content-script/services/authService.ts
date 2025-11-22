@@ -14,6 +14,7 @@ import type {
   AuthSignInRequest,
   AuthSignInResponse,
 } from '../../types/messages'
+import type { AuthError } from '../../types/auth'
 import logger from '../../utils/logger'
 
 interface OAuthState {

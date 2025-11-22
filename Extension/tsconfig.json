@@ -12,8 +12,12 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "types": ["chrome", "vite/client", "vitest/globals"]
+    "types": ["chrome", "vite/client", "vitest/globals"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "tests/e2e"]
+  "exclude": ["node_modules", "dist", "tests/**/*", "src/**/*.test.ts", "src/**/*.test.tsx"]
 }

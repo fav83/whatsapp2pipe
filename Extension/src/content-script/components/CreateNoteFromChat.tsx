@@ -8,15 +8,24 @@ interface CreateNoteFromChatProps {
   personId: number
   contactName: string
   userName: string
+  selectedDealId?: number | null
+  selectedDealTitle?: string
 }
 
-export function CreateNoteFromChat({ personId, contactName, userName }: CreateNoteFromChatProps) {
+export function CreateNoteFromChat({
+  personId,
+  contactName,
+  userName,
+  selectedDealId,
+  selectedDealTitle,
+}: CreateNoteFromChatProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [messages, setMessages] = useState<ExtractedMessage[]>([])
   const [selectedMessageIds, setSelectedMessageIds] = useState<Set<string>>(new Set())
   const [extractionError, setExtractionError] = useState<string | null>(null)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
-  const { createNote, isCreatingNote, createNoteError } = usePipedrive()
+  const { createPersonNote, createDealNote, isCreatingNote, createNoteError } = usePipedrive()
   const { showToast } = useToast()
 
   // Extract messages and expand section
@@ -69,8 +78,17 @@ export function CreateNoteFromChat({ personId, contactName, userName }: CreateNo
     setSelectedMessageIds(new Set())
   }
 
+  // Handle menu item click
+  const handleMenuItemClick = async (destination: 'person' | 'deal') => {
+    // Close dropdown
+    setIsDropdownOpen(false)
+
+    // Create note to selected destination
+    await handleCreateNote(destination)
+  }
+
   // Create note with selected messages
-  const handleCreateNote = async () => {
+  const handleCreateNote = async (destination: 'person' | 'deal' = 'person') => {
     // Get selected messages
     const selected = messages.filter((m) => selectedMessageIds.has(m.id))
 
@@ -81,8 +99,18 @@ export function CreateNoteFromChat({ personId, contactName, userName }: CreateNo
     // Format as note content
     const content = formatMessagesAsNote(selected)
 
-    // Call API
-    const success = await createNote(personId, content)
+    // Call appropriate API based on destination
+    let success = false
+    if (destination === 'person') {
+      success = await createPersonNote(personId, content)
+    } else {
+      // destination === 'deal'
+      if (!selectedDealId) {
+        // Should not happen (button only shows when deal selected)
+        return
+      }
+      success = await createDealNote(selectedDealId, content)
+    }
 
     if (success) {
       // Immediately collapse and reset state
@@ -234,35 +262,100 @@ export function CreateNoteFromChat({ personId, contactName, userName }: CreateNo
             </div>
 
             {/* Create Note Button */}
-            <button
-              onClick={handleCreateNote}
-              disabled={isCreateButtonDisabled}
-              className="w-full px-4 py-2 bg-brand-primary hover:bg-brand-hover text-white text-sm font-medium rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {isCreatingNote ? (
-                <>
-                  {/* Spinner */}
-                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Creating...
-                </>
-              ) : (
-                'Create Note'
-              )}
-            </button>
+            {!selectedDealId ? (
+              /* Regular button - no deal selected */
+              <button
+                onClick={() => handleCreateNote('person')}
+                disabled={isCreateButtonDisabled}
+                className="w-full px-4 py-2 bg-brand-primary hover:bg-brand-hover text-white text-sm font-medium rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isCreatingNote ? (
+                  <>
+                    {/* Spinner */}
+                    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                    Creating...
+                  </>
+                ) : (
+                  'Create Note'
+                )}
+              </button>
+            ) : (
+              /* Split button with dropdown - deal selected */
+              <div className="relative">
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  disabled={isCreateButtonDisabled}
+                  className="w-full px-4 py-2 bg-brand-primary hover:bg-brand-hover text-white text-sm font-medium rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isCreatingNote ? (
+                    <>
+                      {/* Spinner */}
+                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      Create Note
+                      {/* Dropdown chevron */}
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </>
+                  )}
+                </button>
+
+                {/* Dropdown menu */}
+                {isDropdownOpen && !isCreatingNote && (
+                  <div className="absolute z-10 mt-2 w-full bg-white border border-border-secondary rounded-lg shadow-lg">
+                    <button
+                      onClick={() => handleMenuItemClick('person')}
+                      className="w-full px-4 py-2 text-left text-sm text-text-primary hover:bg-background-secondary transition-colors rounded-t-lg"
+                    >
+                      Save to Contact
+                    </button>
+                    <button
+                      onClick={() => handleMenuItemClick('deal')}
+                      className="w-full px-4 py-2 text-left text-sm text-text-primary hover:bg-background-secondary transition-colors rounded-b-lg"
+                    >
+                      Save to Deal
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Error Message */}
             {createNoteError && <div className="mt-3 text-sm text-red-600">{createNoteError}</div>}

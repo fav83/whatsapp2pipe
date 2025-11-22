@@ -13,6 +13,8 @@ interface DealsSectionProps {
   dealsError?: string
   pipelines?: Pipeline[]
   stages?: Stage[]
+  selectedDealId?: number | null
+  onSelectedDealChanged?: (dealId: number | null) => void
   onRetry?: () => void
   onDealsUpdated?: (deals: Deal[]) => void
 }
@@ -68,11 +70,23 @@ export function DealsSection({
   dealsError,
   pipelines = [],
   stages = [],
+  selectedDealId: externalSelectedDealId,
+  onSelectedDealChanged,
   onRetry,
   onDealsUpdated,
 }: DealsSectionProps) {
-  const [selectedDealId, setSelectedDealId] = useState<number | null>(null)
+  const [internalSelectedDealId, setInternalSelectedDealId] = useState<number | null>(null)
   const [isCreatingDeal, setIsCreatingDeal] = useState(false)
+
+  // Use external selectedDealId if provided, otherwise use internal state
+  const selectedDealId = externalSelectedDealId !== undefined ? externalSelectedDealId : internalSelectedDealId
+  const setSelectedDealId = (dealId: number | null) => {
+    if (onSelectedDealChanged) {
+      onSelectedDealChanged(dealId)
+    } else {
+      setInternalSelectedDealId(dealId)
+    }
+  }
 
   // Handle deal created
   const handleDealCreated = (deal: Deal) => {

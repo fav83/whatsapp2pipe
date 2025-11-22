@@ -318,7 +318,7 @@ Allow users to mark open deals as Lost with optional lost reason input.
 
 ---
 
-### 4.8 Reopen Closed Deal (Feature 38) - ⏳ Pending
+### 4.8 Reopen Closed Deal (Feature 38) - ✅ Complete
 
 Allow users to reopen won or lost deals back to open status.
 
@@ -348,7 +348,7 @@ Allow users to reopen won or lost deals back to open status.
 
 ---
 
-### 4.9 Save WhatsApp Messages to Deal Notes (Feature 39) - ⏳ Pending
+### 4.9 Save WhatsApp Messages to Deal Notes (Feature 39) - ✅ Complete
 
 Extend existing "Create Note from Chat" feature (Spec-130b) to support saving selected WhatsApp messages to Deal notes (not just Person notes).
 

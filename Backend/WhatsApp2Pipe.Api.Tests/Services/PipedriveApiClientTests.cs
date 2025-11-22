@@ -480,6 +480,333 @@ public class PipedriveApiClientTests
 
     #endregion
 
+    #region CreateNoteAsync Tests
+
+    [Fact]
+    public async Task CreateNoteAsync_WithPersonId_CreatesNoteSuccessfully()
+    {
+        // Arrange
+        var session = CreateTestSession();
+        var content = "Test note content";
+        var personId = 123;
+
+        var noteResponse = new PipedriveNoteResponse
+        {
+            Success = true,
+            Data = new PipedriveNote
+            {
+                Id = 456,
+                Content = content,
+                PersonId = personId
+            }
+        };
+
+        var mockHttpMessageHandler = CreateMockHttpMessageHandler(
+            HttpStatusCode.Created,
+            JsonSerializer.Serialize(noteResponse)
+        );
+
+        var httpClient = new HttpClient(mockHttpMessageHandler.Object)
+        {
+            BaseAddress = new Uri("https://api.pipedrive.com")
+        };
+        var client = new PipedriveApiClient(
+            httpClient, config, mockLogger.Object, mockOAuthService.Object, mockSessionService.Object);
+
+        // Act
+        var result = await client.CreateNoteAsync(session, content, personId: personId);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.NotNull(result.Data);
+        Assert.Equal(456, result.Data.Id);
+        Assert.Equal(content, result.Data.Content);
+        Assert.Equal(personId, result.Data.PersonId);
+    }
+
+    [Fact]
+    public async Task CreateNoteAsync_WithDealId_CreatesNoteSuccessfully()
+    {
+        // Arrange
+        var session = CreateTestSession();
+        var content = "Deal note content";
+        var dealId = 789;
+
+        var noteResponse = new PipedriveNoteResponse
+        {
+            Success = true,
+            Data = new PipedriveNote
+            {
+                Id = 456,
+                Content = content,
+                DealId = dealId
+            }
+        };
+
+        var mockHttpMessageHandler = CreateMockHttpMessageHandler(
+            HttpStatusCode.Created,
+            JsonSerializer.Serialize(noteResponse)
+        );
+
+        var httpClient = new HttpClient(mockHttpMessageHandler.Object)
+        {
+            BaseAddress = new Uri("https://api.pipedrive.com")
+        };
+        var client = new PipedriveApiClient(
+            httpClient, config, mockLogger.Object, mockOAuthService.Object, mockSessionService.Object);
+
+        // Act
+        var result = await client.CreateNoteAsync(session, content, dealId: dealId);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.NotNull(result.Data);
+        Assert.Equal(456, result.Data.Id);
+        Assert.Equal(content, result.Data.Content);
+        Assert.Equal(dealId, result.Data.DealId);
+    }
+
+    [Fact]
+    public async Task CreateNoteAsync_WithNeitherPersonIdNorDealId_ThrowsArgumentException()
+    {
+        // Arrange
+        var session = CreateTestSession();
+        var content = "Test content";
+
+        var mockHttpMessageHandler = CreateMockHttpMessageHandler(HttpStatusCode.OK, "{}");
+        var httpClient = new HttpClient(mockHttpMessageHandler.Object)
+        {
+            BaseAddress = new Uri("https://api.pipedrive.com")
+        };
+        var client = new PipedriveApiClient(
+            httpClient, config, mockLogger.Object, mockOAuthService.Object, mockSessionService.Object);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(
+            async () => await client.CreateNoteAsync(session, content, personId: null, dealId: null)
+        );
+    }
+
+    [Fact]
+    public async Task CreateNoteAsync_WithBothPersonIdAndDealId_ThrowsArgumentException()
+    {
+        // Arrange
+        var session = CreateTestSession();
+        var content = "Test content";
+
+        var mockHttpMessageHandler = CreateMockHttpMessageHandler(HttpStatusCode.OK, "{}");
+        var httpClient = new HttpClient(mockHttpMessageHandler.Object)
+        {
+            BaseAddress = new Uri("https://api.pipedrive.com")
+        };
+        var client = new PipedriveApiClient(
+            httpClient, config, mockLogger.Object, mockOAuthService.Object, mockSessionService.Object);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(
+            async () => await client.CreateNoteAsync(session, content, personId: 123, dealId: 789)
+        );
+    }
+
+    [Fact]
+    public async Task CreateNoteAsync_WithLongContent_CreatesNoteSuccessfully()
+    {
+        // Arrange
+        var session = CreateTestSession();
+        var longContent = new string('A', 10000);
+        var personId = 123;
+
+        var noteResponse = new PipedriveNoteResponse
+        {
+            Success = true,
+            Data = new PipedriveNote
+            {
+                Id = 456,
+                Content = longContent,
+                PersonId = personId
+            }
+        };
+
+        var mockHttpMessageHandler = CreateMockHttpMessageHandler(
+            HttpStatusCode.Created,
+            JsonSerializer.Serialize(noteResponse)
+        );
+
+        var httpClient = new HttpClient(mockHttpMessageHandler.Object)
+        {
+            BaseAddress = new Uri("https://api.pipedrive.com")
+        };
+        var client = new PipedriveApiClient(
+            httpClient, config, mockLogger.Object, mockOAuthService.Object, mockSessionService.Object);
+
+        // Act
+        var result = await client.CreateNoteAsync(session, longContent, personId: personId);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.NotNull(result.Data);
+        Assert.Equal(longContent, result.Data.Content);
+    }
+
+    [Fact]
+    public async Task CreateNoteAsync_WithUnauthorizedResponse_ThrowsPipedriveUnauthorizedException()
+    {
+        // Arrange
+        var session = CreateTestSession();
+        var content = "Test content";
+        var personId = 123;
+
+        // Mock the first unauthorized response
+        var mockHandler = new Mock<HttpMessageHandler>();
+        mockHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.Unauthorized,
+                Content = new StringContent("{}", Encoding.UTF8, "application/json")
+            });
+
+        var httpClient = new HttpClient(mockHandler.Object)
+        {
+            BaseAddress = new Uri("https://api.pipedrive.com")
+        };
+
+        // Mock token refresh failure
+        mockOAuthService.Setup(o => o.RefreshAccessTokenAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ThrowsAsync(new PipedriveUnauthorizedException("Refresh token expired"));
+
+        var client = new PipedriveApiClient(
+            httpClient, config, mockLogger.Object, mockOAuthService.Object, mockSessionService.Object);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<PipedriveUnauthorizedException>(
+            async () => await client.CreateNoteAsync(session, content, personId: personId)
+        );
+    }
+
+    [Fact]
+    public async Task CreateNoteAsync_WithRateLimitResponse_ThrowsPipedriveRateLimitException()
+    {
+        // Arrange
+        var session = CreateTestSession();
+        var content = "Test content";
+        var personId = 123;
+
+        var mockHttpMessageHandler = CreateMockHttpMessageHandler(
+            (HttpStatusCode)429,
+            "{}"
+        );
+
+        var httpClient = new HttpClient(mockHttpMessageHandler.Object)
+        {
+            BaseAddress = new Uri("https://api.pipedrive.com")
+        };
+        var client = new PipedriveApiClient(
+            httpClient, config, mockLogger.Object, mockOAuthService.Object, mockSessionService.Object);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<PipedriveRateLimitException>(
+            async () => await client.CreateNoteAsync(session, content, personId: personId)
+        );
+    }
+
+    [Fact]
+    public async Task CreateNoteAsync_WithNotFoundResponse_ThrowsPipedriveNotFoundException()
+    {
+        // Arrange
+        var session = CreateTestSession();
+        var content = "Test content";
+        var personId = 999;
+
+        var mockHttpMessageHandler = CreateMockHttpMessageHandler(
+            HttpStatusCode.NotFound,
+            "{}"
+        );
+
+        var httpClient = new HttpClient(mockHttpMessageHandler.Object)
+        {
+            BaseAddress = new Uri("https://api.pipedrive.com")
+        };
+        var client = new PipedriveApiClient(
+            httpClient, config, mockLogger.Object, mockOAuthService.Object, mockSessionService.Object);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<PipedriveNotFoundException>(
+            async () => await client.CreateNoteAsync(session, content, personId: personId)
+        );
+    }
+
+    [Fact]
+    public async Task CreateNoteAsync_WithServerError_ThrowsPipedriveApiException()
+    {
+        // Arrange
+        var session = CreateTestSession();
+        var content = "Test content";
+        var personId = 123;
+
+        var mockHttpMessageHandler = CreateMockHttpMessageHandler(
+            HttpStatusCode.InternalServerError,
+            "{}"
+        );
+
+        var httpClient = new HttpClient(mockHttpMessageHandler.Object)
+        {
+            BaseAddress = new Uri("https://api.pipedrive.com")
+        };
+        var client = new PipedriveApiClient(
+            httpClient, config, mockLogger.Object, mockOAuthService.Object, mockSessionService.Object);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<PipedriveApiException>(
+            async () => await client.CreateNoteAsync(session, content, personId: personId)
+        );
+    }
+
+    [Fact]
+    public async Task CreateNoteAsync_WithSpecialCharacters_CreatesNoteSuccessfully()
+    {
+        // Arrange
+        var session = CreateTestSession();
+        var specialContent = "Test & <script>alert('XSS')</script> \"quotes\" and 'apostrophes' with newlines\nand tabs\t";
+        var personId = 123;
+
+        var noteResponse = new PipedriveNoteResponse
+        {
+            Success = true,
+            Data = new PipedriveNote
+            {
+                Id = 456,
+                Content = specialContent,
+                PersonId = personId
+            }
+        };
+
+        var mockHttpMessageHandler = CreateMockHttpMessageHandler(
+            HttpStatusCode.Created,
+            JsonSerializer.Serialize(noteResponse)
+        );
+
+        var httpClient = new HttpClient(mockHttpMessageHandler.Object)
+        {
+            BaseAddress = new Uri("https://api.pipedrive.com")
+        };
+        var client = new PipedriveApiClient(
+            httpClient, config, mockLogger.Object, mockOAuthService.Object, mockSessionService.Object);
+
+        // Act
+        var result = await client.CreateNoteAsync(session, specialContent, personId: personId);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.NotNull(result.Data);
+        Assert.Equal(specialContent, result.Data.Content);
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private Session CreateTestSession()

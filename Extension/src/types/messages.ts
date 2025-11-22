@@ -138,9 +138,18 @@ export interface PipedriveAttachPhoneRequest {
 /**
  * Create a note in Pipedrive attached to a person
  */
-export interface PipedriveCreateNoteRequest {
-  type: 'PIPEDRIVE_CREATE_NOTE'
+export interface PipedriveCreatePersonNoteRequest {
+  type: 'PIPEDRIVE_CREATE_PERSON_NOTE'
   personId: number
+  content: string
+}
+
+/**
+ * Create a note in Pipedrive attached to a deal
+ */
+export interface PipedriveCreateDealNoteRequest {
+  type: 'PIPEDRIVE_CREATE_DEAL_NOTE'
+  dealId: number
   content: string
 }
 
@@ -179,7 +188,8 @@ export type PipedriveRequest =
   | PipedriveSearchByNameRequest
   | PipedriveCreatePersonRequest
   | PipedriveAttachPhoneRequest
-  | PipedriveCreateNoteRequest
+  | PipedriveCreatePersonNoteRequest
+  | PipedriveCreateDealNoteRequest
   | PipedriveCreateDealRequest
   | PipedriveUpdateDealRequest
   | PipedriveMarkDealWonLostRequest
@@ -224,17 +234,32 @@ export interface PipedriveAttachSuccess {
 }
 
 /**
- * Successfully created note
+ * Successfully created person note
  */
-export interface PipedriveCreateNoteSuccess {
-  type: 'PIPEDRIVE_CREATE_NOTE_SUCCESS'
+export interface PipedriveCreatePersonNoteSuccess {
+  type: 'PIPEDRIVE_CREATE_PERSON_NOTE_SUCCESS'
 }
 
 /**
- * Failed to create note
+ * Failed to create person note
  */
-export interface PipedriveCreateNoteError {
-  type: 'PIPEDRIVE_CREATE_NOTE_ERROR'
+export interface PipedriveCreatePersonNoteError {
+  type: 'PIPEDRIVE_CREATE_PERSON_NOTE_ERROR'
+  error: string
+}
+
+/**
+ * Successfully created deal note
+ */
+export interface PipedriveCreateDealNoteSuccess {
+  type: 'PIPEDRIVE_CREATE_DEAL_NOTE_SUCCESS'
+}
+
+/**
+ * Failed to create deal note
+ */
+export interface PipedriveCreateDealNoteError {
+  type: 'PIPEDRIVE_CREATE_DEAL_NOTE_ERROR'
   error: string
 }
 
@@ -282,8 +307,10 @@ export type PipedriveResponse =
   | PipedriveSearchSuccess
   | PipedriveCreateSuccess
   | PipedriveAttachSuccess
-  | PipedriveCreateNoteSuccess
-  | PipedriveCreateNoteError
+  | PipedriveCreatePersonNoteSuccess
+  | PipedriveCreatePersonNoteError
+  | PipedriveCreateDealNoteSuccess
+  | PipedriveCreateDealNoteError
   | PipedriveCreateDealSuccess
   | PipedriveUpdateDealSuccess
   | PipedriveMarkDealWonLostSuccess

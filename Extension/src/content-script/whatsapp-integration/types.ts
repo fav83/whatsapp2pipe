@@ -45,6 +45,8 @@ export interface WhatsAppStore {
  * WhatsApp Chat model (reverse-engineered)
  */
 export interface WhatsAppChat {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  id?: any // Chat identifier (varies by WhatsApp version)
   active: boolean
   __x_contact: WhatsAppContact
   __x_groupMetadata?: WhatsAppGroupMetadata

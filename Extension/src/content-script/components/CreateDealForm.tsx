@@ -55,7 +55,7 @@ export function CreateDealForm({
 
   // Get current stages for selected pipeline
   const currentStages = useMemo(() => {
-    if (!selectedPipelineId) return []
+    if (!selectedPipelineId || !stages) return []
     return stages
       .filter((s) => s.pipelineId === selectedPipelineId)
       .sort((a, b) => a.orderNr - b.orderNr)
