@@ -66,6 +66,12 @@ class PipedriveApiService {
         const statusCode = response.status
         let errorMessage: string
 
+        // Determine if this is a person lookup endpoint (404 is expected)
+        const isPersonLookupEndpoint =
+          endpoint.includes('/api/pipedrive/persons/lookup') ||
+          endpoint.includes('/api/pipedrive/persons/search') ||
+          endpoint.match(/\/api\/pipedrive\/persons\/\d+/)
+
         switch (statusCode) {
           case 401:
             // Clear authentication on 401
@@ -73,7 +79,16 @@ class PipedriveApiService {
             errorMessage = 'Authentication expired. Please sign in again.'
             break
           case 404:
-            errorMessage = 'Person not found'
+            // Context-aware error messages for 404
+            if (endpoint.includes('/api/pipedrive/deals/')) {
+              errorMessage = 'Deal not found'
+            } else if (endpoint.includes('/api/pipedrive/persons/')) {
+              errorMessage = 'Person not found'
+            } else if (endpoint.includes('/api/config')) {
+              errorMessage = 'Configuration not found'
+            } else {
+              errorMessage = 'Resource not found'
+            }
             break
           case 429:
             errorMessage = 'Too many requests. Please try again in a moment.'
@@ -85,8 +100,11 @@ class PipedriveApiService {
             errorMessage = 'An error occurred. Please try again.'
         }
 
-        // Log API errors to Sentry (except 404 - expected state)
-        if (statusCode !== 404) {
+        // Log API errors to Sentry
+        // Only skip logging for 404s on person lookup endpoints (expected state)
+        const shouldLogToSentry = !(statusCode === 404 && isPersonLookupEndpoint)
+
+        if (shouldLogToSentry) {
           logBreadcrumb(
             'API request failed',
             'api.request_failed',

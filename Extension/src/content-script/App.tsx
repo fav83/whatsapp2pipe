@@ -66,8 +66,6 @@ type SidebarState =
       phone: string
       deals: Deal[] | null
       dealsError?: string
-      pipelines: Pipeline[]
-      stages: Stage[]
     }
   | { type: 'person-no-match'; name: string; phone: string }
   | { type: 'person-error'; name: string; phone: string; error: string }
@@ -374,8 +372,6 @@ function SidebarContent({ state, setState, userName, pipelines, stages, selected
                 phone,
                 deals: result.deals,
                 dealsError: result.dealsError,
-                pipelines,
-                stages,
               }
             } else {
               logger.log('[SidebarContent] Updating state to person-no-match for:', phone)
@@ -476,8 +472,6 @@ function SidebarContent({ state, setState, userName, pipelines, stages, selected
       person,
       phone,
       deals: [], // Empty deals when person is first created
-      pipelines,
-      stages,
     })
   }
 
@@ -523,8 +517,8 @@ function SidebarContent({ state, setState, userName, pipelines, stages, selected
             personName={state.person.name}
             deals={state.deals}
             dealsError={state.dealsError}
-            pipelines={state.pipelines}
-            stages={state.stages}
+            pipelines={pipelines}
+            stages={stages}
             selectedDealId={selectedDealId}
             onSelectedDealChanged={setSelectedDealId}
             onRetry={() => handleRetry(state.phone, state.person.name)}

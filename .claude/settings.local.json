@@ -64,7 +64,9 @@
       "Bash(xargs:*)",
       "Bash(git config:*)",
       "Bash(git merge:*)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(git worktree add:*)",
+      "Bash(git worktree:*)"
     ],
     "deny": [],
     "ask": [
