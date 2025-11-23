@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo, useId } from 'react'
-import { X } from 'lucide-react'
+import { X, Pencil } from 'lucide-react'
 import type { Deal, Pipeline, Stage } from '@/types/deal'
 import { usePipedrive } from '../hooks/usePipedrive'
 import { useToast } from '../context/ToastContext'
@@ -203,6 +203,8 @@ export const DealDetails = React.memo(function DealDetails({
   const [selectedStageId, setSelectedStageId] = useState(deal.stage.id)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isEditingPipeline, setIsEditingPipeline] = useState(false)
+  const [isEditingStage, setIsEditingStage] = useState(false)
 
   // Won/Lost state
   const [isConfirmingWon, setIsConfirmingWon] = useState(false)
@@ -247,6 +249,8 @@ export const DealDetails = React.memo(function DealDetails({
     setWonError(null)
     setLostError(null)
     setError(null)
+    setIsEditingPipeline(false)
+    setIsEditingStage(false)
   }, [deal.id])
 
   // Get stages for currently selected pipeline
@@ -325,6 +329,10 @@ export const DealDetails = React.memo(function DealDetails({
         // Hide buttons immediately by updating refs to match new values
         originalPipelineId.current = selectedPipelineId
         originalStageId.current = selectedStageId
+
+        // Exit editing mode
+        setIsEditingPipeline(false)
+        setIsEditingStage(false)
       } else {
         // API returned null (error handled by hook)
         const errorMessage = 'Failed to update deal. Please try again.'
@@ -353,6 +361,10 @@ export const DealDetails = React.memo(function DealDetails({
 
     // Clear any error
     setError(null)
+
+    // Exit editing mode
+    setIsEditingPipeline(false)
+    setIsEditingStage(false)
   }
 
   /**
@@ -504,23 +516,60 @@ export const DealDetails = React.memo(function DealDetails({
           <span className="font-medium">Value:</span> {deal.value}
         </div>
 
-        {/* Pipeline Dropdown */}
-        <CustomDropdown
-          options={pipelines}
-          selectedId={selectedPipelineId}
-          onSelect={handlePipelineChange}
-          disabled={isSaving}
-          placeholder="Select pipeline..."
-        />
+        {/* Pipeline - Label with Edit Icon or Dropdown */}
+        {!isEditingPipeline ? (
+          <div className="group flex items-center justify-between text-sm text-text-secondary">
+            <div>
+              <span className="font-medium">Pipeline:</span>{' '}
+              {pipelines.find((p) => p.id === selectedPipelineId)?.name || 'Unknown'}
+            </div>
+            <button
+              onClick={() => {
+                setIsEditingPipeline(true)
+                setIsEditingStage(true)
+              }}
+              className="p-1 hover:bg-gray-100 rounded invisible group-hover:visible"
+              aria-label="Edit pipeline"
+              type="button"
+            >
+              <Pencil className="w-3.5 h-3.5 text-text-tertiary" />
+            </button>
+          </div>
+        ) : (
+          <CustomDropdown
+            options={pipelines}
+            selectedId={selectedPipelineId}
+            onSelect={handlePipelineChange}
+            disabled={isSaving}
+            placeholder="Select pipeline..."
+          />
+        )}
 
-        {/* Stage Dropdown */}
-        <CustomDropdown
-          options={currentStages}
-          selectedId={selectedStageId}
-          onSelect={handleStageChange}
-          disabled={isSaving}
-          placeholder="Select stage..."
-        />
+        {/* Stage - Label with Edit Icon or Dropdown */}
+        {!isEditingStage ? (
+          <div className="group flex items-center justify-between text-sm text-text-secondary">
+            <div>
+              <span className="font-medium">Stage:</span>{' '}
+              {currentStages.find((s) => s.id === selectedStageId)?.name || 'Unknown'}
+            </div>
+            <button
+              onClick={() => setIsEditingStage(true)}
+              className="p-1 hover:bg-gray-100 rounded invisible group-hover:visible"
+              aria-label="Edit stage"
+              type="button"
+            >
+              <Pencil className="w-3.5 h-3.5 text-text-tertiary" />
+            </button>
+          </div>
+        ) : (
+          <CustomDropdown
+            options={currentStages}
+            selectedId={selectedStageId}
+            onSelect={handleStageChange}
+            disabled={isSaving}
+            placeholder="Select stage..."
+          />
+        )}
 
         {/* Save/Cancel Buttons (only if hasChanges) */}
         {hasChanges && (
