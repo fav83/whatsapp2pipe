@@ -130,7 +130,7 @@ export function CreateNoteFromChat({
   // Collapsed state
   if (!isExpanded) {
     return (
-      <div className="px-3 pt-3">
+      <div className="px-3 pt-2 pb-2">
         <div className="p-3 bg-white border border-border-secondary rounded-lg shadow-sm">
           {/* Header */}
           <div className="flex items-center gap-2 mb-3">
@@ -165,7 +165,7 @@ export function CreateNoteFromChat({
 
   // Expanded state
   return (
-    <div className="px-3 pt-3">
+    <div className="px-3 pt-2 pb-2">
       <div className="p-3 bg-white border border-border-secondary rounded-lg shadow-sm">
         {/* Header */}
         <div className="flex items-center justify-between mb-3">
