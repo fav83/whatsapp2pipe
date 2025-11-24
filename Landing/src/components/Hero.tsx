@@ -14,7 +14,7 @@ export function Hero() {
           {/* Left column - Content */}
           <div className="flex flex-col">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-700 leading-tight max-w-[600px]">
-              Stop losing WhatsApp leads in the chaos
+              Sync WhatsApp Leads to Pipedrive Instantly
             </h1>
 
             <p className="mt-6 text-lg text-slate-600 leading-relaxed max-w-[540px]">
@@ -29,11 +29,14 @@ export function Hero() {
           {/* Right column - Visual */}
           <div className="hidden md:flex items-center justify-center">
             <div className="relative w-full max-w-sm">
-              <img
-                src="/hero-image.png"
-                alt="Chat2Deal - Connect WhatsApp to Pipedrive"
-                className="w-full h-auto"
-              />
+              <picture>
+                <source srcSet="/hero-image.webp" type="image/webp" />
+                <img
+                  src="/hero-image.png"
+                  alt="Chat2Deal - Connect WhatsApp to Pipedrive"
+                  className="w-full h-auto"
+                />
+              </picture>
             </div>
           </div>
         </div>

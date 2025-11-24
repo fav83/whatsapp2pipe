@@ -1,1 +1,5 @@
-npm run type-check && npx lint-staged
+#!/bin/sh
+# Only run checks if Extension files are staged
+if git diff --cached --name-only | grep -q '^Extension/'; then
+  cd Extension && npm run type-check && npx lint-staged
+fi

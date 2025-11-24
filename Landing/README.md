@@ -9,15 +9,22 @@ This landing page is built following the design specification in [Spec-123-Landi
 **Features:**
 - Modern SaaS design with clean typography and subtle animations
 - Fully responsive (mobile, tablet, desktop)
-- Waitlist form with client-side validation
-- SEO optimized with Open Graph and Twitter meta tags
+- Direct sign-in with Pipedrive (open to all users)
+- **SEO optimized** with dynamic meta tags, Open Graph, and Twitter Cards
+  - React Helmet for page-level SEO
+  - Static pre-rendering for all routes
+  - Automated sitemap generation
+  - Proper canonical URLs and og:url tags
 - Accessibility compliant (WCAG AA)
-- Form handling with success/error states
+- Legal pages (Privacy Policy, Terms of Service)
 
 ## Tech Stack
 
 - **Framework**: Vite + React 18 + TypeScript
+- **Routing**: React Router v7
 - **Styling**: Tailwind CSS v3
+- **SEO**: react-helmet-async, static pre-rendering (Puppeteer)
+- **Content**: react-markdown for legal pages
 - **Build Tool**: Vite
 - **Type Checking**: TypeScript
 
@@ -232,10 +239,7 @@ CORS_ALLOWED_ORIGINS=https://web.whatsapp.com,http://localhost:3000,http://local
 CORS_ALLOWED_ORIGINS=https://web.whatsapp.com,https://dashboard.chat2deal.com,https://chat2deal.com
 ```
 
-If using both www and non-www domains, include both:
-```
-CORS_ALLOWED_ORIGINS=https://web.whatsapp.com,https://dashboard.chat2deal.com,https://chat2deal.com,https://www.chat2deal.com
-```
+**Note:** chat2deal.com uses non-www canonical domain. The www subdomain redirects to non-www via Azure Static Web Apps custom domain configuration.
 
 **Testing the Connection:**
 

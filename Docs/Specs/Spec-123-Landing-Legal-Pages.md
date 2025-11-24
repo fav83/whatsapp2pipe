@@ -1007,6 +1007,19 @@ The following are explicitly **not** part of this specification:
 - All acceptance criteria met and exceeded
 - Legal documents written in Basecamp conversational style with CC BY 4.0 attribution
 
+**Post-Implementation Improvements (2025-11-24):**
+- Fixed duplicate og:url meta tag issue causing Ahrefs SEO errors
+- Added explicit routes to `staticwebapp.config.json` for legal pages:
+  ```json
+  {
+    "route": "/privacy-policy",
+    "rewrite": "/privacy-policy/index.html"
+  }
+  ```
+- Documented Pitfall #4 in Landing-SEO-Architecture.md about og:url duplication
+- Updated index.html to remove all duplicate meta tags (og:url, og:title, og:description, twitter:*, meta description)
+- Ensures pre-rendered legal pages are properly served by Azure Static Web Apps
+
 **Related Documentation:**
 - [Landing-SEO-Architecture.md](../Architecture/Landing-SEO-Architecture.md) - Complete SEO system documentation
 - [Parking Lot](../Plans/Parking-Lot.md) - Social media preview images (future enhancement)

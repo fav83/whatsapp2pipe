@@ -11,8 +11,8 @@ export default function Home() {
   return (
     <>
       <PageHelmet
-        title="Chat2Deal"
-        description="Seamlessly connect WhatsApp Web conversations to Pipedrive CRM. Sync contacts, track conversations, and close more deals with our Chrome extension for sales teams."
+        title="Chat2Deal - Sync your WhatsApp to Pipedrive"
+        description="Connect WhatsApp Web to Pipedrive CRM. Sync contacts, log chats, and close more deals with our Chrome extension."
         keywords="WhatsApp CRM, Pipedrive integration, WhatsApp Web, CRM extension, sales automation, contact sync, Chrome extension"
         url="/"
       />

@@ -85,9 +85,10 @@ And the URL should contain "oauth.pipedrive.com"
 ```gherkin
 Given I am on the landing page
 When I click the "Privacy Policy" link in the footer
-Then I should be navigated to "/privacy"
+Then I should be navigated to "/privacy-policy"
 And the page should display the privacy policy content
 And the page should have proper SEO meta tags
+And the og:url meta tag should match the canonical URL
 ```
 
 ### Scenario: User navigates to Terms of Service
@@ -96,16 +97,17 @@ And the page should have proper SEO meta tags
 ```gherkin
 Given I am on the landing page
 When I click the "Terms of Service" link in the footer
-Then I should be navigated to "/terms"
+Then I should be navigated to "/terms-of-service"
 And the page should display the terms of service content
 And the page should have proper SEO meta tags
+And the og:url meta tag should match the canonical URL
 ```
 
 ### Scenario: User navigates back to home from legal pages
 **Priority:** Low
 
 ```gherkin
-Given I am on the "/privacy" page
+Given I am on the "/privacy-policy" page
 When I click the logo in the header
 Then I should be navigated back to the home page "/"
 ```

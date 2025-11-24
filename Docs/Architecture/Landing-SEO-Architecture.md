@@ -10,6 +10,12 @@
 
 1. [Overview and Architecture](#1-overview-and-architecture)
 2. [Dynamic Meta Tag Management](#2-dynamic-meta-tag-management)
+   - 2.1 [Component-Level SEO](#21-component-level-seo)
+   - 2.2 [Meta Tags Generated](#22-meta-tags-generated)
+   - 2.3 [Implementation Details](#23-implementation-details)
+   - 2.4 [Architectural Rules: index.html vs PageHelmet](#24-architectural-rules-indexhtml-vs-pagehelmet)
+   - 2.5 [Common Pitfalls and How to Avoid Them](#25-common-pitfalls-and-how-to-avoid-them)
+   - 2.6 [Verification and Testing](#26-verification-and-testing)
 3. [Automated Route Discovery](#3-automated-route-discovery)
 4. [XML Sitemap Generation](#4-xml-sitemap-generation)
 5. [Static Pre-rendering](#5-static-pre-rendering)
@@ -146,6 +152,234 @@ The `PageHelmet` component automatically generates:
 - Site name: "Chat2Deal"
 - Base URL: `VITE_SITE_URL` environment variable
 - Default OG image: `/og-image.png`
+
+### 2.4 Architectural Rules: index.html vs PageHelmet
+
+**Critical Pattern:** This project uses a clear separation between static fallback meta tags and dynamic meta tags.
+
+#### ✅ CORRECT: Minimal index.html with PageHelmet Managing Dynamic Tags
+
+**`Landing/index.html` should contain ONLY:**
+- Basic fallback `<title>` (overridden by PageHelmet)
+- Minimal OG/Twitter fallbacks: `og:type`, `og:image`, `twitter:card`, `twitter:image`
+- NO `meta name="description"` tags
+- NO `meta property="og:description"` tags
+- NO `meta name="twitter:description"` tags
+- NO `meta property="og:title"` tags
+- NO `meta property="og:url"` tags
+
+**`PageHelmet` component manages ALL:**
+- `<title>` tags (with site name suffix)
+- `meta name="description"` tags
+- `meta property="og:title"`, `og:description`, and `og:url` tags
+- `meta name="twitter:title"` and `twitter:description` tags
+- Canonical URLs (`<link rel="canonical">`)
+- Keywords
+
+**Rationale:**
+1. **Single Source of Truth:** PageHelmet is the authoritative source for all dynamic meta tags
+2. **Per-Page Customization:** Each page defines its own SEO metadata at the component level
+3. **Pre-rendering Compatibility:** Static pre-rendering bakes PageHelmet's dynamic tags into HTML
+4. **No Duplication:** React Helmet ADDS tags but does NOT remove existing static tags from index.html
+
+#### ❌ INCORRECT: Duplicate Meta Tags in Both Locations
+
+**DO NOT do this:**
+```html
+<!-- ❌ WRONG: index.html with description tags -->
+<head>
+  <meta name="description" content="Stop losing WhatsApp leads..." />
+  <meta property="og:description" content="Stop losing WhatsApp leads..." />
+  <!-- This creates duplicates when PageHelmet also adds these tags! -->
+</head>
+```
+
+**Why this fails:**
+- React Helmet injects NEW meta tags when PageHelmet renders
+- Original static tags from index.html remain in the DOM
+- Result: **TWO meta description tags per page** → SEO errors
+
+### 2.5 Common Pitfalls and How to Avoid Them
+
+#### Pitfall #1: Adding Static Meta Descriptions to index.html
+
+**Symptom:** SEO tools report "Multiple meta description tags" error
+
+**Cause:** Developer adds meta descriptions to `index.html` without realizing PageHelmet also manages them
+
+**Example of mistake:**
+```html
+<!-- Landing/index.html - WRONG -->
+<head>
+  <title>Chat2Deal</title>
+  <meta name="description" content="Some description" />  ❌ Remove this!
+</head>
+```
+
+**Fix:** Remove ALL description/title-related meta tags from index.html that PageHelmet manages
+
+**Prevention:**
+- Review index.html when adding new pages
+- Use verification commands (see Section 2.6) after builds
+- Trust PageHelmet + pre-rendering for all dynamic meta tags
+
+#### Pitfall #2: Misunderstanding React Helmet Behavior
+
+**Common Misconception:** "React Helmet will replace the static meta tags in index.html"
+
+**Reality:** React Helmet **ADDS** new meta tags but **DOES NOT REMOVE** existing static tags
+
+**Technical Details:**
+```
+Browser loads index.html
+  ↓
+Static <meta name="description" content="A" /> exists in <head>
+  ↓
+React app boots up
+  ↓
+PageHelmet component renders
+  ↓
+React Helmet injects <meta name="description" content="B" data-rh="true" />
+  ↓
+Result: TWO meta description tags in DOM! ❌
+```
+
+**Solution:** Keep index.html minimal with only fallback tags, let PageHelmet own all dynamic tags
+
+#### Pitfall #3: Forgetting to Run Pre-render Build
+
+**Symptom:** Meta tags work in development but aren't visible in production HTML source
+
+**Cause:** Running `npm run build` (no pre-rendering) instead of `npm run build:prerender`
+
+**Without Pre-rendering:**
+- `dist/index.html` contains minimal fallback tags only
+- PageHelmet tags are injected client-side via JavaScript
+- Search engine crawlers may not see page-specific meta tags (depends on crawler JS support)
+
+**With Pre-rendering:**
+- Each route has pre-rendered HTML with fully baked-in meta tags
+- `dist/index.html` includes home page's PageHelmet tags
+- `dist/privacy-policy/index.html` includes privacy page's PageHelmet tags
+- Search engines see complete meta tags immediately, no JS execution required
+
+**Solution:** Always use `npm run build:prerender` for production deployments
+
+#### Pitfall #4: Adding og:url Fallback to index.html
+
+**Symptom:** Ahrefs or other SEO tools report "Open Graph URL not matching canonical"
+
+**Cause:** Adding `<meta property="og:url">` fallback to index.html creates duplicate og:url tags
+
+**Example of mistake:**
+```html
+<!-- Landing/index.html - WRONG -->
+<head>
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://chat2deal.com/" />  ❌ Remove this!
+  <meta property="og:image" content="https://chat2deal.com/og-image.jpg" />
+</head>
+```
+
+**What happens:**
+1. Pre-rendered pages get the fallback `og:url` from index.html
+2. PageHelmet adds the correct page-specific `og:url`
+3. Result: Two `og:url` tags per page
+4. Search engines may use the wrong one (the fallback homepage URL)
+
+**Technical Details:**
+```
+Privacy Policy page gets pre-rendered:
+  ↓
+Static og:url from index.html: "https://chat2deal.com/" (homepage)
+  ↓
+PageHelmet adds: "https://chat2deal.com/privacy-policy" (correct)
+  ↓
+Result: TWO og:url tags! Search engines may pick the first (wrong) one ❌
+```
+
+**Solution:** Remove `og:url` from index.html entirely. PageHelmet manages it for all pages, including the homepage.
+
+**Fixed index.html:**
+```html
+<!-- Landing/index.html - CORRECT -->
+<head>
+  <!-- Minimal OG fallbacks - NO og:url, og:title, or og:description -->
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://chat2deal.com/og-image.jpg" />
+
+  <!-- PageHelmet will add og:url, og:title, og:description dynamically -->
+</head>
+```
+
+**Verification:**
+```bash
+# After npm run build:prerender, check each page has only ONE og:url
+grep "og:url" Landing/dist/privacy-policy/index.html
+# Should show exactly one line: og:url content="https://chat2deal.com/privacy-policy"
+```
+
+### 2.6 Verification and Testing
+
+#### Build-Time Verification
+
+After running `npm run build:prerender`, verify no duplicate meta tags exist:
+
+```bash
+cd Landing/dist
+
+# Check home page (should have exactly ONE meta description)
+grep -c 'meta name="description"' index.html
+# Expected output: 1
+
+# Check all pages for duplicate descriptions
+grep 'meta name="description"' index.html privacy-policy/index.html terms-of-service/index.html
+# Each line should show exactly one meta description tag
+```
+
+#### Expected Meta Tag Structure
+
+**Correct index.html after pre-rendering:**
+```html
+<head>
+  <!-- Static fallbacks (before React Helmet injection marker) -->
+  <title>Chat2Deal - WhatsApp to Pipedrive in Seconds</title>
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://chat2deal.com/og-image.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://chat2deal.com/twitter-image.jpg">
+
+  <!-- Dynamic tags from PageHelmet (marked with data-rh="true") -->
+  <link rel="canonical" href="https://chat2deal.com/" data-rh="true">
+  <meta name="description" content="Seamlessly connect WhatsApp Web..." data-rh="true">
+  <meta property="og:title" content="Chat2Deal" data-rh="true">
+  <meta property="og:description" content="Seamlessly connect..." data-rh="true">
+  <!-- ... etc -->
+</head>
+```
+
+**Key Indicators of Correct Setup:**
+- ✅ All description/title meta tags have `data-rh="true"` attribute
+- ✅ Only ONE `meta name="description"` tag exists
+- ✅ Only ONE `meta property="og:description"` tag exists
+- ✅ Only ONE `meta name="twitter:description"` tag exists
+
+#### Runtime Verification (Browser DevTools)
+
+1. Open page in browser
+2. Open DevTools → Elements tab
+3. Expand `<head>` section
+4. Search for "description"
+5. Verify exactly ONE of each meta tag type exists
+
+#### Automated Testing (Future Enhancement)
+
+Consider adding to CI/CD pipeline:
+```bash
+# Test script to catch duplicate meta tags
+npm run build:prerender
+node scripts/verify-seo.js  # Check for duplicates, exit 1 if found
+```
 
 ---
 
@@ -488,5 +722,7 @@ To add a new page with automatic SEO integration:
 
 ## Changelog
 
+- **2025-11-24** - Added Pitfall #4: Documented og:url duplication issue and fixed index.html to remove og:url fallback tag (fixes Ahrefs "Open Graph URL not matching canonical" error)
+- **2025-11-24** - Added Section 2.4-2.6: Architectural rules, common pitfalls, and verification for meta tag management (prevents duplicate meta description tags)
 - **2025-11-05** - Complete architecture documentation (all 8 sections)
 - **2025-11-05** - Initial document creation with Section 1 (Overview and Architecture)

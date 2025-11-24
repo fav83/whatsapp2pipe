@@ -60,7 +60,6 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 - [Spec-120a-Website-Invite-System.md](Docs/Specs/Spec-120a-Website-Invite-System.md) - Website closed beta invite system (⚠️ SUPERSEDED - Not Implemented, Open Access Instead)
 - [Spec-120b-Extension-Beta-Access.md](Docs/Specs/Spec-120b-Extension-Beta-Access.md) - Extension beta access control (⚠️ PARTIALLY SUPERSEDED - Backend Allows Open Access, Extension UI Not Implemented)
 - [Spec-123-Landing-Legal-Pages.md](Docs/Specs/Spec-123-Landing-Legal-Pages.md) - Landing page legal pages with SEO system (✅ Complete)
-- [Spec-123-Implementation-Summary.md](Docs/Specs/Spec-123-Implementation-Summary.md) - Complete implementation summary with SEO enhancements
 - [Spec-127-Comprehensive-Backend-Logging.md](Docs/Specs/Spec-127-Comprehensive-Backend-Logging.md) - Comprehensive backend logging with HTTP response tracking (✅ Complete)
 - [Spec-128-Landing-Pricing-Section.md](Docs/Specs/Spec-128-Landing-Pricing-Section.md) - Landing page pricing section (✅ Complete)
 - [Spec-130a-Backend-Notes-API.md](Docs/Specs/Spec-130a-Backend-Notes-API.md) - Backend Notes API for creating Pipedrive notes (✅ Complete)
