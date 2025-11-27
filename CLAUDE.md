@@ -18,6 +18,42 @@ This project uses a structured organization:
 - Environment files (.env.*)
 - Build output (dist/)
 
+## README.md vs CLAUDE.md
+
+This project uses two types of documentation files with distinct purposes:
+
+| File | Audience | Purpose |
+|------|----------|---------|
+| **README.md** | Human developers | How to use, run, and deploy |
+| **CLAUDE.md** | AI assistants | How to write code correctly |
+
+**README.md should contain:**
+- Project description and purpose
+- Prerequisites and installation steps
+- How to run locally and build for production
+- Environment setup instructions
+- Deployment and configuration
+- Contributing guidelines
+
+**CLAUDE.md should contain:**
+- Coding conventions and naming rules
+- Architecture gotchas and non-obvious patterns
+- Build system quirks and workarounds
+- Logging and error handling patterns
+- What NOT to do (anti-patterns)
+- Links to detailed specs/architecture docs
+
+**Rule of thumb:** If it helps someone get the project running, put it in README. If it helps someone write code correctly in this project, put it in CLAUDE.md.
+
+## Component-Specific Documentation
+
+Each major component has its own CLAUDE.md file with detailed development guidelines:
+
+- **[Extension/CLAUDE.md](Extension/CLAUDE.md)** - Chrome extension development (Vite, Sentry, logging, Tailwind)
+- **[Backend/CLAUDE.md](Backend/CLAUDE.md)** - Backend development (logging, authentication, C# conventions)
+- **[Website/CLAUDE.md](Website/CLAUDE.md)** - Dashboard website development (components, routes, auth flow)
+- **[Landing/CLAUDE.md](Landing/CLAUDE.md)** - Landing page development (components, SEO, pricing)
+
 ## Documentation Structure
 
 All project documents are located in the [Docs/](Docs/) folder, organized as follows:
@@ -27,10 +63,10 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 
 ### Architecture
 - [Chrome-Extension-Architecture.md](Docs/Architecture/Chrome-Extension-Architecture.md) - Technical architecture and component design
-- [Website-Architecture.md](Docs/Architecture/Website-Architecture.md) - User dashboard web application architecture (✅ Complete)
-- [Landing-SEO-Architecture.md](Docs/Architecture/Landing-SEO-Architecture.md) - Landing page SEO system architecture (✅ Complete)
+- [Website-Architecture.md](Docs/Architecture/Website-Architecture.md) - User dashboard web application architecture
+- [Landing-SEO-Architecture.md](Docs/Architecture/Landing-SEO-Architecture.md) - Landing page SEO system architecture
 - [Landing-Blog-Architecture.md](Docs/Architecture/Landing-Blog-Architecture.md) - Landing page blog with MDX for SEO (📋 Planned)
-- [UI-Design-Specification.md](Docs/Architecture/UI-Design-Specification.md) - Complete UI design specification with visual system, components, and states (✅ Complete)
+- [UI-Design-Specification.md](Docs/Architecture/UI-Design-Specification.md) - Complete UI design specification with visual system, components, and states
 
 ### BRDs (Business Requirements Documents)
 - [BRD-001-MVP-Pipedrive-WhatsApp.md](Docs/BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md) - MVP requirements and specifications
@@ -45,533 +81,30 @@ See [Specs-Overview.md](Docs/Specs-Overview.md) for complete list of specificati
 ### External Documentation
 - [Pipedrive/](Docs/External/Pipedrive/) - Pipedrive API documentation and development resources
 
-## Build System Notes
-
-### Vite Configuration for Chrome Extensions
-
-The build system uses Vite with Chrome extension-specific configurations:
-
-**Asset Loading Configuration:**
-- **`base: './'`** in vite.config.ts - CRITICAL for Chrome extensions
-- Vite defaults to absolute paths (`/assets/...`) which fail in extension context
-- Relative paths (`./assets/...`) ensure proper CSS/JS loading
-- Without this setting, assets will fail to load with CORS or path resolution errors
-
-### Chrome Extension Module Bundling
-
-The build system uses separate Vite configurations to solve Chrome Manifest V3 ES module compatibility issues:
-
-**Problem:** Chrome content scripts don't support ES modules, but Vite creates code-split chunks with import/export statements.
-
-**Solution:** The build system uses three separate Vite configurations:
-- **vite.content.config.ts** - Builds content-script.js with `inlineDynamicImports: true`
-- **vite.inspector.config.ts** - Builds inspector-main.js with `inlineDynamicImports: true`
-- **vite.config.ts** - Builds service worker and popup, separates source maps
-
-**Build Command:**
-```bash
-npm run build
-# Executes three sequential builds:
-# 1. vite build --config vite.content.config.ts --mode production
-# 2. vite build --config vite.inspector.config.ts --mode production
-# 3. vite build --mode production
-```
-
-**Result:**
-- content-script.js: Single file bundle (~142KB) with no import/export statements
-- inspector-main.js: Single file bundle with no import/export statements
-- Accurate source maps for each entry point (moved to `sourcemaps/` directory)
-- Works in Chrome without "Cannot use import statement outside a module" errors
-
-**Documentation:** See [Chrome-Extension-Architecture.md](Docs/Architecture/Chrome-Extension-Architecture.md#81-vite-configuration) for complete technical details.
-
-### Source Map Separation for Security
-
-The build system includes a custom Vite plugin (`separate-sourcemaps`) that ensures source maps are never accidentally shipped to users:
-
-**Problem:** Source maps expose original TypeScript source code and should never be included in production builds distributed to users.
-
-**Solution:** The `separate-sourcemaps` plugin automatically:
-- Runs after all other build plugins complete
-- Recursively finds all `.map` files in the `dist/` directory
-- Moves them to a separate `sourcemaps/` directory with flattened names
-- Ensures `dist/` contains ONLY production code, ready to ship
-
-**Directory Structure After Build:**
-```
-Extension/
-  dist/              ← Production code ONLY (safe to ship)
-    *.js, *.css, *.html, manifest.json
-  sourcemaps/        ← Source maps ONLY (for Sentry upload)
-    *.js.map, *.css.map
-  release/           ← Created by npm run package
-  chat2deal-vX.X.X.zip ← Distribution package
-```
-
-**Security Benefit:** Even if you accidentally package `dist/` directly instead of using `npm run package`, it contains NO source maps!
-
-**Sentry Integration:** Source maps are uploaded separately to Sentry via `npm run upload-sourcemaps`, which reads from the `sourcemaps/` directory.
-
-**Documentation:** See [DEPLOYMENT.md](Extension/DEPLOYMENT.md) for complete deployment workflow.
-
-### Environment Variables
-
-**Extension Environment Variables:**
-
-**.env.development:**
-```
-VITE_BACKEND_URL=http://localhost:7071
-VITE_DASHBOARD_URL=http://localhost:3000
-```
-
-**.env.production:**
-```
-VITE_BACKEND_URL=https://api.chat2deal.com
-VITE_DASHBOARD_URL=https://app.chat2deal.com
-VITE_CONSOLE_LOGGING_ENABLED=false
-```
-
-**Key Variables:**
-- `VITE_BACKEND_URL` - Backend OAuth and API service URL
-- `VITE_DASHBOARD_URL` - Dashboard website URL for authentication and profile access
-- `VITE_SENTRY_ENABLED` - Enable/disable Sentry error tracking
-- `VITE_ENV` - Environment (development/production)
-- `VITE_SHOW_DEV_INDICATOR` - Show dev mode indicator banner
-- `VITE_CONSOLE_LOGGING_ENABLED` - Enable console logging in production (default: false)
-
-### Sentry Error Tracking
-
-The extension uses Sentry for error tracking and performance monitoring with PII filtering.
-
-**Setup:**
-- Sentry enabled in production (`VITE_SENTRY_ENABLED=true`)
-- Disabled in development by default
-- PII filtering removes phone numbers, names, and tokens from error reports
-
-**Source Maps and Debug IDs:**
-- Debug IDs are injected during `npm run upload-sourcemaps` (not during build)
-- **CRITICAL:** After uploading source maps, you MUST reload the extension in Chrome
-- Without reload, old code runs without Debug IDs, causing "Missing source file with a matching Debug ID" errors
-
-**Workflow:**
-1. Build: `npm run build`
-2. Upload: `npm run upload-sourcemaps` (injects Debug IDs and uploads to Sentry)
-3. Reload: Open `chrome://extensions` and click Reload button
-4. Test: Hard-refresh WhatsApp Web and reproduce errors
-
-**Dev Mode Components:**
-- `<DevModeIndicator />` - Shows dev mode banner with Sentry test button (only in development)
-- `<SentryTest />` - Test component for verifying Sentry integration (only in development)
-- Both components are automatically hidden in production builds
-
-**Documentation:** See [DEPLOYMENT.md](Extension/DEPLOYMENT.md#debug-ids-and-reload-workflow) for complete Sentry workflow.
-
 ## Logging Strategy
 
-The project uses a comprehensive logging approach with clear separation between development and production environments.
-
-### Extension Logging
-
-**IMPORTANT:** Always use the provided logging utilities instead of direct `console.log()` calls.
-
-#### Development Logging (`Extension/src/utils/logger.ts`)
-
-For console output during development and optionally in production:
-
-```typescript
-import * as logger from '@/utils/logger'
-
-// General information logging
-logger.log('User clicked button', { userId: 123 })
-
-// Warnings
-logger.warn('API response took longer than expected')
-
-// Debug information
-logger.debug('Component state:', componentState)
-
-// Grouped logging for related messages
-logger.group('API Request Details')
-logger.log('URL:', apiUrl)
-logger.log('Headers:', headers)
-logger.groupEnd()
-
-// Table logging for structured data
-logger.table(userData)
-```
-
-**Key Features:**
-- **Development mode:** All logging methods output to console
-- **Production mode:** Logging is disabled by default (zero runtime overhead)
-- **Production debugging:** Enable via `VITE_CONSOLE_LOGGING_ENABLED=true` in `.env.production`
-- Supports all console methods: `log`, `warn`, `error`, `debug`, `info`, `group`, `groupEnd`, `table`
-- Use for debugging, development tracing, and local troubleshooting
-
-**Enabling Production Console Logging:**
-Set `VITE_CONSOLE_LOGGING_ENABLED=true` in `Extension/.env.production` to enable console logging in production builds for debugging. This is disabled by default to reduce noise in production.
-
-#### Error Logging (`Extension/src/utils/errorLogger.ts`)
-
-For errors that should be tracked in production with Sentry integration:
-
-```typescript
-import { logError } from '@/utils/errorLogger'
-import * as Sentry from '@sentry/browser'
-
-try {
-  await riskyOperation()
-} catch (error) {
-  logError(
-    'Failed to create person',           // Context description
-    error,                                 // Error object
-    {                                      // Additional context (optional)
-      userId: user.id,
-      statusCode: response.status
-    },
-    Sentry.getCurrentScope()              // Sentry scope (optional)
-  )
-}
-```
-
-**Key Features:**
-- **Format**: `[chat2deal-pipe][timestamp][version] context: errorMessage`
-- **Development**: Logs to console with full error details
-- **Production**: Only logs to Sentry (no console output)
-- **Sentry Integration**: Automatically captures errors with structured context
-- **Smart Filtering**: Skips expected errors (404, validation, user cancellations)
-- **Isolated Scopes**: Each error uses cloned Sentry scope to prevent conflicts
-
-**When to Use:**
-- API failures that users encounter
-- Unexpected errors that break functionality
-- Integration failures (Pipedrive API, authentication)
-- Data processing errors
-
-**When NOT to Use:**
-- Expected errors (404 not found, validation failures)
-- User-initiated cancellations
-- Development debugging (use `logger.ts` instead)
-
-### Backend Logging
-
-**IMPORTANT:** Backend logging is always enabled in all environments with no sampling.
-
-#### HTTP Request/Response Logging
-
-All HTTP traffic is automatically logged via `HttpRequestLogger` service:
-
-```csharp
-[Function("MyFunction")]
-public async Task<HttpResponseData> Run(
-    [HttpTrigger] HttpRequestData req,
-    HttpRequestLogger httpRequestLogger)
-{
-    // Log incoming request (automatic via middleware)
-    await httpRequestLogger.LogRequestAsync(req);
-
-    // ... function logic ...
-
-    // Log outgoing response (required in each function)
-    var response = req.CreateResponse(HttpStatusCode.OK);
-    httpRequestLogger.LogResponse("MyFunction", 200);
-    return response;
-}
-```
-
-**Response Logging Overloads:**
-
-```csharp
-// Simple status code only
-httpRequestLogger.LogResponse("MyFunction", 200);
-
-// With JSON object body
-httpRequestLogger.LogResponse("MyFunction", 200, responseData);
-
-// With pre-serialized string body
-httpRequestLogger.LogResponse("MyFunction", 200, jsonString);
-
-// With full details (headers + body)
-httpRequestLogger.LogResponse("MyFunction", 200, headers, responseData);
-```
-
-**What's Logged:**
-- **Requests** → Application Insights `customEvents` table
-  - Method, URL, headers (JSON), body, timestamp, correlation ID
-- **Responses** → Application Insights `traces` table
-  - Function name, status code, headers (optional), body, correlation ID
-- **Pipedrive API** → Application Insights `traces` table
-  - All API requests/responses with full details
-
-#### Configuration
-
-**Backend/WhatsApp2Pipe.Api/host.json:**
-```json
-{
-  "logging": {
-    "applicationInsights": {
-      "samplingSettings": {
-        "isEnabled": false  // ⚠️ CRITICAL: Disabled for complete log capture
-      }
-    },
-    "logLevel": {
-      "WhatsApp2Pipe.Api": "Information",
-      "WhatsApp2Pipe.Api.Functions": "Information",
-      "WhatsApp2Pipe.Api.Services": "Information"
-    }
-  }
-}
-```
-
-**Backend/WhatsApp2Pipe.Api/Program.cs:**
-```csharp
-// Configure logging to ensure all ILogger output reaches Application Insights
-services.Configure<LoggerFilterOptions>(options =>
-{
-    // Remove default filter that might suppress logs
-    var defaultRule = options.Rules.FirstOrDefault(rule =>
-        rule.ProviderName == "Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider");
-    if (defaultRule != null)
-    {
-        options.Rules.Remove(defaultRule);
-    }
-});
-```
-
-#### Querying Logs in Application Insights
-
-**View all HTTP responses:**
-```kql
-traces
-| where message startswith "[HTTP Response]"
-| project
-    timestamp,
-    operation_Id,
-    FunctionName = customDimensions.FunctionName,
-    StatusCode = customDimensions.StatusCode,
-    Body = customDimensions.Body
-| order by timestamp desc
-```
-
-**View all Pipedrive API calls:**
-```kql
-traces
-| where message contains "Pipedrive API"
-| project
-    timestamp,
-    operation_Id,
-    Method = customDimensions.Method,
-    Url = customDimensions.Url,
-    StatusCode = customDimensions.StatusCode
-| order by timestamp desc
-```
-
-**Correlate request → response:**
-```kql
-let operationId = "<operation-id>";
-union
-    (customEvents | where name == "HttpRequest" and operation_Id == operationId),
-    (traces | where message startswith "[HTTP Response]" and operation_Id == operationId)
-| project timestamp, type = itemType, details = customDimensions
-| order by timestamp asc
-```
-
-### Logging Best Practices
-
-1. **Extension Development:**
-   - Use `logger.*` for all development debugging
-   - Use `logError()` only for production-critical errors
-   - Never use `console.log()` directly
-
-2. **Extension Production:**
-   - All `logger.*` calls are no-ops (zero overhead)
-   - Only critical errors reach Sentry via `logError()`
-   - PII is filtered before sending to Sentry
-
-3. **Backend:**
-   - Always call `httpRequestLogger.LogResponse()` before returning responses
-   - Use appropriate overload based on response type
-   - Logging failures are caught and don't impact function execution
-
-4. **Error Context:**
-   - Provide clear context descriptions
-   - Include relevant IDs (userId, personId, etc.)
-   - Add status codes when available
-   - Use structured data (objects) for additional context
-
-5. **Security:**
-   - Backend logs contain ALL data (tokens, PII) - use RBAC to restrict access
-   - Extension logs filter PII before sending to Sentry
-   - Configure Application Insights retention policies (recommend 90 days)
-
-### Documentation References
-
-- [Spec-127-Comprehensive-Backend-Logging.md](Docs/Specs/Spec-127-Comprehensive-Backend-Logging.md) - Complete backend logging specification (✅ Complete)
-- [Chrome-Extension-Architecture.md](Docs/Architecture/Chrome-Extension-Architecture.md) - Extension logging architecture
-- [DEPLOYMENT.md](Extension/DEPLOYMENT.md) - Deployment workflow with logging verification
-
-### WhatsApp Web Integration
-
-The sidebar adjusts the WhatsApp Web layout to prevent overlay:
-- Detects WhatsApp container: `#app > div > div`
-- Applies `marginRight: 350px` to push content left
-- Sidebar uses `position: fixed` on the right
-- Result: Sidebar and WhatsApp sit side-by-side without overlap
-
-### Tailwind CSS Setup
-
-The extension uses Tailwind CSS v3 for styling:
-
-**Configuration Files:**
-- `tailwind.config.js` - Tailwind configuration with content path scanning
-- `postcss.config.js` - PostCSS configuration for Tailwind and Autoprefixer
-- `src/styles/content-script.css` - Main CSS file with Tailwind directives
-
-**Key Points:**
-- Tailwind v3 used for better compatibility with Vite and content scanning
-- CSS file includes `@tailwind base`, `@tailwind components`, and `@tailwind utilities` directives
-- All utility classes are scoped within `#pipedrive-whatsapp-sidebar` container
-- No aggressive CSS reset (`all: revert` removed) to allow Tailwind classes to work
-- Content paths configured to scan all `.tsx` and `.ts` files in `src/`
-
-**Build Process:**
-- PostCSS processes Tailwind directives during Vite build
-- Utility classes are generated based on usage in components
-- Final CSS includes only used classes (tree-shaking)
-- Typical CSS bundle size: ~10-11 KB (minified, before gzip)
-
-**Important:** Avoid using `all: revert` or similar aggressive CSS resets as they will override Tailwind utility classes. Use targeted resets only when necessary.
-
-## Website & Landing Page Components
-
-### Landing Page (Open Access - No Waitlist)
-
-**Key Components:**
-- `Landing/src/components/SignInButton.tsx` - Direct sign-in with Pipedrive button (replaces WaitlistForm)
-- `Landing/src/components/Hero.tsx` - Hero section with SignInButton
-- `Landing/src/components/FinalCTA.tsx` - Final CTA section with SignInButton
-- `Landing/src/components/Header.tsx` - Navigation header with sign-in button
-
-**Important Changes (2025-11-10):**
-- **Removed WaitlistForm** - Replaced with direct sign-in flow
-- **Section ID changed** - From `#waitlist` to `#get-started`
-- **Open to all Pipedrive users** - No invite code or waitlist required
-
-### Website Dashboard (Open Access)
-
-**Key Components:**
-- `Website/src/components/auth/UserProfile.tsx` - User profile card with sign-out
-- `Website/src/components/dashboard/ExtensionStatus.tsx` - Chrome extension installation status
-- `Website/src/components/dashboard/HowToUse.tsx` - NEW: Step-by-step usage instructions
-- `Website/src/pages/HomePage.tsx` - Landing page with direct sign-in (no invite input)
-- `Website/src/pages/DashboardPage.tsx` - User dashboard with profile and extension status
-- `Website/src/pages/AuthCallbackPage.tsx` - OAuth callback handler
-
-**Important Changes (2025-11-10):**
-- **Removed invite code requirement** - Any Pipedrive user can sign in directly
-- **Removed WaitlistPage route** - Simplified to direct sign-in flow
-- **Added HowToUse component** - User guidance on dashboard
-- **Updated error messages** - Removed closed beta/invalid invite user-facing errors
-- **Updated auth types** - Marked inviteCode as unused in OAuthState
-
-**Website Routes:**
-- `/` - Homepage with sign-in button
-- `/auth/callback` - OAuth callback handler
-- `/dashboard` - Authenticated user dashboard
-- `/dashboard?verification_code=xxx` - NEW: Auto sign-in from extension (URL parameter-based authentication)
-
-### Backend Authentication (Open Access)
-
-**Key Changes in AuthCallbackFunction.cs (Lines 173-197):**
-- **New users allowed** - Both extension and website users can sign in without invites
-- **Invite code optional** - If provided and valid, linked to user account for tracking
-- **No rejection logic** - All Pipedrive users proceed to authenticated state
-- **Invite infrastructure preserved** - Database tables remain but are not enforced
-
-**OAuth Flow (Current Implementation):**
-1. User clicks "Sign in with Pipedrive" (no invite required)
-2. Backend generates OAuth URL and redirects to Pipedrive
-3. User authorizes on Pipedrive
-4. Backend checks if user exists in database
-5. **NEW USER:** Creates user record (with optional invite link if provided)
-6. **EXISTING USER:** Updates LastLoginAt timestamp
-7. Backend creates session and returns verification_code
-8. User is authenticated and redirected to dashboard/extension
-
-### Extension Features (v0.32.181)
-
-**New Profile Link in User Avatar Dropdown:**
-- File: `Extension/src/content-script/components/UserAvatar.tsx`
-- Feature: Added "Profile" menu item that opens website dashboard in new tab
-- Behavior: Passes `verification_code` as URL parameter for auto sign-in
-- Message Type: `TAB_OPEN` sent to service worker (content scripts can't access chrome.tabs)
-
-**Service Worker Tab Management:**
-- File: `Extension/src/service-worker/index.ts`
-- New Handler: `handleTabOpen()` - Opens URLs in new tabs on behalf of content scripts
-- Message Types: `TAB_OPEN_REQUEST`, `TAB_OPEN_SUCCESS`, `TAB_OPEN_ERROR`
-- Usage: Enables content scripts to open tabs without direct chrome.tabs access
-
-**Website Dashboard Auto Sign-In:**
-- File: `Website/src/pages/DashboardPage.tsx`
-- Feature: Detects `verification_code` URL parameter and auto signs in
-- Flow: Extension → `?verification_code=xxx` → Store in localStorage → Reload → Authenticated
-- Use Case: Seamless transition from extension to website dashboard
-
-### Landing Page Features
-
-**Pricing Section (Spec-128):**
-- File: `Landing/src/components/Pricing.tsx`
-- Location: After "Your CRM" section, before "How It Works"
-- Tiers: Free (Beta) with active CTA, Pro (Coming Soon) with disabled button
-- Copy: "Free during beta. Paid plans coming soon."
-- Anchor: `id="pricing"` for header navigation link
-- Header Link: `Landing/src/components/Header.tsx` includes "Pricing" link with smooth scroll
+The project uses comprehensive logging with separation between development and production:
+
+### Extension
+- **Development logging**: `Extension/src/utils/logger.ts` - Console output (disabled in production by default)
+- **Error logging**: `Extension/src/utils/errorLogger.ts` - Sentry integration for production errors
+- **Details**: See [Extension/CLAUDE.md](Extension/CLAUDE.md#logging)
+
+### Backend
+- **HTTP logging**: All requests/responses logged to Application Insights (no sampling)
+- **Pipedrive API**: All API calls logged with full details
+- **Details**: See [Backend/CLAUDE.md](Backend/CLAUDE.md#logging)
 
 ## Code Style Guidelines
 
-### C# Naming Conventions
+### Language-Specific Conventions
 
-**IMPORTANT:** For C# code, follow these naming conventions:
-
-- **Do NOT** use underscore prefix for any variables, including private fields
-- Use `camelCase` for private fields, parameters, and local variables
+**C# (Backend):**
+- Use `camelCase` for private fields, parameters, and local variables (NO underscore prefix)
 - Use `PascalCase` for public properties, methods, and classes
-- Use descriptive, meaningful names
+- See [Backend/CLAUDE.md](Backend/CLAUDE.md#code-style) for detailed examples
 
-**Examples:**
-
-```csharp
-// ❌ INCORRECT - Do not use underscore prefix
-private readonly ILogger<MyClass> _logger;
-private readonly IMyService _myService;
-
-// ✅ CORRECT - Use camelCase without underscore
-private readonly ILogger<MyClass> logger;
-private readonly IMyService myService;
-
-public class MyService
-{
-    private readonly HttpClient httpClient;  // ✅ Correct
-    private readonly string apiKey;          // ✅ Correct
-
-    public MyService(HttpClient httpClient, string apiKey)
-    {
-        // Use 'this.' when parameter name matches field name
-        this.httpClient = httpClient;
-        this.apiKey = apiKey;
-    }
-
-    public async Task<string> GetDataAsync(string id)
-    {
-        var result = await httpClient.GetAsync($"/api/{id}");
-        return await result.Content.ReadAsStringAsync();
-    }
-}
-```
-
-### TypeScript/JavaScript Conventions
-
-- Follow existing project conventions (see Extension/ codebase)
+**TypeScript/JavaScript (Extension, Website, Landing):**
 - Use `camelCase` for variables and functions
 - Use `PascalCase` for React components and types
 - Use `UPPER_CASE` for constants
