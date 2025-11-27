@@ -157,16 +157,7 @@ npm run preview
 
 ## Design System
 
-### Colors
-- **Primary**: `#6366f1` (indigo)
-- **Secondary**: `#66748d` (gray)
-- **Black**: `#000000`
-- **White**: `#ffffff`
-- **Light Gray**: `#e2e8f0`
-
-### Typography
-- **Font**: Inter (loaded from Google Fonts)
-- **Weights**: 400 (regular), 500 (medium), 600 (semibold), 700 (bold)
+See [Brand-Guide.md](../Docs/Brand-Guide.md) for complete design system including colors, typography, voice, and visual style.
 
 ### Responsive Breakpoints
 - **Mobile**: < 768px
