@@ -662,7 +662,6 @@ To meet legal compliance requirements and build user trust, the Chat2Deal landin
 - [Chrome Extension Architecture](../Architecture/Chrome-Extension-Architecture.md) - Technical architecture for the Chrome extension
 - [Website Architecture](../Architecture/Website-Architecture.md) - User dashboard web application architecture
 - [UI Design Specification](../Architecture/UI-Design-Specification.md) - Complete UI design specification with visual system
-- [Plan-001: MVP Feature Breakdown](../Plans/Plan-001-MVP-Feature-Breakdown.md) - MVP broken down into implementable features
 - [Spec-119: Website Pipedrive Authentication](../Specs/Spec-119-Website-Pipedrive-Auth.md) - Website OAuth implementation and user dashboard
 - [Spec-120a: Website Invite System](../Specs/Spec-120a-Website-Invite-System.md) - Closed beta invite system (website)
 - [Spec-120b: Extension Beta Access](../Specs/Spec-120b-Extension-Beta-Access.md) - Closed beta access control (extension)

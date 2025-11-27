@@ -213,7 +213,6 @@ Sidebar calls searchByName → shows loading placeholder
 
 ## 8. Implementation Notes & TODOs
 
-- Update docs references (Plan-001 status once implemented).
 - After rollout, revisit Parking Lot item for keyboard navigation if requested.
 - Coordinate with backend owners to ensure attach endpoint continues returning organization name (if missing, extend transform service).
 - Post-implementation checklist: rotate any staging secrets used during testing; update manual testing doc in `Docs/Specs/Spec-103-Implementation-Summary.md`.

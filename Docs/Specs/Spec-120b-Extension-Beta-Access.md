@@ -46,7 +46,6 @@ Feature 20 (Closed Beta Invite System) is split into two independent specificati
 
 **Related Docs:**
 - [BRD-001-MVP-Pipedrive-WhatsApp.md](../BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md) - Section 6.4 (Closed Beta Invite System)
-- [Plan-001-MVP-Feature-Breakdown.md](../Plans/Plan-001-MVP-Feature-Breakdown.md) - Feature 20
 - [Spec-120a-Website-Invite-System.md](Spec-120a-Website-Invite-System.md) - Website invite system foundation
 - [Spec-105b-Extension-OAuth-Integration.md](Spec-105b-Extension-OAuth-Integration.md) - Extension OAuth architecture
 - [Spec-112-UI-States-Error-Handling.md](Spec-112-UI-States-Error-Handling.md) - Extension UI states and error patterns
@@ -715,7 +714,6 @@ The following are explicitly **not** part of Spec-120b:
 ## 13. Related Documentation
 
 - [BRD-001: MVP Pipedrive WhatsApp](../BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md) - Section 6.4
-- [Plan-001: MVP Feature Breakdown](../Plans/Plan-001-MVP-Feature-Breakdown.md) - Feature 20
 - [Spec-120a: Website Invite System](Spec-120a-Website-Invite-System.md) - Website invite foundation
 - [Spec-105b: Extension OAuth Integration](Spec-105b-Extension-OAuth-Integration.md) - Extension OAuth architecture
 - [Spec-112: UI States & Error Handling](Spec-112-UI-States-Error-Handling.md) - Extension error patterns

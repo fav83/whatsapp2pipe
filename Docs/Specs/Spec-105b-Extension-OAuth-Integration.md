@@ -24,7 +24,6 @@ Feature 5 (Pipedrive OAuth Authentication) is split into two independent specifi
 
 **Related Docs:**
 - [BRD-001-MVP-Pipedrive-WhatsApp.md](../BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md) - Section 4.2 (Pipedrive Sign-In)
-- [Plan-001-MVP-Feature-Breakdown.md](../Plans/Plan-001-MVP-Feature-Breakdown.md) - Feature 5
 - [Spec-105a-Backend-OAuth-Service.md](Spec-105a-Backend-OAuth-Service.md)
 - [Chrome Identity API Documentation](https://developer.chrome.com/docs/extensions/reference/api/identity)
 

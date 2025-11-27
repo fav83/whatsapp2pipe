@@ -649,7 +649,6 @@ interface Person {
 ## 11. References
 
 ### Related Documents
-- [Plan-001-MVP-Feature-Breakdown.md](../Plans/Plan-001-MVP-Feature-Breakdown.md) - Feature 9 definition
 - [Chrome-Extension-Architecture.md](../Architecture/Chrome-Extension-Architecture.md) - Overall architecture
 - [Spec-106b-Extension-Pipedrive-API-Integration.md](Spec-106b-Extension-Pipedrive-API-Integration.md) - usePipedrive hook
 - BRD-001-MVP-Pipedrive-WhatsApp.md - Product requirements

@@ -1078,14 +1078,12 @@ describe('Network Error Detection', () => {
 
 **Tasks:**
 54. Update CLAUDE.md with Feature 12 completion
-55. Update Plan-001 to mark Feature 12 complete
-56. Update this spec status to "Complete"
-57. Take screenshots of fallback UI
-58. Final code review
+55. Update this spec status to "Complete"
+56. Take screenshots of fallback UI
+57. Final code review
 
 **Files:**
 - `CLAUDE.md`
-- `Docs/Plans/Plan-001-MVP-Feature-Breakdown.md`
 - `Docs/Specs/Spec-112-UI-States-Error-Handling.md`
 
 ---
@@ -1377,7 +1375,6 @@ describe('Network Error Detection', () => {
 
 ### 16.1 Related Documents
 
-- [Plan-001-MVP-Feature-Breakdown.md](../Plans/Plan-001-MVP-Feature-Breakdown.md) - Feature 12 definition
 - [Chrome-Extension-Architecture.md](../Architecture/Chrome-Extension-Architecture.md) - Overall architecture
 - [Spec-106a-Backend-Pipedrive-API-Service.md](Spec-106a-Backend-Pipedrive-API-Service.md) - Backend API error handling
 - [Spec-106b-Extension-Pipedrive-API-Integration.md](Spec-106b-Extension-Pipedrive-API-Integration.md) - usePipedrive hook error handling

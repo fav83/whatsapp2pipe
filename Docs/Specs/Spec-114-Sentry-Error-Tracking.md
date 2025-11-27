@@ -1112,8 +1112,7 @@ it('redacts phone numbers from error messages', () => {
 ### Phase 12: Documentation (1 hour)
 
 64. Create this spec document
-65. Update Plan-001
-66. Update CLAUDE.md
+65. Update CLAUDE.md
 
 **Total Estimated Time:** 14-16 hours
 
@@ -1218,8 +1217,7 @@ it('redacts phone numbers from error messages', () => {
 ### 11.10 Documentation
 
 - [ ] **AC-68:** Spec document created
-- [ ] **AC-69:** Plan-001 updated
-- [ ] **AC-70:** CLAUDE.md updated
+- [ ] **AC-69:** CLAUDE.md updated
 - [ ] **AC-71:** Source map upload documented
 - [ ] **AC-72:** Testing checklist documented
 - [ ] **AC-73:** Troubleshooting guide included
@@ -1446,7 +1444,6 @@ GDPR considerations (mitigated by strict PII redaction)
 
 ### 16.1 Related Documents
 
-- [Plan-001-MVP-Feature-Breakdown.md](../Plans/Plan-001-MVP-Feature-Breakdown.md) - Feature 14
 - [Spec-112-UI-States-Error-Handling.md](Spec-112-UI-States-Error-Handling.md) - Feature 12
 - [Chrome-Extension-Architecture.md](../Architecture/Chrome-Extension-Architecture.md) - Architecture
 - [BRD-001-MVP-Pipedrive-WhatsApp.md](../BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md) - Privacy requirements

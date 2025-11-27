@@ -23,7 +23,6 @@ Feature 6 (Pipedrive API Service Layer) is split into two independent specificat
 
 **Related Docs:**
 - [BRD-001-MVP-Pipedrive-WhatsApp.md](../BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md) - Sections 4.3, 4.4, 4.5 (Person operations)
-- [Plan-001-MVP-Feature-Breakdown.md](../Plans/Plan-001-MVP-Feature-Breakdown.md) - Feature 6
 - [Spec-105b-Extension-OAuth-Integration.md](Spec-105b-Extension-OAuth-Integration.md) - OAuth foundation
 - [Spec-106a-Backend-Pipedrive-API-Service.md](Spec-106a-Backend-Pipedrive-API-Service.md) - Backend counterpart
 

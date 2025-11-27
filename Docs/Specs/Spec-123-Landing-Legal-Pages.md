@@ -10,7 +10,6 @@
 
 **Related Docs:**
 - [BRD-001-MVP-Pipedrive-WhatsApp.md](../BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md) - Section 6.8 (Landing Page Legal Pages)
-- [Plan-001-MVP-Feature-Breakdown.md](../Plans/Plan-001-MVP-Feature-Breakdown.md) - Feature 23
 
 ---
 
@@ -972,7 +971,6 @@ The following are explicitly **not** part of this specification:
 ## 14. Related Documentation
 
 - [BRD-001: MVP Pipedrive WhatsApp](../BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md) - Section 6.8
-- [Plan-001: MVP Feature Breakdown](../Plans/Plan-001-MVP-Feature-Breakdown.md) - Feature 23
 
 **Reference Implementation:**
 - boring-calc website: `c:\myproj\boring-calc\website\src\pages\legal\`

@@ -28,7 +28,6 @@ Feature 5 (Pipedrive OAuth Authentication) is split into two independent specifi
 
 **Related Docs:**
 - [BRD-001-MVP-Pipedrive-WhatsApp.md](../BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md) - Section 4.2 (Pipedrive Sign-In)
-- [Plan-001-MVP-Feature-Breakdown.md](../Plans/Plan-001-MVP-Feature-Breakdown.md) - Feature 5
 - [Pipedrive OAuth Documentation](../External/Pipedrive/docs/marketplace-oauth-authorization.md)
 - [Pipedrive Scopes Documentation](../External/Pipedrive/docs/marketplace-scopes-and-permissions-explanations.md)
 

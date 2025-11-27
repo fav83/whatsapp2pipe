@@ -1242,13 +1242,11 @@ describe('Create Person Integration', () => {
 59. Code review (self-review first)
 60. Verify all acceptance criteria met
 61. Update CLAUDE.md if needed
-62. Update Plan-001 to mark Feature 10 complete
-63. Create implementation summary (optional)
-64. Take screenshots for documentation
+62. Create implementation summary (optional)
+63. Take screenshots for documentation
 
 **Files Modified:**
 - `CLAUDE.md` (if needed)
-- `Docs/Plans/Plan-001-MVP-Feature-Breakdown.md`
 - `Docs/Specs/Spec-110-Create-Person-Flow.md` (this file - update status)
 
 **Estimated Time:** 30 minutes
@@ -1597,7 +1595,6 @@ describe('Create Person Integration', () => {
 
 ### 17.1 Related Documents
 
-- [Plan-001-MVP-Feature-Breakdown.md](../Plans/Plan-001-MVP-Feature-Breakdown.md) - Feature 10 definition
 - [Spec-109-Person-Auto-Lookup-Flow.md](Spec-109-Person-Auto-Lookup-Flow.md) - Previous feature (lookup)
 - [Spec-106a-Backend-Pipedrive-API-Service.md](Spec-106a-Backend-Pipedrive-API-Service.md) - Backend API (createPerson)
 - [Spec-106b-Extension-Pipedrive-API-Integration.md](Spec-106b-Extension-Pipedrive-API-Integration.md) - usePipedrive hook
@@ -1665,7 +1662,6 @@ describe('Create Person Integration', () => {
 **Documentation:**
 - `Docs/Specs/Spec-110-Create-Person-Flow.md` - This specification document
 - `CLAUDE.md` - Updated with Feature 10 completion
-- `Docs/Plans/Plan-001-MVP-Feature-Breakdown.md` - Marked Feature 10 as complete
 
 ### 19.3 Key Implementation Details
 

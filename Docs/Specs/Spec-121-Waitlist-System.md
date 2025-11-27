@@ -10,7 +10,6 @@
 
 **Related Docs:**
 - [BRD-001-MVP-Pipedrive-WhatsApp.md](../BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md) - Section 6.5 (Waitlist System)
-- [Plan-001-MVP-Feature-Breakdown.md](../Plans/Plan-001-MVP-Feature-Breakdown.md) - Feature 21
 - [Spec-120a-Website-Invite-System.md](Spec-120a-Website-Invite-System.md) - Invite system foundation
 - [Spec-120b-Extension-Beta-Access.md](Spec-120b-Extension-Beta-Access.md) - Extension beta rejection states
 - [Spec-119-Website-Pipedrive-Auth.md](Spec-119-Website-Pipedrive-Auth.md) - Website architecture
@@ -1266,7 +1265,6 @@ The following are explicitly **not** part of this specification:
 ## 15. Related Documentation
 
 - [BRD-001: MVP Pipedrive WhatsApp](../BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md) - Section 6.5
-- [Plan-001: MVP Feature Breakdown](../Plans/Plan-001-MVP-Feature-Breakdown.md) - Feature 21
 - [Spec-120a: Website Invite System](Spec-120a-Website-Invite-System.md) - Invite system foundation
 - [Spec-120b: Extension Beta Access](Spec-120b-Extension-Beta-Access.md) - Extension beta rejection
 - [Spec-119: Website Pipedrive Authentication](Spec-119-Website-Pipedrive-Auth.md) - Website architecture

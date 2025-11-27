@@ -1160,7 +1160,6 @@ Output: Click <a href="#">here</a> (sanitized, href removed, onclick removed)
 ## 15. Related Documentation
 
 - [BRD-001: MVP Business Requirements](../BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md) - Section 4.9 (Feature 25)
-- [Plan-001: MVP Feature Breakdown](../Plans/Plan-001-MVP-Feature-Breakdown.md) - Feature 25
 - [Chrome Extension Architecture](../Architecture/Chrome-Extension-Architecture.md) - Component structure and patterns
 - [UI Design Specification](../Architecture/UI-Design-Specification.md) - Design system and visual patterns
 - [Spec-105a: Backend OAuth Service](Spec-105a-Backend-OAuth-Service.md) - Authentication patterns

@@ -37,10 +37,14 @@ Chrome extension that integrates Pipedrive CRM with WhatsApp Web for seamless co
 ### Development
 
 - `npm run dev` - Build in watch mode
-- `npm run test` - Run unit tests
-- `npm run test:e2e` - Run E2E tests
+- `npm run build` - Production build (creates `dist/`)
+- `npm run test` - Run unit tests (Vitest)
+- `npm run test -- --watch` - Run unit tests in watch mode
+- `npm run test:e2e` - Run E2E tests (Playwright)
+- `npm run test:e2e -- --ui` - Run E2E tests in UI mode
 - `npm run lint` - Lint code
-- `npm run format` - Format code
+- `npm run format` - Format code with Prettier
+- `npm run type-check` - Type check without emitting files
 
 ### Manual Testing (Feature 2 - Basic Extension)
 
@@ -88,7 +92,6 @@ After loading the extension:
 See [Docs/](../Docs/) folder for:
 - [Architecture](../Docs/Architecture/Chrome-Extension-Architecture.md)
 - [BRD](../Docs/BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md)
-- [Feature Plan](../Docs/Plans/Plan-001-MVP-Feature-Breakdown.md)
 
 ## Tech Stack
 

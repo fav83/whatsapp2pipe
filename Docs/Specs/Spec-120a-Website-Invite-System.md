@@ -49,7 +49,6 @@ Feature 20 (Closed Beta Invite System) is split into two independent specificati
 
 **Related Docs:**
 - [BRD-001-MVP-Pipedrive-WhatsApp.md](../BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md) - Section 6.4 (Closed Beta Invite System)
-- [Plan-001-MVP-Feature-Breakdown.md](../Plans/Plan-001-MVP-Feature-Breakdown.md) - Feature 20
 - [Spec-119-Website-Pipedrive-Auth.md](Spec-119-Website-Pipedrive-Auth.md) - Website authentication foundation
 - [Spec-105a-Backend-OAuth-Service.md](Spec-105a-Backend-OAuth-Service.md) - Backend OAuth architecture
 
@@ -813,7 +812,6 @@ The following are explicitly **not** part of Spec-120a:
 ## 12. Related Documentation
 
 - [BRD-001: MVP Pipedrive WhatsApp](../BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md) - Section 6.4
-- [Plan-001: MVP Feature Breakdown](../Plans/Plan-001-MVP-Feature-Breakdown.md) - Feature 20
 - [Spec-119: Website Pipedrive Authentication](Spec-119-Website-Pipedrive-Auth.md) - Website OAuth foundation
 - [Spec-120b: Extension Beta Access](Spec-120b-Extension-Beta-Access.md) - Extension error states
 - [Spec-105a: Backend OAuth Service](Spec-105a-Backend-OAuth-Service.md) - OAuth architecture

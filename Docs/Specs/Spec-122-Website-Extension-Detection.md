@@ -989,7 +989,6 @@ test.describe('Extension Detection', () => {
 **Documentation:**
 - [ ] Spec document complete (this document)
 - [ ] BRD updated with Feature 22
-- [ ] Plan-001 updated with Feature 22
 - [ ] CLAUDE.md updated with extension detection instructions (if needed)
 
 ---
@@ -997,7 +996,6 @@ test.describe('Extension Detection', () => {
 ## 14. Related Documentation
 
 - [BRD-001: MVP Pipedrive WhatsApp](../BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md) - Business requirements (Section 6.7)
-- [Plan-001: MVP Feature Breakdown](../Plans/Plan-001-MVP-Feature-Breakdown.md) - Feature 22 implementation plan
 - [Website-Architecture.md](../Architecture/Website-Architecture.md) - Website architecture and technology stack
 - [Chrome-Extension-Architecture.md](../Architecture/Chrome-Extension-Architecture.md) - Extension architecture and build system
 - [Spec-119: Website Pipedrive Authentication](Spec-119-Website-Pipedrive-Auth.md) - Website OAuth and dashboard foundation

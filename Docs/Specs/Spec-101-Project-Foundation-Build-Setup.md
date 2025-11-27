@@ -7,7 +7,6 @@
 **Related Docs:**
 - [BRD-001-MVP-Pipedrive-WhatsApp.md](../BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md)
 - [Chrome-Extension-Architecture.md](../Architecture/Chrome-Extension-Architecture.md)
-- [Plan-001-MVP-Feature-Breakdown.md](../Plans/Plan-001-MVP-Feature-Breakdown.md)
 
 ---
 
@@ -609,7 +608,6 @@ Chrome extension that integrates Pipedrive CRM with WhatsApp Web for seamless co
 See [Docs/](Docs/) folder for:
 - [Architecture](Docs/Architecture/Chrome-Extension-Architecture.md)
 - [BRD](Docs/BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md)
-- [Feature Plan](Docs/Plans/Plan-001-MVP-Feature-Breakdown.md)
 
 ## Tech Stack
 

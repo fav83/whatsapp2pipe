@@ -48,7 +48,6 @@ This specification has been split into two implementation phases:
 **Related Docs:**
 - [BRD-001-MVP-Pipedrive-WhatsApp.md](../BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md)
 - [Chrome-Extension-Architecture.md](../Architecture/Chrome-Extension-Architecture.md)
-- [Plan-001-MVP-Feature-Breakdown.md](../Plans/Plan-001-MVP-Feature-Breakdown.md)
 - [Spec-103-WhatsApp-Sidebar-Injection.md](Spec-103-WhatsApp-Sidebar-Injection.md)
 
 ---

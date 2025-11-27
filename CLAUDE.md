@@ -29,126 +29,21 @@ All project documents are located in the [Docs/](Docs/) folder, organized as fol
 - [Chrome-Extension-Architecture.md](Docs/Architecture/Chrome-Extension-Architecture.md) - Technical architecture and component design
 - [Website-Architecture.md](Docs/Architecture/Website-Architecture.md) - User dashboard web application architecture (✅ Complete)
 - [Landing-SEO-Architecture.md](Docs/Architecture/Landing-SEO-Architecture.md) - Landing page SEO system architecture (✅ Complete)
+- [Landing-Blog-Architecture.md](Docs/Architecture/Landing-Blog-Architecture.md) - Landing page blog with MDX for SEO (📋 Planned)
 - [UI-Design-Specification.md](Docs/Architecture/UI-Design-Specification.md) - Complete UI design specification with visual system, components, and states (✅ Complete)
 
 ### BRDs (Business Requirements Documents)
 - [BRD-001-MVP-Pipedrive-WhatsApp.md](Docs/BRDs/BRD-001-MVP-Pipedrive-WhatsApp.md) - MVP requirements and specifications
 - [BRD-002-Deals-Management.md](Docs/BRDs/BRD-002-Deals-Management.md) - Deals management features (Features 31-38)
 
-### Plans
-- [Plan-001-MVP-Feature-Breakdown.md](Docs/Plans/Plan-001-MVP-Feature-Breakdown.md) - MVP broken down into implementable features
-
 ### Specs
-- [Spec-101-Project-Foundation-Build-Setup.md](Docs/Specs/Spec-101-Project-Foundation-Build-Setup.md) - Project foundation and build setup specification
-- [Spec-102-Chrome-Extension-Manifest-Basic-Structure.md](Docs/Specs/Spec-102-Chrome-Extension-Manifest-Basic-Structure.md) - Chrome extension manifest and basic structure
-- [Spec-103-WhatsApp-Sidebar-Injection.md](Docs/Specs/Spec-103-WhatsApp-Sidebar-Injection.md) - WhatsApp Web sidebar injection with UI states (✅ Complete)
-- [Spec-103-Implementation-Summary.md](Docs/Specs/Spec-103-Implementation-Summary.md) - Complete implementation summary and manual testing checklist
-- [Spec-105a-Backend-OAuth-Service.md](Docs/Specs/Spec-105a-Backend-OAuth-Service.md) - Backend OAuth Service for Pipedrive authentication (✅ Complete)
-- [Spec-105b-Extension-OAuth-Integration.md](Docs/Specs/Spec-105b-Extension-OAuth-Integration.md) - Extension OAuth integration with hybrid architecture (✅ Complete)
-- [Spec-106a-Backend-Pipedrive-API-Service.md](Docs/Specs/Spec-106a-Backend-Pipedrive-API-Service.md) - Backend Pipedrive API Service (✅ Complete)
-- [Spec-106b-Extension-Pipedrive-API-Integration.md](Docs/Specs/Spec-106b-Extension-Pipedrive-API-Integration.md) - Extension Pipedrive API Integration (✅ Complete)
-- [Spec-106b-Implementation-Summary.md](Docs/Specs/Spec-106b-Implementation-Summary.md) - Complete implementation summary and testing results
-- [Spec-109-Person-Auto-Lookup-Flow.md](Docs/Specs/Spec-109-Person-Auto-Lookup-Flow.md) - Person auto-lookup flow with UI states (✅ Complete)
-- [Spec-110-Create-Person-Flow.md](Docs/Specs/Spec-110-Create-Person-Flow.md) - Create person flow with validation and error handling (✅ Complete)
-- [Spec-111-Attach-Number-To-Existing-Person-Flow.md](Docs/Specs/Spec-111-Attach-Number-To-Existing-Person-Flow.md) - Attach number to existing person flow (✅ Complete)
-- [Spec-112-UI-States-Error-Handling.md](Docs/Specs/Spec-112-UI-States-Error-Handling.md) - UI states and error handling with error boundaries (✅ Complete)
-- [Spec-116-User-Entity-Tracking.md](Docs/Specs/Spec-116-User-Entity-Tracking.md) - User entity tracking with EF Core and Azure SQL (✅ Complete)
-- [Spec-116-Implementation-Summary.md](Docs/Specs/Spec-116-Implementation-Summary.md) - Complete implementation summary and configuration details
-- [Spec-117-User-Avatar-Dropdown.md](Docs/Specs/Spec-117-User-Avatar-Dropdown.md) - User avatar with profile dropdown (✅ Complete)
-- [Spec-118-Module-Raid-Loading-Overlay.md](Docs/Specs/Spec-118-Module-Raid-Loading-Overlay.md) - Module raid loading overlay with Sentry error reporting (✅ Complete)
-- [Spec-119-Website-Pipedrive-Auth.md](Docs/Specs/Spec-119-Website-Pipedrive-Auth.md) - Website OAuth implementation and user dashboard (✅ Complete - Open to All Pipedrive Users)
-- [Spec-120a-Website-Invite-System.md](Docs/Specs/Spec-120a-Website-Invite-System.md) - Website closed beta invite system (⚠️ SUPERSEDED - Not Implemented, Open Access Instead)
-- [Spec-120b-Extension-Beta-Access.md](Docs/Specs/Spec-120b-Extension-Beta-Access.md) - Extension beta access control (⚠️ PARTIALLY SUPERSEDED - Backend Allows Open Access, Extension UI Not Implemented)
-- [Spec-123-Landing-Legal-Pages.md](Docs/Specs/Spec-123-Landing-Legal-Pages.md) - Landing page legal pages with SEO system (✅ Complete)
-- [Spec-127-Comprehensive-Backend-Logging.md](Docs/Specs/Spec-127-Comprehensive-Backend-Logging.md) - Comprehensive backend logging with HTTP response tracking (✅ Complete)
-- [Spec-128-Landing-Pricing-Section.md](Docs/Specs/Spec-128-Landing-Pricing-Section.md) - Landing page pricing section (✅ Complete)
-- [Spec-130a-Backend-Notes-API.md](Docs/Specs/Spec-130a-Backend-Notes-API.md) - Backend Notes API for creating Pipedrive notes (✅ Complete)
-- [Spec-130b-Extension-Create-Note-From-Chat.md](Docs/Specs/Spec-130b-Extension-Create-Note-From-Chat.md) - Extension UI for creating notes from WhatsApp chats (✅ Complete)
-- [Spec-131a-Backend-Deals-API.md](Docs/Specs/Spec-131a-Backend-Deals-API.md) - Backend Deals API Service with enrichment and sorting (✅ Complete)
-- [Spec-131b-Extension-Deals-Display.md](Docs/Specs/Spec-131b-Extension-Deals-Display.md) - Extension UI for displaying and selecting deals (✅ Complete)
-- [Spec-134-Create-Deal-Flow.md](Docs/Specs/Spec-134-Create-Deal-Flow.md) - Create deal flow with inline form and backend API (✅ Complete)
-- [Spec-135-Change-Deal-Stage-Flow.md](Docs/Specs/Spec-135-Change-Deal-Stage-Flow.md) - Change deal stage and pipeline with save/cancel flow (✅ Complete)
-- [Spec-136-Mark-Deal-Won-Lost-Flow.md](Docs/Specs/Spec-136-Mark-Deal-Won-Lost-Flow.md) - Mark deals as won/lost with optional lost reason and Open in Pipedrive links (✅ Complete)
-- [Spec-136-Implementation-Summary.md](Docs/Specs/Spec-136-Implementation-Summary.md) - Complete implementation summary with deviations and testing results
-- [Spec-137-Reopen-Deal-Flow.md](Docs/Specs/Spec-137-Reopen-Deal-Flow.md) - Reopen closed deals with comprehensive test coverage (✅ Complete)
-- [Spec-139-Save-Messages-To-Deal-Notes.md](Docs/Specs/Spec-139-Save-Messages-To-Deal-Notes.md) - Save WhatsApp messages to Deal notes with split button UI (✅ Complete)
+See [Specs-Overview.md](Docs/Specs-Overview.md) for complete list of specification documents.
 
 ### Testing Documentation
 - [Testing/Manual/](Docs/Testing/Manual/) - Manual testing checklists for Extension, Landing, and Website
 
 ### External Documentation
 - [Pipedrive/](Docs/External/Pipedrive/) - Pipedrive API documentation and development resources
-
-## Development Commands
-
-All commands must be run from the `Extension/` directory:
-
-```bash
-cd Extension
-```
-
-### Setup
-```bash
-# Install dependencies
-npm install
-
-# First-time setup: copy environment template
-cp .env.development .env.local
-```
-
-### Build Commands
-```bash
-# Production build (creates Extension/dist/)
-npm run build
-
-# Development build with watch mode
-npm run dev
-```
-
-### Testing Commands
-```bash
-# Run unit tests (Vitest)
-npm test
-
-# Run unit tests in watch mode
-npm run test -- --watch
-
-# Run E2E tests (Playwright)
-npm run test:e2e
-
-# Run E2E tests in UI mode
-npm run test:e2e -- --ui
-```
-
-### Code Quality Commands
-```bash
-# Lint code
-npm run lint
-
-# Format code with Prettier
-npm run format
-
-# Type check without emitting files
-npm run type-check
-```
-
-### Loading the Extension in Chrome
-
-1. Build the extension: `npm run build`
-2. Open Chrome and navigate to `chrome://extensions`
-3. Enable "Developer mode" (toggle in top-right)
-4. Click "Load unpacked"
-5. Select the `Extension/dist/` folder
-6. The extension should now appear in your extensions list
-
-### Development Workflow
-
-1. Make code changes in `Extension/src/`
-2. Run `npm run build` to rebuild
-3. Go to `chrome://extensions` and click the reload icon on your extension
-4. Test changes on https://web.whatsapp.com
-
-For faster development, use `npm run dev` which watches for changes and rebuilds automatically.
 
 ## Build System Notes
 
