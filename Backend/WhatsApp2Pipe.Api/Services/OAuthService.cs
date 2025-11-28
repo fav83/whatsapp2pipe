@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using WhatsApp2Pipe.Api.Configuration;
 using WhatsApp2Pipe.Api.Models;
 
@@ -10,12 +11,17 @@ public class OAuthService : IOAuthService
 {
     private readonly HttpClient httpClient;
     private readonly PipedriveSettings pipedriveSettings;
+    private readonly FeatureFlagsSettings featureFlagsSettings;
     private readonly ILogger<OAuthService> logger;
 
-    public OAuthService(PipedriveSettings pipedriveSettings, ILogger<OAuthService> logger)
+    public OAuthService(
+        PipedriveSettings pipedriveSettings,
+        IOptions<FeatureFlagsSettings> featureFlagsOptions,
+        ILogger<OAuthService> logger)
     {
         this.logger = logger;
         this.pipedriveSettings = pipedriveSettings;
+        this.featureFlagsSettings = featureFlagsOptions.Value;
         httpClient = new HttpClient();
 
         logger.LogInformation("OAuthService initialized for redirect URI: {RedirectUri}",
@@ -32,10 +38,11 @@ public class OAuthService : IOAuthService
             { "response_type", "code" }
         };
 
-        // Add scope if specified
-        if (!string.IsNullOrEmpty(pipedriveSettings.Scope))
+        // Build scope dynamically based on feature flags
+        var scope = BuildScope();
+        if (!string.IsNullOrEmpty(scope))
         {
-            queryParams.Add("scope", pipedriveSettings.Scope);
+            queryParams.Add("scope", scope);
         }
 
         var queryString = string.Join("&", queryParams.Select(kvp =>
@@ -43,9 +50,26 @@ public class OAuthService : IOAuthService
 
         var authUrl = $"{pipedriveSettings.AuthorizationEndpoint}?{queryString}";
 
-        logger.LogInformation("Built authorization URL with state: {State}", state);
+        logger.LogInformation("Built authorization URL with state: {State}, scope: {Scope}",
+            state, scope ?? "(none)");
 
         return authUrl;
+    }
+
+    private string BuildScope()
+    {
+        var scopes = new List<string>
+        {
+            "contacts:full"  // Always required for person management
+        };
+
+        // Add deals scope only when EnableDeals feature flag is true
+        if (featureFlagsSettings.EnableDeals)
+        {
+            scopes.Add("deals:full");
+        }
+
+        return string.Join(" ", scopes);
     }
 
     public async Task<PipedriveTokenResponse> ExchangeCodeForTokensAsync(string code)

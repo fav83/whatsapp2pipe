@@ -538,8 +538,7 @@ public class PipedriveApiClientTests
             Data = new PipedriveNote
             {
                 Id = 456,
-                Content = content,
-                DealId = dealId
+                Content = content
             }
         };
 
@@ -563,7 +562,6 @@ public class PipedriveApiClientTests
         Assert.NotNull(result.Data);
         Assert.Equal(456, result.Data.Id);
         Assert.Equal(content, result.Data.Content);
-        Assert.Equal(dealId, result.Data.DealId);
     }
 
     [Fact]
@@ -675,7 +673,7 @@ public class PipedriveApiClientTests
         };
 
         // Mock token refresh failure
-        mockOAuthService.Setup(o => o.RefreshAccessTokenAsync(It.IsAny<string>(), It.IsAny<string>()))
+        mockOAuthService.Setup(o => o.RefreshAccessTokenAsync(It.IsAny<string>()))
             .ThrowsAsync(new PipedriveUnauthorizedException("Refresh token expired"));
 
         var client = new PipedriveApiClient(

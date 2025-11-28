@@ -54,7 +54,7 @@ public class CreateDealNoteFunctionTests
         var pipedriveNoteResponse = new PipedriveNoteResponse
         {
             Success = true,
-            Data = new PipedriveNote { Id = 456, Content = "Important deal note", DealId = 789 }
+            Data = new PipedriveNote { Id = 456, Content = "Important deal note" }
         };
 
         mockPipedriveApiClient.Setup(c => c.CreateNoteAsync(session, "Important deal note", null, 789))
@@ -382,7 +382,7 @@ public class CreateDealNoteFunctionTests
         var pipedriveNoteResponse = new PipedriveNoteResponse
         {
             Success = true,
-            Data = new PipedriveNote { Id = 456, Content = longContent, DealId = 789 }
+            Data = new PipedriveNote { Id = 456, Content = longContent }
         };
 
         mockPipedriveApiClient.Setup(c => c.CreateNoteAsync(session, longContent, null, 789))
@@ -410,7 +410,7 @@ public class CreateDealNoteFunctionTests
         var pipedriveNoteResponse = new PipedriveNoteResponse
         {
             Success = true,
-            Data = new PipedriveNote { Id = 456, Content = specialContent, DealId = 789 }
+            Data = new PipedriveNote { Id = 456, Content = specialContent }
         };
 
         mockPipedriveApiClient.Setup(c => c.CreateNoteAsync(session, specialContent, null, 789))

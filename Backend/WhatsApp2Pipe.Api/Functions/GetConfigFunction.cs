@@ -74,31 +74,43 @@ public class GetConfigFunction
             // 3. Get config message from configuration
             var configMessage = configuration["ConfigMessage"];
 
-            // 4. Fetch pipelines and stages
-            var pipelinesResponse = await pipedriveApiClient.GetPipelinesAsync(session);
-            var stagesResponse = await pipedriveApiClient.GetStagesAsync(session);
+            // 4. Fetch pipelines and stages (only if deals feature is enabled)
+            object[] pipelines;
+            object[] stages;
 
-            // 5. Filter active pipelines and format data
-            var pipelines = pipelinesResponse.Data?
-                .Where(p => p.Active)
-                .Select(p => new
-                {
-                    id = p.Id,
-                    name = p.Name,
-                    orderNr = p.OrderNr,
-                    active = p.Active
-                })
-                .ToArray() ?? Array.Empty<object>();
+            if (featureFlagsSettings.EnableDeals)
+            {
+                var pipelinesResponse = await pipedriveApiClient.GetPipelinesAsync(session);
+                var stagesResponse = await pipedriveApiClient.GetStagesAsync(session);
 
-            var stages = stagesResponse.Data?
-                .Select(s => new
-                {
-                    id = s.Id,
-                    name = s.Name,
-                    orderNr = s.OrderNr,
-                    pipelineId = s.PipelineId
-                })
-                .ToArray() ?? Array.Empty<object>();
+                // 5. Filter active pipelines and format data
+                pipelines = pipelinesResponse.Data?
+                    .Where(p => p.Active)
+                    .Select(p => new
+                    {
+                        id = p.Id,
+                        name = p.Name,
+                        orderNr = p.OrderNr,
+                        active = p.Active
+                    })
+                    .ToArray() ?? Array.Empty<object>();
+
+                stages = stagesResponse.Data?
+                    .Select(s => new
+                    {
+                        id = s.Id,
+                        name = s.Name,
+                        orderNr = s.OrderNr,
+                        pipelineId = s.PipelineId
+                    })
+                    .ToArray() ?? Array.Empty<object>();
+            }
+            else
+            {
+                // When deals feature is disabled, return empty arrays
+                pipelines = Array.Empty<object>();
+                stages = Array.Empty<object>();
+            }
 
             // 6. Return config with pipelines/stages
             var response = req.CreateResponse(HttpStatusCode.OK);

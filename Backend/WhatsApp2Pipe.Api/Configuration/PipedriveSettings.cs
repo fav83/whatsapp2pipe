@@ -15,7 +15,6 @@ public class PipedriveSettings
     public string RedirectUri { get; set; } = string.Empty;
     public string AuthorizationEndpoint { get; set; } = string.Empty;
     public string TokenEndpoint { get; set; } = string.Empty;
-    public string Scope { get; set; } = string.Empty;
 
     /// <summary>
     /// Constructs full API URL for given endpoint

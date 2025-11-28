@@ -2,6 +2,8 @@ using System.Net;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using WhatsApp2Pipe.Api.Configuration;
 using WhatsApp2Pipe.Api.Models;
 using WhatsApp2Pipe.Api.Services;
 
@@ -15,6 +17,7 @@ public class PipedrivePersonsLookupFunction
     private readonly PersonTransformService personTransformService;
     private readonly DealTransformService dealTransformService;
     private readonly HttpRequestLogger httpRequestLogger;
+    private readonly FeatureFlagsSettings featureFlagsSettings;
 
     // Cached JSON serializer options for camelCase output
     private static readonly System.Text.Json.JsonSerializerOptions JsonOptions = new()
@@ -28,7 +31,8 @@ public class PipedrivePersonsLookupFunction
         IPipedriveApiClient pipedriveApiClient,
         PersonTransformService personTransformService,
         DealTransformService dealTransformService,
-        HttpRequestLogger httpRequestLogger)
+        HttpRequestLogger httpRequestLogger,
+        IOptions<FeatureFlagsSettings> featureFlagsSettings)
     {
         this.logger = logger;
         this.sessionService = sessionService;
@@ -36,6 +40,7 @@ public class PipedrivePersonsLookupFunction
         this.personTransformService = personTransformService;
         this.dealTransformService = dealTransformService;
         this.httpRequestLogger = httpRequestLogger;
+        this.featureFlagsSettings = featureFlagsSettings.Value;
     }
 
     [Function("PipedrivePersonsLookup")]
@@ -140,34 +145,43 @@ public class PipedrivePersonsLookupFunction
             logger.LogInformation("[PipedrivePersonsLookup] Person found: {PersonId} - {PersonName}", pipedrivePerson.Id, pipedrivePerson.Name);
 
             // Step 5: Fetch deals for person (with graceful degradation)
-            logger.LogInformation("[PipedrivePersonsLookup] Step 5: Fetching deals for person: {PersonId}", pipedrivePerson.Id);
             List<Deal>? transformedDeals = null;
             string? dealsError = null;
 
-            try
+            if (featureFlagsSettings.EnableDeals)
             {
-                // Fetch deals
-                var dealsResponse = await pipedriveApiClient.GetPersonDealsAsync(session, pipedrivePerson.Id);
-                logger.LogInformation("[PipedrivePersonsLookup] Deals fetched - Count: {Count}", dealsResponse.Data?.Length ?? 0);
+                logger.LogInformation("[PipedrivePersonsLookup] Step 5: Fetching deals for person: {PersonId}", pipedrivePerson.Id);
 
-                // Fetch stages and pipelines for enrichment
-                var stagesResponse = await pipedriveApiClient.GetStagesAsync(session);
-                var pipelinesResponse = await pipedriveApiClient.GetPipelinesAsync(session);
-                logger.LogInformation("[PipedrivePersonsLookup] Metadata fetched - Stages: {StageCount}, Pipelines: {PipelineCount}",
-                    stagesResponse.Data?.Length ?? 0, pipelinesResponse.Data?.Length ?? 0);
+                try
+                {
+                    // Fetch deals
+                    var dealsResponse = await pipedriveApiClient.GetPersonDealsAsync(session, pipedrivePerson.Id);
+                    logger.LogInformation("[PipedrivePersonsLookup] Deals fetched - Count: {Count}", dealsResponse.Data?.Length ?? 0);
 
-                // Transform and sort deals
-                transformedDeals = dealTransformService.TransformDeals(
-                    dealsResponse.Data ?? Array.Empty<PipedriveDeal>(),
-                    stagesResponse.Data ?? Array.Empty<PipedriveStage>(),
-                    pipelinesResponse.Data ?? Array.Empty<PipedrivePipeline>()
-                );
-                logger.LogInformation("[PipedrivePersonsLookup] Step 5 COMPLETED: Deals transformed - Count: {Count}", transformedDeals.Count);
+                    // Fetch stages and pipelines for enrichment
+                    var stagesResponse = await pipedriveApiClient.GetStagesAsync(session);
+                    var pipelinesResponse = await pipedriveApiClient.GetPipelinesAsync(session);
+                    logger.LogInformation("[PipedrivePersonsLookup] Metadata fetched - Stages: {StageCount}, Pipelines: {PipelineCount}",
+                        stagesResponse.Data?.Length ?? 0, pipelinesResponse.Data?.Length ?? 0);
+
+                    // Transform and sort deals
+                    transformedDeals = dealTransformService.TransformDeals(
+                        dealsResponse.Data ?? Array.Empty<PipedriveDeal>(),
+                        stagesResponse.Data ?? Array.Empty<PipedriveStage>(),
+                        pipelinesResponse.Data ?? Array.Empty<PipedrivePipeline>()
+                    );
+                    logger.LogInformation("[PipedrivePersonsLookup] Step 5 COMPLETED: Deals transformed - Count: {Count}", transformedDeals.Count);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "[PipedrivePersonsLookup] Failed to fetch or transform deals for person {PersonId}", pipedrivePerson.Id);
+                    dealsError = "Failed to fetch deals from Pipedrive";
+                }
             }
-            catch (Exception ex)
+            else
             {
-                logger.LogError(ex, "[PipedrivePersonsLookup] Failed to fetch or transform deals for person {PersonId}", pipedrivePerson.Id);
-                dealsError = "Failed to fetch deals from Pipedrive";
+                logger.LogInformation("[PipedrivePersonsLookup] Step 5: Skipping deals fetch - deals feature is disabled");
+                transformedDeals = new List<Deal>();
             }
 
             // Step 6: Transform person

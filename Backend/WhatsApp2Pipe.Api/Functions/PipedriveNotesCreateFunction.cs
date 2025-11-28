@@ -29,7 +29,7 @@ public class PipedriveNotesCreateFunction
 
     [Function("PipedriveNotesCreate")]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", "options", Route = "pipedrive/notes/person")] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", "options", Route = "pipedrive/notes")] HttpRequestData req)
     {
         // Handle CORS preflight
         if (req.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))

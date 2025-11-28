@@ -3,6 +3,8 @@ using System.Text.Json;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using WhatsApp2Pipe.Api.Configuration;
 using WhatsApp2Pipe.Api.Models;
 using WhatsApp2Pipe.Api.Services;
 
@@ -14,17 +16,20 @@ public class PipedriveDealNotesCreateFunction
     private readonly ISessionService sessionService;
     private readonly IPipedriveApiClient pipedriveApiClient;
     private readonly HttpRequestLogger httpRequestLogger;
+    private readonly FeatureFlagsSettings featureFlagsSettings;
 
     public PipedriveDealNotesCreateFunction(
         ILogger<PipedriveDealNotesCreateFunction> logger,
         ISessionService sessionService,
         IPipedriveApiClient pipedriveApiClient,
-        HttpRequestLogger httpRequestLogger)
+        HttpRequestLogger httpRequestLogger,
+        IOptions<FeatureFlagsSettings> featureFlagsSettings)
     {
         this.logger = logger;
         this.sessionService = sessionService;
         this.pipedriveApiClient = pipedriveApiClient;
         this.httpRequestLogger = httpRequestLogger;
+        this.featureFlagsSettings = featureFlagsSettings.Value;
     }
 
     [Function("PipedriveDealNotesCreate")]
@@ -71,6 +76,16 @@ public class PipedriveDealNotesCreateFunction
                 var unauthorizedResponse = req.CreateResponse(HttpStatusCode.Unauthorized);
                 httpRequestLogger.LogResponse("PipedriveDealNotesCreate", (int)HttpStatusCode.Unauthorized);
                 return unauthorizedResponse;
+            }
+
+            // Check feature flag
+            if (!featureFlagsSettings.EnableDeals)
+            {
+                logger.LogWarning("PipedriveDealNotesCreate blocked: Deals feature is disabled");
+                var forbiddenResponse = req.CreateResponse(HttpStatusCode.Forbidden);
+                await forbiddenResponse.WriteAsJsonAsync(new { error = "Deals feature is not enabled" });
+                httpRequestLogger.LogResponse("PipedriveDealNotesCreate", (int)HttpStatusCode.Forbidden, new { error = "Deals feature is not enabled" });
+                return forbiddenResponse;
             }
 
             // Parse request body

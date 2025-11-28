@@ -10,7 +10,6 @@
     "Pipedrive__RedirectUri": "http://localhost:7071/api/auth/callback",
     "Pipedrive__AuthorizationEndpoint": "https://oauth.pipedrive.com/oauth/authorize",
     "Pipedrive__TokenEndpoint": "https://oauth.pipedrive.com/oauth/token",
-    "Pipedrive__Scope": "contacts:full",
     "Pipedrive__BaseUrl": "https://api.pipedrive.com",
     "Pipedrive__ApiVersion": "v1",
 

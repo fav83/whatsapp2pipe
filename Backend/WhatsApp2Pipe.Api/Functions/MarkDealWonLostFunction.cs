@@ -2,6 +2,8 @@ using System.Net;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using WhatsApp2Pipe.Api.Configuration;
 using WhatsApp2Pipe.Api.Models;
 using WhatsApp2Pipe.Api.Services;
 using System.Text.Json;
@@ -15,6 +17,7 @@ public class MarkDealWonLostFunction
     private readonly IPipedriveApiClient pipedriveApiClient;
     private readonly DealTransformService dealTransformService;
     private readonly HttpRequestLogger httpRequestLogger;
+    private readonly FeatureFlagsSettings featureFlagsSettings;
 
     // Cached JSON serializer options for camelCase output
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -33,13 +36,15 @@ public class MarkDealWonLostFunction
         ISessionService sessionService,
         IPipedriveApiClient pipedriveApiClient,
         DealTransformService dealTransformService,
-        HttpRequestLogger httpRequestLogger)
+        HttpRequestLogger httpRequestLogger,
+        IOptions<FeatureFlagsSettings> featureFlagsSettings)
     {
         this.logger = logger;
         this.sessionService = sessionService;
         this.pipedriveApiClient = pipedriveApiClient;
         this.dealTransformService = dealTransformService;
         this.httpRequestLogger = httpRequestLogger;
+        this.featureFlagsSettings = featureFlagsSettings.Value;
     }
 
     [Function("MarkDealWonLost")]
@@ -84,6 +89,13 @@ public class MarkDealWonLostFunction
 
             logger.LogInformation("[MarkDealWonLost] Step 2 PASSED: Valid session - User: {UserId}, Company: {CompanyId}",
                 session.UserId, session.CompanyId);
+
+            // 2b. Check feature flag
+            if (!featureFlagsSettings.EnableDeals)
+            {
+                logger.LogWarning("[MarkDealWonLost] BLOCKED: Deals feature is disabled");
+                return CreateErrorResponse(req, HttpStatusCode.Forbidden, "Deals feature is not enabled");
+            }
 
             // 3. Parse request body
             logger.LogInformation("[MarkDealWonLost] Step 3: Parsing request body");

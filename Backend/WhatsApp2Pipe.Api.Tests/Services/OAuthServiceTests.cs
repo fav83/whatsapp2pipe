@@ -1,6 +1,7 @@
 using AutoFixture;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using WhatsApp2Pipe.Api.Configuration;
 using WhatsApp2Pipe.Api.Services;
@@ -10,7 +11,6 @@ namespace WhatsApp2Pipe.Api.Tests.Services;
 public class OAuthServiceTests
 {
     private readonly Mock<ILogger<OAuthService>> mockLogger;
-    private readonly OAuthService service;
     private readonly Fixture fixture;
     private readonly PipedriveSettings settings;
 
@@ -26,11 +26,13 @@ public class OAuthServiceTests
             ClientSecret = "test-client-secret",
             RedirectUri = "https://test.azurewebsites.net/api/auth/callback",
             AuthorizationEndpoint = "https://oauth.pipedrive.com/oauth/authorize",
-            TokenEndpoint = "https://oauth.pipedrive.com/oauth/token",
-            Scope = ""
+            TokenEndpoint = "https://oauth.pipedrive.com/oauth/token"
         };
+    }
 
-        service = new OAuthService(settings, mockLogger.Object);
+    private static IOptions<FeatureFlagsSettings> CreateFeatureFlagsOptions(bool enableDeals)
+    {
+        return Options.Create(new FeatureFlagsSettings { EnableDeals = enableDeals });
     }
 
     #region BuildAuthorizationUrl Tests
@@ -39,6 +41,8 @@ public class OAuthServiceTests
     public void BuildAuthorizationUrl_ValidState_ReturnsCorrectUrl()
     {
         // Arrange
+        var featureFlags = CreateFeatureFlagsOptions(enableDeals: false);
+        var service = new OAuthService(settings, featureFlags, mockLogger.Object);
         var state = "test-state-value";
 
         // Act
@@ -57,6 +61,8 @@ public class OAuthServiceTests
     public void BuildAuthorizationUrl_StateWithSpecialCharacters_UrlEncodesState()
     {
         // Arrange
+        var featureFlags = CreateFeatureFlagsOptions(enableDeals: false);
+        var service = new OAuthService(settings, featureFlags, mockLogger.Object);
         var state = "state+with/special=chars&more";
 
         // Act
@@ -70,6 +76,8 @@ public class OAuthServiceTests
     public void BuildAuthorizationUrl_IncludesAllRequiredParameters()
     {
         // Arrange
+        var featureFlags = CreateFeatureFlagsOptions(enableDeals: false);
+        var service = new OAuthService(settings, featureFlags, mockLogger.Object);
         var state = fixture.Create<string>();
 
         // Act
@@ -86,46 +94,26 @@ public class OAuthServiceTests
     }
 
     [Fact]
-    public void BuildAuthorizationUrl_WithScope_IncludesScope()
+    public void BuildAuthorizationUrl_AlwaysIncludesContactsScope()
     {
         // Arrange
-        var settingsWithScope = new PipedriveSettings
-        {
-            ClientId = "test-client-id",
-            ClientSecret = "test-client-secret",
-            RedirectUri = "https://test.azurewebsites.net/api/auth/callback",
-            AuthorizationEndpoint = "https://oauth.pipedrive.com/oauth/authorize",
-            TokenEndpoint = "https://oauth.pipedrive.com/oauth/token",
-            Scope = "read write"
-        };
-
-        var serviceWithScope = new OAuthService(settingsWithScope, mockLogger.Object);
-        var state = fixture.Create<string>();
-
-        // Act
-        var url = serviceWithScope.BuildAuthorizationUrl(state);
-
-        // Assert
-        Assert.Contains("scope=read%20write", url);
-    }
-
-    [Fact]
-    public void BuildAuthorizationUrl_WithoutScope_DoesNotIncludeScope()
-    {
-        // Arrange
+        var featureFlags = CreateFeatureFlagsOptions(enableDeals: false);
+        var service = new OAuthService(settings, featureFlags, mockLogger.Object);
         var state = fixture.Create<string>();
 
         // Act
         var url = service.BuildAuthorizationUrl(state);
 
         // Assert
-        Assert.DoesNotContain("scope=", url);
+        Assert.Contains("scope=contacts%3Afull", url);
     }
 
     [Fact]
     public void BuildAuthorizationUrl_EmptyState_ReturnsUrlWithEmptyState()
     {
         // Arrange
+        var featureFlags = CreateFeatureFlagsOptions(enableDeals: false);
+        var service = new OAuthService(settings, featureFlags, mockLogger.Object);
         var state = string.Empty;
 
         // Act
@@ -140,6 +128,8 @@ public class OAuthServiceTests
     public void BuildAuthorizationUrl_MultipleCallsSameState_ReturnsSameUrl()
     {
         // Arrange
+        var featureFlags = CreateFeatureFlagsOptions(enableDeals: false);
+        var service = new OAuthService(settings, featureFlags, mockLogger.Object);
         var state = fixture.Create<string>();
 
         // Act
@@ -148,6 +138,38 @@ public class OAuthServiceTests
 
         // Assert
         Assert.Equal(url1, url2);
+    }
+
+    [Fact]
+    public void BuildAuthorizationUrl_EnableDealsFalse_DoesNotIncludeDealsScope()
+    {
+        // Arrange
+        var featureFlags = CreateFeatureFlagsOptions(enableDeals: false);
+        var service = new OAuthService(settings, featureFlags, mockLogger.Object);
+        var state = fixture.Create<string>();
+
+        // Act
+        var url = service.BuildAuthorizationUrl(state);
+
+        // Assert
+        Assert.Contains("scope=contacts%3Afull", url);
+        Assert.DoesNotContain("deals", url);
+    }
+
+    [Fact]
+    public void BuildAuthorizationUrl_EnableDealsTrue_IncludesDealsScope()
+    {
+        // Arrange
+        var featureFlags = CreateFeatureFlagsOptions(enableDeals: true);
+        var service = new OAuthService(settings, featureFlags, mockLogger.Object);
+        var state = fixture.Create<string>();
+
+        // Act
+        var url = service.BuildAuthorizationUrl(state);
+
+        // Assert
+        // URL-encoded: contacts:full deals:full -> contacts%3Afull%20deals%3Afull
+        Assert.Contains("scope=contacts%3Afull%20deals%3Afull", url);
     }
 
     #endregion
