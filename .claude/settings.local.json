@@ -4,7 +4,9 @@
       "Bash(dotnet build:*)",
       "Bash(git fetch:*)",
       "Bash(git checkout:*)",
-      "Bash(git ls-tree:*)"
+      "Bash(git ls-tree:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nGuard deals/pipelines API calls with enableDeals feature flag\n\n- Block CreateDeal, UpdateDeal, MarkDealWonLost, and DealNotesCreate\n  endpoints with 403 when enableDeals is disabled\n- Skip deals/pipelines fetching in PersonsLookup and GetConfig\n  when enableDeals is disabled\n- Rename notes route from /notes/person back to /notes for\n  backward compatibility with extension v1.0.229\nEOF\n)\")",
+      "Bash(npm run type-check:*)"
     ],
     "deny": [],
     "ask": []

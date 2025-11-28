@@ -1,7 +1,8 @@
 # Spec-140: Feature Flags System
 
-**Status:** Draft
+**Status:** Complete
 **Created:** 2025-01-28
+**Completed:** 2025-01-28
 
 ## Overview
 
@@ -484,29 +485,29 @@ The extension hook can be updated to handle both formats with backward compatibi
 ## Implementation Checklist
 
 ### Backend
-- [ ] Create `FeatureFlagsSettings.cs` configuration class
-- [ ] Create `FeatureFlagsDto.cs` response model
-- [ ] Register settings in `Program.cs` DI container
-- [ ] Update `UserConfig` to include `FeatureFlags` property
-- [ ] Inject and map flags in `GetConfigFunction.cs`
-- [ ] Add `FeatureFlags__enableDeals=true` to `local.settings.json`
-- [ ] Add flag to Azure App Settings (production)
+- [x] Create `FeatureFlagsSettings.cs` configuration class
+- [x] Create `FeatureFlagsDto.cs` response model
+- [x] Register settings in `Program.cs` DI container
+- [x] Update `UserConfig` to include `FeatureFlags` property
+- [x] Inject and map flags in `GetConfigFunction.cs`
+- [x] Add `FeatureFlags__enableDeals=true` to `local.settings.json`
+- [x] Add flag to Azure App Settings (production)
 
 ### Extension
-- [ ] Create `FeatureFlags` type definition
-- [ ] Create `DEFAULT_FEATURE_FLAGS` constant
-- [ ] Update `UserConfig` type to include `featureFlags`
-- [ ] Persist flags to `chrome.storage.local` on config fetch
-- [ ] Create `useFeatureFlags()` hook
-- [ ] Implement fallback loading from storage
-- [ ] Wrap deal-related UI with `isEnabled('enableDeals')` checks
+- [x] Create `FeatureFlags` type definition
+- [x] Create `DEFAULT_FEATURE_FLAGS` constant
+- [x] Update `UserConfig` type to include `featureFlags`
+- [x] Persist flags to `chrome.storage.local` on config fetch
+- [x] Create `useFeatureFlags()` hook
+- [x] Implement fallback loading from storage
+- [x] Wrap deal-related UI with `isEnabled('enableDeals')` checks
 
 ### Testing
-- [ ] Backend unit tests for settings binding
-- [ ] Backend integration test for `/api/config` response
-- [ ] Extension unit tests for `useFeatureFlags` hook
-- [ ] Extension integration tests for conditional rendering
-- [ ] Manual end-to-end testing
+- [x] Backend unit tests for settings binding
+- [x] Backend integration test for `/api/config` response
+- [x] Extension unit tests for `useFeatureFlags` hook
+- [x] Extension integration tests for conditional rendering
+- [x] Manual end-to-end testing
 
 ## References
 

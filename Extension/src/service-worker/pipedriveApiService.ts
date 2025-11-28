@@ -272,7 +272,7 @@ class PipedriveApiService {
       throw new Error('Not authenticated')
     }
 
-    const response = await fetch(`${this.baseUrl}/api/pipedrive/notes/person`, {
+    const response = await fetch(`${this.baseUrl}/api/pipedrive/notes`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

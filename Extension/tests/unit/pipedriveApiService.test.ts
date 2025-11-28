@@ -789,7 +789,7 @@ describe('PipedriveApiService', () => {
   })
 
   describe('createPersonNote', () => {
-    it('sends POST request to /api/pipedrive/notes/person', async () => {
+    it('sends POST request to /api/pipedrive/notes', async () => {
       vi.mocked(fetch).mockResolvedValue({
         status: 201,
       } as Response)
@@ -797,7 +797,7 @@ describe('PipedriveApiService', () => {
       await pipedriveApiService.createPersonNote(123, 'Test note content')
 
       expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/pipedrive/notes/person'),
+        expect.stringContaining('/api/pipedrive/notes'),
         expect.objectContaining({
           method: 'POST',
           headers: expect.objectContaining({
