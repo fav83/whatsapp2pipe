@@ -14,6 +14,8 @@
     "Pipedrive__BaseUrl": "https://api.pipedrive.com",
     "Pipedrive__ApiVersion": "v1",
 
+    "FeatureFlags__EnableDeals": "false",
+
     "APP_WEBSITE_CALLBACK_URL": "http://localhost:3000/auth/callback",
     "CORS_ALLOWED_ORIGINS": "https://web.whatsapp.com,http://localhost:3000,http://localhost:5173,https://dashboard.chat2deal.com",
 

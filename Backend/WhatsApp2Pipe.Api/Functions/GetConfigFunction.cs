@@ -3,6 +3,9 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using WhatsApp2Pipe.Api.Configuration;
+using WhatsApp2Pipe.Api.Models;
 using WhatsApp2Pipe.Api.Services;
 using System.Text.Json;
 
@@ -15,19 +18,22 @@ public class GetConfigFunction
     private readonly IConfiguration configuration;
     private readonly HttpRequestLogger httpRequestLogger;
     private readonly IPipedriveApiClient pipedriveApiClient;
+    private readonly FeatureFlagsSettings featureFlagsSettings;
 
     public GetConfigFunction(
         ILogger<GetConfigFunction> logger,
         ISessionService sessionService,
         IConfiguration configuration,
         HttpRequestLogger httpRequestLogger,
-        IPipedriveApiClient pipedriveApiClient)
+        IPipedriveApiClient pipedriveApiClient,
+        IOptions<FeatureFlagsSettings> featureFlagsSettings)
     {
         this.logger = logger;
         this.sessionService = sessionService;
         this.configuration = configuration;
         this.httpRequestLogger = httpRequestLogger;
         this.pipedriveApiClient = pipedriveApiClient;
+        this.featureFlagsSettings = featureFlagsSettings.Value;
     }
 
     [Function("GetConfig")]
@@ -102,7 +108,11 @@ public class GetConfigFunction
             {
                 message = configMessage,
                 pipelines,
-                stages
+                stages,
+                featureFlags = new
+                {
+                    enableDeals = featureFlagsSettings.EnableDeals
+                }
             };
 
             await response.WriteStringAsync(JsonSerializer.Serialize(responseBody));

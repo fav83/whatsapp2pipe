@@ -75,6 +75,10 @@ var host = new HostBuilder()
             return settings;
         });
 
+        // Register feature flags configuration
+        services.Configure<FeatureFlagsSettings>(
+            context.Configuration.GetSection("FeatureFlags"));
+
         // Register Pipedrive services
         services.AddHttpClient<IPipedriveApiClient, PipedriveApiClient>();
         services.AddSingleton<PersonTransformService>();

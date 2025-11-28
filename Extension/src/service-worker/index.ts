@@ -614,6 +614,15 @@ async function handleConfigGet(
 
     const config = await pipedriveApiService.getConfig()
 
+    // Persist feature flags to storage for fallback (fire-and-forget)
+    // Storage write failure should not block config delivery
+    if (config.featureFlags) {
+      chrome.storage.local
+        .set({ featureFlags: config.featureFlags })
+        .then(() => logger.log('[Service Worker] Feature flags persisted to storage'))
+        .catch((err) => logger.error('[Service Worker] Failed to persist feature flags:', err))
+    }
+
     sendResponse({
       type: 'CONFIG_GET_SUCCESS',
       config,

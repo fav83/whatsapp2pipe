@@ -35,6 +35,9 @@ import { DealsLoadingSkeleton } from './components/DealsLoadingSkeleton'
 import { CreateNoteFromChat } from './components/CreateNoteFromChat'
 import type { Person } from '../types/person'
 import type { Deal, Pipeline, Stage } from '../types/deal'
+import type { FeatureFlags } from '../types/featureFlags'
+import { DEFAULT_FEATURE_FLAGS } from '../types/featureFlags'
+import { useFeatureFlags } from './hooks/useFeatureFlags'
 import logger from '../utils/logger'
 
 interface ChatStatus {
@@ -87,6 +90,7 @@ export default function App() {
   const [pipelines, setPipelines] = useState<Pipeline[]>([])
   const [stages, setStages] = useState<Stage[]>([])
   const [selectedDealId, setSelectedDealId] = useState<number | null>(null)
+  const [featureFlags, setFeatureFlags] = useState<FeatureFlags | undefined>(undefined)
 
   // Theme manager is now initialized in index.tsx before React mount (prevents flicker)
 
@@ -147,6 +151,18 @@ export default function App() {
   }, [state, selectedDealId])
 
   /**
+   * Load cached feature flags from storage (fallback when backend is unreachable)
+   */
+  const loadCachedFeatureFlags = async (): Promise<FeatureFlags> => {
+    try {
+      const result = await chrome.storage.local.get('featureFlags')
+      return result.featureFlags ?? DEFAULT_FEATURE_FLAGS
+    } catch {
+      return DEFAULT_FEATURE_FLAGS
+    }
+  }
+
+  /**
    * Fetch user configuration from backend
    */
   const fetchConfig = async () => {
@@ -165,8 +181,15 @@ export default function App() {
         if (response.config.stages) {
           setStages(response.config.stages)
         }
+        // Store feature flags
+        if (response.config.featureFlags) {
+          setFeatureFlags(response.config.featureFlags)
+        }
+      } else {
+        // Config fetch failed - load cached feature flags
+        const cachedFlags = await loadCachedFeatureFlags()
+        setFeatureFlags(cachedFlags)
       }
-      // Silent failure - error logged to Sentry by service worker
     } catch (error) {
       // Silent failure - log to console and Sentry only
       logger.error('[App] Failed to fetch config:', error)
@@ -175,6 +198,9 @@ export default function App() {
           tags: { context: 'config_fetch' },
         })
       }
+      // Load cached feature flags as fallback
+      const cachedFlags = await loadCachedFeatureFlags()
+      setFeatureFlags(cachedFlags)
     }
   }
 
@@ -229,6 +255,7 @@ export default function App() {
             stages={stages}
             selectedDealId={selectedDealId}
             setSelectedDealId={setSelectedDealId}
+            featureFlags={featureFlags}
           />
         )}
       </main>
@@ -320,10 +347,12 @@ interface SidebarContentProps {
   stages: Stage[]
   selectedDealId: number | null
   setSelectedDealId: (dealId: number | null) => void
+  featureFlags?: FeatureFlags
 }
 
-function SidebarContent({ state, setState, userName, pipelines, stages, selectedDealId, setSelectedDealId }: SidebarContentProps) {
+function SidebarContent({ state, setState, userName, pipelines, stages, selectedDealId, setSelectedDealId, featureFlags }: SidebarContentProps) {
   const { lookupByPhone } = usePipedrive()
+  const { isEnabled } = useFeatureFlags(featureFlags)
   // Track the current lookup to prevent race conditions when rapidly switching contacts
   const currentLookupRef = useRef<string | null>(null)
 
@@ -499,7 +528,7 @@ function SidebarContent({ state, setState, userName, pipelines, stages, selected
       return (
         <>
           <PersonLookupLoading contactName={state.name} phone={state.phone} />
-          <DealsLoadingSkeleton />
+          {isEnabled('enableDeals') && <DealsLoadingSkeleton />}
         </>
       )
     case 'person-matched':
@@ -512,31 +541,33 @@ function SidebarContent({ state, setState, userName, pipelines, stages, selected
             personId={state.person.id}
           />
 
-          <DealsSection
-            personId={state.person.id}
-            personName={state.person.name}
-            deals={state.deals}
-            dealsError={state.dealsError}
-            pipelines={pipelines}
-            stages={stages}
-            selectedDealId={selectedDealId}
-            onSelectedDealChanged={setSelectedDealId}
-            onRetry={() => handleRetry(state.phone, state.person.name)}
-            onDealsUpdated={(updatedDeals) => {
-              setState((prev) =>
-                prev.type === 'person-matched' ? { ...prev, deals: updatedDeals } : prev
-              )
-            }}
-          />
+          {isEnabled('enableDeals') && (
+            <DealsSection
+              personId={state.person.id}
+              personName={state.person.name}
+              deals={state.deals}
+              dealsError={state.dealsError}
+              pipelines={pipelines}
+              stages={stages}
+              selectedDealId={selectedDealId}
+              onSelectedDealChanged={setSelectedDealId}
+              onRetry={() => handleRetry(state.phone, state.person.name)}
+              onDealsUpdated={(updatedDeals) => {
+                setState((prev) =>
+                  prev.type === 'person-matched' ? { ...prev, deals: updatedDeals } : prev
+                )
+              }}
+            />
+          )}
 
           {userName && (
             <CreateNoteFromChat
               personId={state.person.id}
               contactName={state.person.name}
               userName={userName}
-              selectedDealId={selectedDealId}
+              selectedDealId={isEnabled('enableDeals') ? selectedDealId : undefined}
               selectedDealTitle={
-                selectedDealId
+                isEnabled('enableDeals') && selectedDealId
                   ? state.deals?.find((d) => d.id === selectedDealId)?.title
                   : undefined
               }

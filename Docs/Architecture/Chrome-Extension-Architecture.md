@@ -1950,6 +1950,48 @@ const PersonLookupError = lazy(() => import('./components/PersonLookupError'))
 
 ---
 
+## 15. Feature Flags System
+
+The extension supports runtime feature flags for gradual rollout and feature gating. Flags are simple boolean toggles controlled from the backend.
+
+### How It Works
+
+1. **Backend defines flags** in Azure App Settings (`FeatureFlags__flagName=true/false`)
+2. **Extension fetches flags** via `/api/config` on startup (alongside pipelines/stages)
+3. **Flags are cached** in `chrome.storage.local` for resilience
+4. **Components check flags** using the `useFeatureFlags()` hook
+5. **Disabled features are hidden** — UI elements don't render when their flag is `false`
+
+### Quick Reference
+
+| Aspect | Value |
+|--------|-------|
+| Storage | Azure App Settings |
+| Delivery | `/api/config` response |
+| Refresh | On page load only |
+| Backend default | Missing App Setting → `false` (opt-in) |
+| Extension fallback | Backend unreachable → `false` (fail-safe) |
+| Access | `useFeatureFlags()` hook |
+
+### Usage Pattern
+
+```tsx
+const { isEnabled } = useFeatureFlags(config?.featureFlags);
+
+{isEnabled('enableDeals') && <DealsSection />}
+```
+
+### Adding New Flags
+
+1. Add property to backend `FeatureFlagsSettings.cs`
+2. Add to `FeatureFlagsDto.cs` and map in `GetConfigFunction`
+3. Add to extension `FeatureFlags` type
+4. Wrap UI with `isEnabled()` checks
+
+**Full specification:** [Spec-140: Feature Flags System](../Specs/Spec-140-Feature-Flags-System.md)
+
+---
+
 ## Related Documentation
 
 - [Website Architecture](Website-Architecture.md) - User dashboard web application architecture
