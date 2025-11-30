@@ -38,3 +38,4 @@ All specification documents are located in [Docs/Specs/](Specs/).
 | [Spec-137](Specs/Spec-137-Reopen-Deal-Flow.md) | Reopen closed deals with comprehensive test coverage | Complete |
 | [Spec-139](Specs/Spec-139-Save-Messages-To-Deal-Notes.md) | Save WhatsApp messages to Deal notes with split button UI | Complete |
 | [Spec-140](Specs/Spec-140-Feature-Flags-System.md) | Feature flags system for gradual rollout | Complete |
+| [Spec-141](Specs/Spec-141-Landing-Blog.md) | Landing page blog with MDX for SEO | Planned |

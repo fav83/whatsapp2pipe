@@ -2,7 +2,7 @@
 export default {
   content: [
     "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
@@ -32,7 +32,51 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
       },
+      typography: {
+        DEFAULT: {
+          css: {
+            maxWidth: 'none',
+            color: '#475569', // slate-600 - matches front page body text
+            a: {
+              color: '#4F39F6',
+              '&:hover': {
+                color: '#4531E0',
+              },
+            },
+            h1: {
+              color: '#334155', // slate-700 - matches front page headings
+            },
+            h2: {
+              color: '#334155', // slate-700
+            },
+            h3: {
+              color: '#334155', // slate-700
+            },
+            h4: {
+              color: '#334155', // slate-700
+            },
+            strong: {
+              color: '#334155', // slate-700
+            },
+            code: {
+              color: '#111827',
+              backgroundColor: '#f3f4f6',
+              padding: '0.25rem 0.375rem',
+              borderRadius: '0.25rem',
+              fontWeight: '400',
+            },
+            'code::before': {
+              content: '""',
+            },
+            'code::after': {
+              content: '""',
+            },
+          },
+        },
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
 }

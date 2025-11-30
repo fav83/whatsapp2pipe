@@ -1,12 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dotnet build:*)",
-      "Bash(git fetch:*)",
-      "Bash(git checkout:*)",
-      "Bash(git ls-tree:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nGuard deals/pipelines API calls with enableDeals feature flag\n\n- Block CreateDeal, UpdateDeal, MarkDealWonLost, and DealNotesCreate\n  endpoints with 403 when enableDeals is disabled\n- Skip deals/pipelines fetching in PersonsLookup and GetConfig\n  when enableDeals is disabled\n- Rename notes route from /notes/person back to /notes for\n  backward compatibility with extension v1.0.229\nEOF\n)\")",
-      "Bash(npm run type-check:*)",
+      "Bash(powershell:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tsc --noEmit)",
+      "Bash(npm run build:no-prerender:*)",
+      "Bash(node:*)",
+      "Bash(npm run generate-sitemap:*)",
+      "Bash(npm run build:prerender:*)",
+      "Bash(timeout 20 npm run dev)",
+      "Bash(rm:*)",
       "Bash(dir:*)"
     ],
     "deny": [],

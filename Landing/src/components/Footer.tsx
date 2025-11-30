@@ -25,6 +25,13 @@ export function Footer() {
             >
               Terms of Service
             </Link>
+            <span className="text-slate-400">•</span>
+            <Link
+              to="/guides"
+              className="text-sm text-slate-600 hover:text-slate-700 hover:underline transition-colors duration-200"
+            >
+              Guides
+            </Link>
           </div>
         </div>
       </div>

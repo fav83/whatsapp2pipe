@@ -16,6 +16,20 @@
   },
   "routes": [
     {
+      "route": "/guides",
+      "rewrite": "/guides/index.html",
+      "headers": {
+        "content-type": "text/html; charset=utf-8"
+      }
+    },
+    {
+      "route": "/guides/*",
+      "rewrite": "/index.html",
+      "headers": {
+        "content-type": "text/html; charset=utf-8"
+      }
+    },
+    {
       "route": "/privacy-policy",
       "rewrite": "/privacy-policy/index.html",
       "headers": {

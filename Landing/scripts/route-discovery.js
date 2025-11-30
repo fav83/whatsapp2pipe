@@ -5,7 +5,7 @@
  * for sitemap generation and static pre-rendering.
  */
 
-import { readdirSync, statSync } from 'fs';
+import { readdirSync, readFileSync, statSync } from 'fs';
 import { join, relative, sep, parse } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -14,6 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const PAGES_DIR = join(__dirname, '..', 'src', 'pages');
+const GUIDES_CONTENT_DIR = join(__dirname, '..', 'src', 'content', 'guides');
 
 /**
  * Convert a component filename to a URL path
@@ -38,6 +39,8 @@ const ROUTE_OVERRIDES = {
   'legal/PrivacyPolicy': '/privacy-policy',
   'legal/TermsOfService': '/terms-of-service',
   'Home': '/',
+  'guides/index': '/guides',
+  'guides/[slug]': null, // Skip dynamic route - handled by discoverGuidesRoutes
 };
 
 /**
@@ -48,7 +51,7 @@ const ROUTE_OVERRIDES = {
 function getPriority(path) {
   if (path === '/') return 1.0;
   if (path.match(/^\/(privacy-policy|terms-of-service)/)) return 0.3;
-  if (path.match(/^\/blog\//)) return 0.7;
+  if (path.match(/^\/guides\//)) return 0.7;
   if (path.match(/^\/about/)) return 0.8;
   return 0.5;
 }
@@ -61,7 +64,7 @@ function getPriority(path) {
 function getChangeFreq(path) {
   if (path === '/') return 'weekly';
   if (path.match(/^\/(privacy-policy|terms-of-service)/)) return 'yearly';
-  if (path.match(/^\/blog\//)) return 'monthly';
+  if (path.match(/^\/guides\//)) return 'monthly';
   return 'monthly';
 }
 
@@ -143,7 +146,16 @@ export function discoverRoutes(options = {}) {
     console.log(`📂 Scanning pages directory: ${PAGES_DIR}\n`);
   }
 
-  const routes = scanDirectoryWithVerbose(PAGES_DIR, PAGES_DIR, verbose);
+  const pageRoutes = scanDirectoryWithVerbose(PAGES_DIR, PAGES_DIR, verbose);
+
+  if (verbose) {
+    console.log(`\n📝 Scanning guides content directory: ${GUIDES_CONTENT_DIR}\n`);
+  }
+
+  const guidesRoutes = discoverGuidesRoutes({ verbose });
+
+  // Combine page routes with guides routes
+  const routes = [...pageRoutes, ...guidesRoutes];
 
   // Sort routes by priority (descending) then by path (ascending)
   routes.sort((a, b) => {
@@ -154,7 +166,7 @@ export function discoverRoutes(options = {}) {
   });
 
   if (verbose) {
-    console.log(`\n✅ Found ${routes.length} route(s)`);
+    console.log(`\n✅ Found ${routes.length} route(s) total (${pageRoutes.length} pages + ${guidesRoutes.length} guides)`);
   }
 
   return routes;
@@ -190,8 +202,15 @@ function scanDirectoryWithVerbose(dir, baseDir, verbose) {
         const normalizedComponentPath = componentPath.split(sep).join('/');
 
         let urlPath;
-        if (ROUTE_OVERRIDES[normalizedComponentPath]) {
+        if (normalizedComponentPath in ROUTE_OVERRIDES) {
           urlPath = ROUTE_OVERRIDES[normalizedComponentPath];
+          // Skip routes marked as null (e.g., dynamic routes handled elsewhere)
+          if (urlPath === null) {
+            if (verbose) {
+              console.log(`   ⊘ Skipped: ${normalizedComponentPath} (dynamic route)`);
+            }
+            continue;
+          }
         } else {
           const pathSegment = filenameToPath(item);
 
@@ -241,4 +260,62 @@ export function getRoutePaths(options = {}) {
  */
 export function getBaseUrl() {
   return process.env.VITE_SITE_URL || 'https://chat2deal.com';
+}
+
+/**
+ * Discover guides routes from MDX content files
+ * Extracts slug from frontmatter to generate routes
+ * @param {Object} options - Configuration options
+ * @param {boolean} options.verbose - Log discovery to console
+ * @returns {Array<Object>} Array of guide route objects
+ */
+export function discoverGuidesRoutes(options = {}) {
+  const { verbose = false } = options;
+  const routes = [];
+
+  try {
+    const items = readdirSync(GUIDES_CONTENT_DIR);
+
+    for (const item of items) {
+      if (!item.endsWith('.mdx')) continue;
+
+      const fullPath = join(GUIDES_CONTENT_DIR, item);
+      const content = readFileSync(fullPath, 'utf-8');
+
+      // Extract slug from frontmatter
+      const frontmatterMatch = content.match(/^---\s*\n([\s\S]*?)\n---/);
+      if (!frontmatterMatch) continue;
+
+      const frontmatter = frontmatterMatch[1];
+      const slugMatch = frontmatter.match(/slug:\s*["']?([^"'\n]+)["']?/);
+      const lastUpdatedMatch = frontmatter.match(/lastUpdated:\s*["']?([^"'\n]+)["']?/);
+      const publishDateMatch = frontmatter.match(/publishDate:\s*["']?([^"'\n]+)["']?/);
+
+      if (!slugMatch) continue;
+
+      const slug = slugMatch[1].trim();
+      const lastmod = lastUpdatedMatch
+        ? lastUpdatedMatch[1].trim()
+        : publishDateMatch
+          ? publishDateMatch[1].trim()
+          : undefined;
+
+      routes.push({
+        path: `/guides/${slug}`,
+        priority: 0.7,
+        changefreq: 'monthly',
+        lastmod,
+      });
+
+      if (verbose) {
+        console.log(`   ✓ Guide: /guides/${slug}`);
+      }
+    }
+  } catch (error) {
+    if (verbose) {
+      console.log(`   ⚠ No guides content directory found or empty`);
+    }
+  }
+
+  return routes;
 }

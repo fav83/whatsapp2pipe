@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 export function Header() {
   const location = useLocation();
@@ -79,10 +79,18 @@ export function Header() {
             <a
               href="/#pricing"
               onClick={handlePricingClick}
-              className="text-sm font-medium text-slate-700 hover:text-button-primary transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-button-primary focus:ring-offset-2 rounded"
+              className="px-3 py-2 text-sm font-medium text-slate-700 hover:bg-button-primary hover:text-white rounded-lg transition-all duration-200 outline-none"
             >
               Pricing
             </a>
+
+            {/* Guides Link */}
+            <Link
+              to="/guides"
+              className="px-3 py-2 text-sm font-medium text-slate-700 hover:bg-button-primary hover:text-white rounded-lg transition-all duration-200 outline-none"
+            >
+              Guides
+            </Link>
 
             {/* Sign in Button */}
             <button

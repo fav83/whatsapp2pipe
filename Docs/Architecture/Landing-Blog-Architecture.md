@@ -2,7 +2,7 @@
 
 **Version:** 1.0
 **Date:** 2025-11-27
-**Status:** 📋 Planned
+**Status:** 📋 Specified (see [Spec-141](../Specs/Spec-141-Landing-Blog.md))
 
 ---
 

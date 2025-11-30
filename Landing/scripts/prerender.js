@@ -21,8 +21,9 @@ const PREVIEW_HOST = 'localhost';
 /**
  * Wait for network to be idle and all meta tags to be rendered
  * @param {import('puppeteer').Page} page - Puppeteer page
+ * @param {string} route - The route being pre-rendered
  */
-async function waitForPageReady(page) {
+async function waitForPageReady(page, route) {
   // Wait for network idle
   await page.waitForNetworkIdle({ timeout: 10000 });
 
@@ -35,6 +36,35 @@ async function waitForPageReady(page) {
     },
     { timeout: 5000 }
   );
+
+  // For blog post pages, wait for article content to be rendered
+  if (route.startsWith('/blog/') && route !== '/blog') {
+    try {
+      await page.waitForFunction(
+        () => {
+          // Wait for prose content (article body) or breadcrumb with Blog link
+          const prose = document.querySelector('.prose');
+          const blogBreadcrumb = document.querySelector('nav[aria-label="Breadcrumb"]');
+          return prose || blogBreadcrumb;
+        },
+        { timeout: 15000 }
+      );
+    } catch {
+      // If timeout, continue anyway - the page might still have content
+      console.log('   ⚠ Warning: Blog content took too long, capturing current state');
+    }
+  }
+
+  // For blog index, wait for blog cards or empty state
+  if (route === '/blog') {
+    await page.waitForFunction(
+      () => {
+        const blogTitle = document.querySelector('h1');
+        return blogTitle && blogTitle.textContent.includes('Blog');
+      },
+      { timeout: 5000 }
+    );
+  }
 
   // Give a small buffer for any final updates
   await new Promise(resolve => setTimeout(resolve, 500));
@@ -61,7 +91,7 @@ async function prerenderRoute(browser, route) {
     });
 
     // Wait for page to be fully ready
-    await waitForPageReady(page);
+    await waitForPageReady(page, route);
 
     // Get fully-rendered HTML
     const html = await page.content();
