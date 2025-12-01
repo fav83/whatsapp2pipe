@@ -4,6 +4,10 @@ interface VideoEmbedProps {
   src: string;
   webmSrc?: string;
   title?: string;
+  description?: string;
+  poster?: string;
+  uploadDate?: string;
+  duration?: string; // ISO 8601 duration format, e.g., "PT1M30S" for 1min 30sec
   aspectRatio?: '16:9' | '4:3';
   autoPlay?: boolean;
 }
@@ -16,6 +20,10 @@ export function VideoEmbed({
   src,
   webmSrc,
   title = 'Video',
+  description,
+  poster,
+  uploadDate,
+  duration,
   aspectRatio = '16:9',
   autoPlay = false,
 }: VideoEmbedProps) {
@@ -24,6 +32,28 @@ export function VideoEmbed({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const hasAutoPlayedRef = useRef(false);
+
+  // Generate VideoObject JSON-LD schema for SEO
+  const getVideoSchema = () => {
+    if (isYouTube) return null; // YouTube handles its own schema
+
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const schema: Record<string, unknown> = {
+      '@context': 'https://schema.org',
+      '@type': 'VideoObject',
+      name: title,
+      contentUrl: `${baseUrl}${src}`,
+    };
+
+    if (description) schema.description = description;
+    if (poster) schema.thumbnailUrl = `${baseUrl}${poster}`;
+    if (uploadDate) schema.uploadDate = uploadDate;
+    if (duration) schema.duration = duration;
+
+    return schema;
+  };
+
+  const videoSchema = getVideoSchema();
 
   const handlePlayClick = () => {
     if (videoRef.current) {
@@ -104,10 +134,18 @@ export function VideoEmbed({
   // MP4 or other video file with optional webm fallback
   return (
     <div className={`not-prose my-8 relative w-full rounded-lg shadow-lg overflow-hidden bg-black ${aspectClass}`}>
+      {/* VideoObject JSON-LD for SEO */}
+      {videoSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(videoSchema) }}
+        />
+      )}
       <video
         ref={videoRef}
         title={title}
         controls
+        poster={poster}
         className="absolute inset-0 w-full h-full object-cover object-top m-0"
         preload="metadata"
         muted={autoPlay}
