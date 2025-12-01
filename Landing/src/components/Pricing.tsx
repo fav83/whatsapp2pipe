@@ -9,8 +9,8 @@ export function Pricing() {
       features: [
         'Everything you need to get started',
         'Capture contacts from WhatsApp chats',
-        'Save directly to your Pipedrive',
-        'Help us improve with your feedback',
+        'Save messages as notes to Pipedrive',
+        'Manage Pipedrive deals from the sidebar',
       ],
       cta: 'active',
       highlight: true,

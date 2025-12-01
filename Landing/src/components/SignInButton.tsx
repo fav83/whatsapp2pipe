@@ -30,7 +30,7 @@ export function SignInButton({ variant = 'hero', label = 'Sign in with Pipedrive
   };
 
   const baseClasses = 'font-medium rounded-lg transition-colors inline-flex items-center justify-center';
-  const sizeClasses = variant === 'hero' ? 'px-8 py-4 text-lg' : 'px-6 py-3 text-base';
+  const sizeClasses = variant === 'hero' ? 'px-8 py-4 text-lg' : 'w-full px-6 py-3 text-base';
   const colorClasses = 'bg-button-primary text-white hover:bg-button-primary-hover active:bg-button-primary-active';
 
   return (
