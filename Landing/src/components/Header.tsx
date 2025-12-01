@@ -74,7 +74,7 @@ export function Header() {
           </a>
 
           {/* Navigation */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             {/* Pricing Link */}
             <a
               href="/#pricing"

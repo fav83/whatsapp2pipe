@@ -1,4 +1,5 @@
 import { CTAButton } from './CTAButton';
+import { ChromeStoreLink } from './ChromeStoreLink';
 import { Screenshot } from './Screenshot';
 import { FeatureHighlight } from './FeatureHighlight';
 import { VideoEmbed } from './VideoEmbed';
@@ -9,9 +10,10 @@ import { VideoEmbed } from './VideoEmbed';
  */
 export const mdxComponents = {
   CTAButton,
+  ChromeStoreLink,
   Screenshot,
   FeatureHighlight,
   VideoEmbed,
 };
 
-export { CTAButton, Screenshot, FeatureHighlight, VideoEmbed };
+export { CTAButton, ChromeStoreLink, Screenshot, FeatureHighlight, VideoEmbed };

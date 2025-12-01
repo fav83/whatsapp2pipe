@@ -13,10 +13,10 @@ export function Footer() {
           {/* Center - Links */}
           <div className="flex items-center gap-6">
             <Link
-              to="/privacy-policy"
+              to="/guides"
               className="text-sm text-slate-600 hover:text-slate-700 hover:underline transition-colors duration-200"
             >
-              Privacy Policy
+              Guides
             </Link>
             <span className="text-slate-400">•</span>
             <Link
@@ -27,10 +27,10 @@ export function Footer() {
             </Link>
             <span className="text-slate-400">•</span>
             <Link
-              to="/guides"
+              to="/privacy-policy"
               className="text-sm text-slate-600 hover:text-slate-700 hover:underline transition-colors duration-200"
             >
-              Guides
+              Privacy Policy
             </Link>
           </div>
         </div>
