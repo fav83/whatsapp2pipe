@@ -25,8 +25,8 @@ export default defineConfig({
     react(),
   ],
 
-  // SEO Optimization: Use base path for proper asset loading
-  base: './',
+  // Use absolute base path so assets load correctly on nested routes
+  base: '/',
 
   build: {
     // Don't generate source maps for production (landing is public website)

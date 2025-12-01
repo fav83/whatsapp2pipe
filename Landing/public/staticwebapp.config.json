@@ -23,8 +23,8 @@
       }
     },
     {
-      "route": "/guides/*",
-      "rewrite": "/index.html",
+      "route": "/guides/capture-whatsapp-leads-pipedrive",
+      "rewrite": "/guides/capture-whatsapp-leads-pipedrive/index.html",
       "headers": {
         "content-type": "text/html; charset=utf-8"
       }
