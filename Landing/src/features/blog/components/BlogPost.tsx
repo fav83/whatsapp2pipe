@@ -57,7 +57,7 @@ export function BlogPost() {
     <>
       <Helmet>
         {/* Basic Meta Tags */}
-        <title>{frontmatter.title} | Chat2Deal Guides</title>
+        <title>{frontmatter.title} | Chat2Deal</title>
         <meta name="description" content={frontmatter.description} />
         <meta name="keywords" content={frontmatter.keywords.join(', ')} />
         <link rel="canonical" href={canonicalUrl} />
